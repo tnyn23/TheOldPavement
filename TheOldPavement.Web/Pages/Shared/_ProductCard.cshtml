@@ -1,0 +1,64 @@
+@using System.Linq
+@model TheOldPavement.Domain.Models.Product
+
+@{
+    var mainImage = Model.ProductImages?.ElementAtOrDefault(0)?.ImageUrl 
+        ?? "https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&fit=crop&w=1080&q=80";
+    var hoverImage = Model.ProductImages?.ElementAtOrDefault(1)?.ImageUrl ?? mainImage;
+    var isSale = Model.IsOnSale == true || (Model.DiscountPercentage.GetValueOrDefault() > 0);
+    var badgeList = new List<(string Text, string Classes)>();
+    if (isSale)
+    {
+        badgeList.Add(($"Sale {Model.DiscountPercentage.GetValueOrDefault(0)}%", "bg-red-600 text-white"));
+    }
+    if (Model.IsCollab == true)
+    {
+        badgeList.Add(("Collab", "bg-black text-white"));
+    }
+    if ((DateTime.Now - Model.CreatedAt.GetValueOrDefault(DateTime.Now)).TotalDays < 14)
+    {
+        badgeList.Add(("New", "bg-emerald-500 text-white"));
+    }
+}
+
+<article class="product-card-card product-card-clickable group" data-product-url="/Product/@Model.Slug" tabindex="0">
+    <div class="product-card-media">
+        <img src="@mainImage" alt="@Model.Name" class="product-card-image product-card-image-main" loading="lazy" />
+        <img src="@hoverImage" alt="@Model.Name alternate view" class="product-card-image product-card-image-back" loading="lazy" />
+        <div class="product-card-badges">
+            @foreach (var badge in badgeList)
+            {
+                <span class="product-card-badge @badge.Classes">@badge.Text</span>
+            }
+        </div>
+        <div class="product-card-overlay">
+            <div class="overlay-copy">
+                <span class="overlay-label">Xem nhanh</span>
+                <strong class="overlay-title">Thêm vào giỏ</strong>
+            </div>
+            <form method="post" asp-page="/Product/Detail" asp-page-handler="AddToCart" asp-route-slug="@Model.Slug" class="card-action-button">
+                <button type="submit" class="overlay-button" aria-label="Thêm @Model.Name vào giỏ">
+                    Thêm vào giỏ
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="product-card-body">
+        <div class="product-card-intro">
+            <span class="product-card-tag">@Model.Category</span>
+            <h3 class="product-card-title">@Model.Name</h3>
+        </div>
+
+        <div class="product-card-footer">
+            <div class="product-card-price-group">
+                <span class="product-card-price">@Model.Price.ToString("N0")₫</span>
+                @if (isSale && Model.OriginalPrice.GetValueOrDefault() > 0)
+                {
+                    <span class="product-card-original">@Model.OriginalPrice?.ToString("N0")₫</span>
+                }
+            </div>
+            <span class="product-card-meta">Minimal streetwear silhouette</span>
+        </div>
+    </div>
+</article>

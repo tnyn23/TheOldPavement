@@ -14,12 +14,12 @@ public class DetailModel : PageModel
     private readonly IProductRepository _productRepository;
     private readonly TheOldPavementDbContext _context;
 
-    public Core.Models.Product? Product { get; set; }
+    public TheOldPavement.Domain.Models.Product? Product { get; set; }
     public List<string> Sizes { get; set; } = new() { "S", "M", "L", "XL", "XXL" };
     public List<string> ProductImagesList { get; set; } = new();
     public Dictionary<string, List<string>> ProductImagesByColor { get; set; } = new();
     
-    public List<Core.Models.Product> RelatedProducts { get; set; } = new();
+    public List<TheOldPavement.Domain.Models.Product> RelatedProducts { get; set; } = new();
     public List<ProductReview> Reviews { get; set; } = new();
 
     public List<ColorOption> Colors { get; set; } = new()
@@ -79,7 +79,7 @@ public class DetailModel : PageModel
             description = "Thiết kế Jacket đa túi mang phong cách Tactical/Utility cao cấp, cản gió nhẹ và chống thấm nước tốt, hoàn thiện với tem nhãn thêu tay độc quyền.";
         }
 
-        Product = new Core.Models.Product
+        Product = new TheOldPavement.Domain.Models.Product
         {
             Id = 999, // Fallback ID
             Name = name,

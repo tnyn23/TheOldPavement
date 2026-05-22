@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TheOldPavement.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5e23d93e2a04426abae18a8b9177fcdacda7cdec")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+faea2104bf17044a2cee3ca400dfb5adc09a88e4")]
 [assembly: System.Reflection.AssemblyProductAttribute("TheOldPavement.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TheOldPavement.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
