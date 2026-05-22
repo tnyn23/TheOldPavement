@@ -2,7 +2,23 @@
 @model TheOldPavement.Web.Pages.Public.ShopModel
 @{
     ViewData["Title"] = "Cửa hàng - Tất cả sản phẩm";
+    var bannerProduct = Model.Products.FirstOrDefault(p => p.Slug == "36-pho-phuong");
+    var bannerImage = bannerProduct?.ProductImages?.FirstOrDefault()?.ImageUrl
+        ?? "https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&fit=crop&w=1080&q=80";
 }
+
+<section class="relative overflow-hidden mb-12">
+    <div class="absolute inset-0">
+        <img src="@bannerImage" alt="36 Phố Phường" class="w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-black/40"></div>
+    </div>
+    <div class="relative z-10 max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 py-24 md:py-32 lg:py-36 text-center text-white">
+        <p class="text-sm tracking-[0.35em] uppercase text-white/80">36 PHỐ PHƯỜNG</p>
+        <h1 class="mt-4 text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight">Streetwear đậm chất phố cổ Hà Nội</h1>
+        <p class="mt-6 max-w-2xl mx-auto text-sm md:text-base text-white/80 leading-relaxed">Bộ sưu tập lấy cảm hứng từ 36 phố phường, hoài niệm Hà Nội và tinh thần streetwear hiện đại.</p>
+        <a href="/Product/36-pho-phuong" class="inline-flex items-center justify-center mt-8 rounded-full bg-white text-black px-8 py-3 text-sm font-semibold uppercase tracking-[0.15em] hover:bg-gray-100 transition">Xem ngay</a>
+    </div>
+</section>
 
 <main class="pt-24 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-20">
     
@@ -88,57 +104,7 @@
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-12">
             @foreach (var p in Model.Products)
             {
-                var img = p.ProductImages?.FirstOrDefault()?.ImageUrl ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
-                
-                <div class="group cursor-pointer flex flex-col h-full relative" onclick="window.location.href='/Product/@p.Slug'">
-                    <!-- Badges -->
-                    <div class="absolute top-2 left-2 z-10 flex flex-col gap-1 pointer-events-none">
-                        @if (p.IsOnSale == true || p.DiscountPercentage > 0)
-                        {
-                            <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">Sale @(p.DiscountPercentage)%</span>
-                        }
-                        @if (p.IsCollab == true)
-                        {
-                            <span class="bg-black text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">Collab</span>
-                        }
-                        @if ((DateTime.Now - p.CreatedAt.GetValueOrDefault(DateTime.Now)).TotalDays < 14)
-                        {
-                            <span class="bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">New</span>
-                        }
-                    </div>
-
-                    <!-- Image -->
-                    <div class="relative bg-gray-50 mb-4 overflow-hidden aspect-square border-b-2 border-transparent group-hover:border-black transition-colors">
-                        <img src="@img" alt="@p.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                        
-                        <!-- Quick Add to Cart (Hover) -->
-                        <div class="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100 flex gap-2">
-                            <form method="post" asp-page="/Product/Detail" asp-page-handler="AddToCart" asp-route-slug="@p.Slug" class="w-full" onclick="event.stopPropagation();">
-                                <button type="submit" class="w-full bg-black/90 backdrop-blur-sm text-white py-3 text-xs font-bold tracking-widest hover:bg-black uppercase border border-transparent">
-                                    Thêm nhanh
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Details -->
-                    <div class="flex-grow flex flex-col">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">@p.Category</p>
-                        <h3 class="text-sm font-bold leading-tight uppercase tracking-wide group-hover:text-gray-600 transition-colors line-clamp-2 mb-2">@p.Name</h3>
-                        
-                        <div class="mt-auto pt-2 flex items-center gap-2">
-                            @if (p.IsOnSale == true && p.OriginalPrice > 0)
-                            {
-                                <p class="font-black text-red-600">@p.Price.ToString("N0")₫</p>
-                                <p class="text-xs font-bold text-gray-400 line-through">@p.OriginalPrice?.ToString("N0")₫</p>
-                            }
-                            else
-                            {
-                                <p class="font-black text-gray-900">@p.Price.ToString("N0")₫</p>
-                            }
-                        </div>
-                    </div>
-                </div>
+                @await Html.PartialAsync("_ProductCard", p)
             }
         </div>
     }
@@ -156,3 +122,12 @@
         </div>
     }
 </main>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/product-card.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/product-card.js" asp-append-version="true"></script>
+}
+

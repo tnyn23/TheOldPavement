@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
-using TheOldPavement.Core.Models;
+using TheOldPavement.Domain.Models;
 
-namespace TheOldPavement.Data.Context;
+namespace TheOldPavement.Infrastructure.Context;
 
 public partial class TheOldPavementDbContext : DbContext
 {
@@ -1259,3 +1259,4 @@ public partial class TheOldPavementDbContext : DbContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
+

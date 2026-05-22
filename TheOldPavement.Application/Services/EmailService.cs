@@ -3,7 +3,7 @@ using System.Net.Mail;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using TheOldPavement.Application.Interfaces;
-using TheOldPavement.Core.Models;
+using TheOldPavement.Domain.Models;
 
 namespace TheOldPavement.Application.Services;
 
@@ -343,3 +343,4 @@ public class EmailService : IEmailService
         );
     }
 }
+

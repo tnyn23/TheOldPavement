@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using TheOldPavement.Core.Models;
+using TheOldPavement.Domain.Models;
 
 namespace TheOldPavement.Application.Interfaces;
 
@@ -10,3 +10,4 @@ public interface IEmailService
     Task SendAccountCreationEmailAsync(string toEmail, string fullName, string rawPassword);
     Task SendPasswordRecoveryEmailAsync(string toEmail, string fullName, string tempPassword);
 }
+

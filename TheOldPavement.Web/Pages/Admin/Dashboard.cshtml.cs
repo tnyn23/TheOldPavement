@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using TheOldPavement.Core.Models;
-using TheOldPavement.Data.Context;
+using TheOldPavement.Domain.Models;
+using TheOldPavement.Infrastructure.Context;
 
 namespace TheOldPavement.Web.Pages.Admin;
 
@@ -14,7 +14,7 @@ public class DashboardModel : PageModel
     private readonly TheOldPavementDbContext _context;
     private readonly IWebHostEnvironment _environment;
 
-    public List<TheOldPavement.Core.Models.Product> Products { get; set; } = new();
+    public List<TheOldPavement.Domain.Models.Product> Products { get; set; } = new();
     public List<Order> Orders { get; set; } = new();
     public List<ProductVariant> ProductVariants { get; set; } = new();
     public List<PromoCode> PromoCodes { get; set; } = new();
@@ -57,7 +57,7 @@ public class DashboardModel : PageModel
         // 1. Check and Seed database dynamically if it is completely empty
         if (!_context.Products.Any())
         {
-            var p1 = new TheOldPavement.Core.Models.Product 
+            var p1 = new TheOldPavement.Domain.Models.Product 
             { 
                 Name = "36 Phố Phường - Hồn Hà Nội Tee", 
                 Slug = "36-pho-phuong", 
@@ -72,7 +72,7 @@ public class DashboardModel : PageModel
             p1.ProductVariants.Add(new ProductVariant { Size = "L", Color = "White", ColorHex = "#FFFFFF", Sku = "OP-36PP-WHT-L", StockQuantity = 120, IsAvailable = true });
             p1.ProductVariants.Add(new ProductVariant { Size = "M", Color = "White", ColorHex = "#FFFFFF", Sku = "OP-36PP-WHT-M", StockQuantity = 85, IsAvailable = true });
 
-            var p2 = new TheOldPavement.Core.Models.Product 
+            var p2 = new TheOldPavement.Domain.Models.Product 
             { 
                 Name = "The Old Pavement Classic Black Tee", 
                 Slug = "classic-black-tee", 
@@ -156,7 +156,7 @@ public class DashboardModel : PageModel
         Products = await _context.Products
             .Include(p => p.ProductImages)
             .Include(p => p.ProductVariants)
-            .OrderByDescending(p => p.Id)
+            .OrderByDescending(p => p.CreatedAt ?? DateTime.MinValue)
             .ToListAsync();
 
         Orders = await _context.Orders
@@ -296,7 +296,7 @@ public class DashboardModel : PageModel
         }
         else
         {
-            var product = new TheOldPavement.Core.Models.Product
+            var product = new TheOldPavement.Domain.Models.Product
             {
                 Name = name,
                 Slug = slug,
@@ -467,3 +467,4 @@ public class TopProductDTO
     public string Name { get; set; } = string.Empty;
     public int SalesCount { get; set; }
 }
+

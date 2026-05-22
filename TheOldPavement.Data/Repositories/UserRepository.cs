@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using TheOldPavement.Core.Interfaces;
-using TheOldPavement.Core.Models;
-using TheOldPavement.Data.Context;
+using TheOldPavement.Domain.Interfaces;
+using TheOldPavement.Domain.Models;
+using TheOldPavement.Infrastructure.Context;
 
-namespace TheOldPavement.Data.Repositories;
+namespace TheOldPavement.Infrastructure.Repositories;
 
 public class UserRepository : Repository<User>, IUserRepository
 {
@@ -16,3 +16,4 @@ public class UserRepository : Repository<User>, IUserRepository
         return await _dbSet.FirstOrDefaultAsync(u => u.Email == email);
     }
 }
+

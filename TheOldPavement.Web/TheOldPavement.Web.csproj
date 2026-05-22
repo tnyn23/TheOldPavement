@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TheOldPavement.Application\TheOldPavement.Application.csproj" />
-    <ProjectReference Include="..\TheOldPavement.Data\TheOldPavement.Data.csproj" />
+    <ProjectReference Include="..\TheOldPavement.Infrastructure\TheOldPavement.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,3 +22,4 @@
   </PropertyGroup>
 
 </Project>
+

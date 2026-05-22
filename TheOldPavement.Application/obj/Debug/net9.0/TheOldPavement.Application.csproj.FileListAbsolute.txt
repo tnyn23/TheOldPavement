@@ -13,3 +13,4 @@ F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Deb
 F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Debug\net9.0\refint\TheOldPavement.Application.dll
 F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Debug\net9.0\TheOldPavement.Application.pdb
 F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Debug\net9.0\ref\TheOldPavement.Application.dll
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Debug\net9.0\TheOldPavement.Application.sourcelink.json

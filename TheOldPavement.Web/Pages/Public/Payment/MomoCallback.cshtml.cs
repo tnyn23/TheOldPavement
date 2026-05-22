@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using TheOldPavement.Application.Interfaces;
-using TheOldPavement.Data.Context;
+using TheOldPavement.Infrastructure.Context;
 using TheOldPavement.Web.Helpers;
 
 namespace TheOldPavement.Web.Pages.Public.Payment;
@@ -116,3 +116,4 @@ public class MomoCallbackModel : PageModel
         return Page();
     }
 }
+

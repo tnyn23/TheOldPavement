@@ -1,9 +1,9 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using TheOldPavement.Core.Interfaces;
-using TheOldPavement.Data.Context;
+using TheOldPavement.Domain.Interfaces;
+using TheOldPavement.Infrastructure.Context;
 
-namespace TheOldPavement.Data.Repositories;
+namespace TheOldPavement.Infrastructure.Repositories;
 
 public class Repository<T> : IRepository<T> where T : class
 {
@@ -63,3 +63,4 @@ public class Repository<T> : IRepository<T> where T : class
         return await _context.SaveChangesAsync();
     }
 }
+

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TheOldPavement.Core.Interfaces;
-using TheOldPavement.Core.Models;
+using TheOldPavement.Domain.Interfaces;
+using TheOldPavement.Domain.Models;
 
 namespace TheOldPavement.Web.Pages;
 
@@ -8,7 +8,7 @@ public class OutletModel : PageModel
 {
     private readonly IProductRepository _productRepository;
 
-    public IEnumerable<TheOldPavement.Core.Models.Product> Products { get; set; } = new List<TheOldPavement.Core.Models.Product>();
+    public IEnumerable<TheOldPavement.Domain.Models.Product> Products { get; set; } = new List<TheOldPavement.Domain.Models.Product>();
     public string SelectedCondition { get; set; } = "all";
 
     public OutletModel(IProductRepository productRepository)
@@ -26,3 +26,4 @@ public class OutletModel : PageModel
         Products = await _productRepository.GetFeaturedProductsAsync();
     }
 }
+

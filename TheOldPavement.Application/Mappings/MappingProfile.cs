@@ -1,6 +1,6 @@
 using AutoMapper;
 using TheOldPavement.Application.DTOs;
-using TheOldPavement.Core.Models;
+using TheOldPavement.Domain.Models;
 
 namespace TheOldPavement.Application.Mappings;
 
@@ -21,3 +21,4 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
     }
 }
+

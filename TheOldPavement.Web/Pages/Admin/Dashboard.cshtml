@@ -16,9 +16,21 @@
         background: rgba(255, 255, 255, 0.85);
         border: 1px solid rgba(229, 231, 235, 0.5);
     }
+    .tab-btn {
+        transition: transform 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+        border: 1px solid transparent;
+    }
+    .tab-btn:hover {
+        transform: translateX(4px);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+        border-color: rgba(31, 41, 55, 0.1);
+    }
     .tab-btn.active {
         background-color: #000000;
         color: #FFFFFF;
+        transform: translateX(6px);
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+        border-color: rgba(255, 255, 255, 0.15);
     }
 </style>
 
@@ -125,23 +137,23 @@
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
         <!-- Left Sidebar Navigation -->
         <div class="lg:col-span-1 space-y-2">
-            <button onclick="switchTab('analytics')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50 active">
+            <button onclick="switchTab(event, 'analytics')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50 active">
                 <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
                 Analytics / Overview
             </button>
-            <button onclick="switchTab('products')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50">
+            <button onclick="switchTab(event, 'products')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50">
                 <i data-lucide="package" class="w-5 h-5"></i>
                 Quản lý sản phẩm
             </button>
-            <button onclick="switchTab('orders')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50">
+            <button onclick="switchTab(event, 'orders')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50">
                 <i data-lucide="receipt" class="w-5 h-5"></i>
                 Quản lý Orders
             </button>
-            <button onclick="switchTab('inventory')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50">
+            <button onclick="switchTab(event, 'inventory')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50">
                 <i data-lucide="boxes" class="w-5 h-5"></i>
                 Quản lý Inventory
             </button>
-            <button onclick="switchTab('coupons')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50">
+            <button onclick="switchTab(event, 'coupons')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50">
                 <i data-lucide="ticket" class="w-5 h-5"></i>
                 Khuyến mãi
             </button>
@@ -673,7 +685,11 @@
 </div>
 
 <script>
-    function switchTab(tabId) {
+    function switchTab(event, tabId) {
+        if (!event) {
+            return;
+        }
+
         // Toggle tab content visibility
         const contents = document.querySelectorAll(".tab-content");
         contents.forEach(content => content.classList.add("hidden"));

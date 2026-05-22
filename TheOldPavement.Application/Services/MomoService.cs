@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using TheOldPavement.Application.Interfaces;
-using TheOldPavement.Core.Models;
+using TheOldPavement.Domain.Models;
 
 namespace TheOldPavement.Application.Services;
 
@@ -168,3 +168,4 @@ public class MomoCreateResponse
     [JsonPropertyName("shortLink")]
     public string ShortLink { get; set; } = string.Empty;
 }
+

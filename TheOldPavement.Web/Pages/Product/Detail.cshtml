@@ -5,6 +5,8 @@
     var productImages = Model.ProductImagesList.ToArray();
     var imagesByColorJson = System.Text.Json.JsonSerializer.Serialize(Model.ProductImagesByColor);
     var selectedColor = Model.SelectedColor ?? "white";
+    var selectedSize = Model.SelectedSize ?? "L";
+    var selectedColorName = Model.Colors.FirstOrDefault(c => c.Value == selectedColor)?.Name ?? selectedColor;
 }
 
 <main class="pt-24 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16">
@@ -98,27 +100,27 @@
                 <!-- Color Selection -->
                 <div>
                     <p class="font-semibold mb-3 tracking-wide">
-                        MÀU SẮC: <span id="selected-color-label" class="font-normal">White</span>
+                        MÀU SẮC: <span id="selected-color-label" class="font-normal">@selectedColorName</span>
                     </p>
                     <div class="flex gap-3">
                         @foreach (var color in Model.Colors)
                         {
                             <button type="button"
                                     onclick="selectColor('@color.Value', '@color.Name')"
-                                    class="color-btn w-12 h-12 rounded-full border-2 transition-all @(color.Value == "white" ? "border-black scale-110" : "border-gray-300")"
+                                    class="color-btn w-12 h-12 rounded-full border-2 transition-all duration-200 shadow-sm hover:shadow-md @(color.Value == selectedColor ? "border-black scale-110" : "border-gray-300")"
                                     style="background-color: @color.Hex"
                                     title="@color.Name"
                                     data-color="@color.Value"></button>
                         }
                     </div>
-                    <input type="hidden" asp-for="SelectedColor" id="hidden-color" value="white" />
+                    <input type="hidden" asp-for="SelectedColor" id="hidden-color" value="@selectedColor" />
                 </div>
 
                 <!-- Size Selection -->
                 <div>
                     <div class="flex items-center justify-between mb-3">
                         <p class="font-semibold tracking-wide">
-                            KÍCH THƯỚC: <span id="selected-size-label" class="font-normal">L</span>
+                            KÍCH THƯỚC: <span id="selected-size-label" class="font-normal">@selectedSize</span>
                         </p>
                         <button type="button" onclick="toggleSizeGuide()" class="text-sm font-semibold underline hover:opacity-60 transition-opacity">
                             Bảng size
@@ -129,13 +131,13 @@
                         {
                             <button type="button"
                                     onclick="selectSize('@size')"
-                                    class="size-btn w-14 h-14 border-2 font-semibold transition-all @(size == "L" ? "border-black bg-black text-white" : "border-gray-300 hover:border-black")"
+                                    class="size-btn w-14 h-14 border-2 font-semibold transition-all duration-200 @(size == selectedSize ? "border-black bg-black text-white" : "border-gray-300 hover:border-black")"
                                     data-size="@size">
                                 @size
                             </button>
                         }
                     </div>
-                    <input type="hidden" asp-for="SelectedSize" id="hidden-size" value="L" />
+                    <input type="hidden" asp-for="SelectedSize" id="hidden-size" value="@selectedSize" />
                 </div>
 
                 <!-- Quantity -->
@@ -412,7 +414,8 @@
 
     function selectColor(value, name) {
         document.getElementById('selected-color-label').innerText = name;
-        document.getElementById('SelectedColor').value = value;
+        const hiddenColor = document.getElementById('hidden-color');
+        if (hiddenColor) hiddenColor.value = value;
 
         // Highlight selected color button
         const colorBtns = document.querySelectorAll('.color-btn');
@@ -442,7 +445,8 @@
 
     function selectSize(size) {
         document.getElementById('selected-size-label').innerText = size;
-        document.getElementById('SelectedSize').value = size;
+        const hiddenSize = document.getElementById('hidden-size');
+        if (hiddenSize) hiddenSize.value = size;
 
         // Highlight selected size button
         const sizeBtns = document.querySelectorAll('.size-btn');
@@ -459,7 +463,7 @@
 
     function adjustQuantity(amount) {
         const qtyDisplay = document.getElementById('quantity-display');
-        const hiddenQty = document.getElementById('Quantity');
+        const hiddenQty = document.getElementById('hidden-quantity');
         let currentQty = parseInt(hiddenQty.value);
         let newQty = currentQty + amount;
         if (newQty < 1) newQty = 1;

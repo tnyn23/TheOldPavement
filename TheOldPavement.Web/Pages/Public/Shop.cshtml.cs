@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using TheOldPavement.Data.Context;
+using TheOldPavement.Infrastructure.Context;
 
 namespace TheOldPavement.Web.Pages.Public;
 
@@ -14,7 +14,7 @@ public class ShopModel : PageModel
         _context = context;
     }
 
-    public List<TheOldPavement.Core.Models.Product> Products { get; set; } = new();
+    public List<TheOldPavement.Domain.Models.Product> Products { get; set; } = new();
 
     [BindProperty(SupportsGet = true)]
     public string? SearchQuery { get; set; }
@@ -74,3 +74,4 @@ public class ShopModel : PageModel
         Products = await query.ToListAsync();
     }
 }
+

@@ -515,24 +515,13 @@
         "dependencies": {
           "AutoMapper": "13.0.1",
           "FluentValidation": "11.9.2",
-          "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
-          "TheOldPavement.Core": "1.0.0"
+          "Microsoft.Extensions.Configuration.Abstractions": "9.0.0"
         },
         "compile": {
           "bin/placeholder/TheOldPavement.Application.dll": {}
         },
         "runtime": {
           "bin/placeholder/TheOldPavement.Application.dll": {}
-        }
-      },
-      "TheOldPavement.Core/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v9.0",
-        "compile": {
-          "bin/placeholder/TheOldPavement.Core.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/TheOldPavement.Core.dll": {}
         }
       }
     }
@@ -1202,11 +1191,6 @@
       "type": "project",
       "path": "../TheOldPavement.Application/TheOldPavement.Application.csproj",
       "msbuildProject": "../TheOldPavement.Application/TheOldPavement.Application.csproj"
-    },
-    "TheOldPavement.Core/1.0.0": {
-      "type": "project",
-      "path": "../TheOldPavement.Core/TheOldPavement.Core.csproj",
-      "msbuildProject": "../TheOldPavement.Core/TheOldPavement.Core.csproj"
     }
   },
   "projectFileDependencyGroups": {

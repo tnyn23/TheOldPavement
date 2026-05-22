@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using TheOldPavement.Core.Interfaces;
-using TheOldPavement.Core.Models;
-using TheOldPavement.Data.Context;
+using TheOldPavement.Domain.Interfaces;
+using TheOldPavement.Domain.Models;
+using TheOldPavement.Infrastructure.Context;
 
-namespace TheOldPavement.Data.Repositories;
+namespace TheOldPavement.Infrastructure.Repositories;
 
 public class ProductRepository : Repository<Product>, IProductRepository
 {
@@ -47,3 +47,4 @@ public class ProductRepository : Repository<Product>, IProductRepository
             .FirstOrDefaultAsync(p => p.Slug == slug);
     }
 }
+

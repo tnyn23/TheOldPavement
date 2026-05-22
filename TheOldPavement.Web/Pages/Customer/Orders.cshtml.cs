@@ -1,8 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TheOldPavement.Core.Interfaces;
-using TheOldPavement.Core.Models;
+using TheOldPavement.Domain.Interfaces;
+using TheOldPavement.Domain.Models;
 
 namespace TheOldPavement.Web.Pages.Customer;
 
@@ -89,3 +89,4 @@ public class OrdersModel : PageModel
         return Page();
     }
 }
+

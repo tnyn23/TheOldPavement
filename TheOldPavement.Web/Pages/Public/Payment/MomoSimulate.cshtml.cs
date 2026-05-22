@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using TheOldPavement.Data.Context;
+using TheOldPavement.Infrastructure.Context;
 
 namespace TheOldPavement.Web.Pages.Public.Payment;
 
@@ -118,3 +118,4 @@ public class MomoSimulateModel : PageModel
         return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
     }
 }
+

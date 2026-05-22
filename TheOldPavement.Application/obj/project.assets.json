@@ -98,16 +98,6 @@
         "build": {
           "buildTransitive/net8.0/_._": {}
         }
-      },
-      "TheOldPavement.Core/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v9.0",
-        "compile": {
-          "bin/placeholder/TheOldPavement.Core.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/TheOldPavement.Core.dll": {}
-        }
       }
     }
   },
@@ -253,19 +243,13 @@
         "microsoft.extensions.primitives.nuspec",
         "useSharedDesignerContext.txt"
       ]
-    },
-    "TheOldPavement.Core/1.0.0": {
-      "type": "project",
-      "path": "../TheOldPavement.Core/TheOldPavement.Core.csproj",
-      "msbuildProject": "../TheOldPavement.Core/TheOldPavement.Core.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
       "AutoMapper >= 13.0.1",
       "FluentValidation >= 11.9.2",
-      "Microsoft.Extensions.Configuration.Abstractions >= 9.0.0",
-      "TheOldPavement.Core >= 1.0.0"
+      "Microsoft.Extensions.Configuration.Abstractions >= 9.0.0"
     ]
   },
   "packageFolders": {
@@ -300,11 +284,7 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
-          "projectReferences": {
-            "F:\\FPT\\Ky8_SU26\\EXE201\\Product\\TheOldPavement\\TheOldPavement.Core\\TheOldPavement.Core.csproj": {
-              "projectPath": "F:\\FPT\\Ky8_SU26\\EXE201\\Product\\TheOldPavement\\TheOldPavement.Core\\TheOldPavement.Core.csproj"
-            }
-          }
+          "projectReferences": {}
         }
       },
       "warningProperties": {

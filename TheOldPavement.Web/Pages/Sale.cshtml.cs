@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TheOldPavement.Core.Interfaces;
-using TheOldPavement.Core.Models;
+using TheOldPavement.Domain.Interfaces;
+using TheOldPavement.Domain.Models;
 using TheOldPavement.Application.DTOs;
 
 namespace TheOldPavement.Web.Pages;
@@ -10,7 +10,7 @@ public class SaleModel : PageModel
 {
     private readonly IProductRepository _productRepository;
 
-    public IEnumerable<TheOldPavement.Core.Models.Product> Products { get; set; } = new List<TheOldPavement.Core.Models.Product>();
+    public IEnumerable<TheOldPavement.Domain.Models.Product> Products { get; set; } = new List<TheOldPavement.Domain.Models.Product>();
     public string SortBy { get; set; } = "discount";
 
     public SaleModel(IProductRepository productRepository)
@@ -47,3 +47,4 @@ public class SaleModel : PageModel
         return RedirectToPage();
     }
 }
+

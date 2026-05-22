@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using TheOldPavement.Core.Models;
+using TheOldPavement.Domain.Models;
 
 namespace TheOldPavement.Application.Interfaces;
 
@@ -21,3 +21,4 @@ public interface IMomoService
         string extraData, 
         string signature);
 }
+

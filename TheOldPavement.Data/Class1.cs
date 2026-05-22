@@ -1,6 +1,7 @@
-﻿namespace TheOldPavement.Data;
+namespace TheOldPavement.Infrastructure;
 
 public class Class1
 {
 
 }
+

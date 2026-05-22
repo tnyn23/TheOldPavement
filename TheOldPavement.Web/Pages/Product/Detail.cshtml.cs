@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using TheOldPavement.Application.DTOs;
-using TheOldPavement.Core.Interfaces;
-using TheOldPavement.Core.Models;
+using TheOldPavement.Domain.Interfaces;
+using TheOldPavement.Domain.Models;
 using TheOldPavement.Web.Helpers;
-using TheOldPavement.Data.Context;
+using TheOldPavement.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace TheOldPavement.Web.Pages.Product;
@@ -284,3 +284,4 @@ public class ColorOption
     public string Value { get; set; } = string.Empty;
     public string Hex { get; set; } = string.Empty;
 }
+

@@ -2,9 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using TheOldPavement.Application.Interfaces;
 using TheOldPavement.Application.Mappings;
 using TheOldPavement.Application.Services;
-using TheOldPavement.Core.Interfaces;
-using TheOldPavement.Data.Context;
-using TheOldPavement.Data.Repositories;
+using TheOldPavement.Domain.Interfaces;
+using TheOldPavement.Infrastructure.Context;
+using TheOldPavement.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -88,3 +88,4 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 app.Run();
+

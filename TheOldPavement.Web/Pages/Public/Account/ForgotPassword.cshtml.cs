@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using TheOldPavement.Application.Interfaces;
-using TheOldPavement.Data.Context;
+using TheOldPavement.Infrastructure.Context;
 
 namespace TheOldPavement.Web.Pages.Public.Account;
 
@@ -83,3 +83,4 @@ public class ForgotPasswordModel : PageModel
         return Page();
     }
 }
+

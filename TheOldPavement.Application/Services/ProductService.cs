@@ -2,9 +2,9 @@ using AutoMapper;
 using TheOldPavement.Application.DTOs;
 using TheOldPavement.Application.Exceptions;
 using TheOldPavement.Application.Interfaces;
-using TheOldPavement.Core.Constants;
-using TheOldPavement.Core.Interfaces;
-using TheOldPavement.Core.Models;
+using TheOldPavement.Domain.Constants;
+using TheOldPavement.Domain.Interfaces;
+using TheOldPavement.Domain.Models;
 
 namespace TheOldPavement.Application.Services;
 
@@ -88,3 +88,4 @@ public class ProductService : IProductService
         await _productRepository.SaveChangesAsync();
     }
 }
+
