@@ -1,0 +1,799 @@
+@page
+@model TheOldPavement.Web.Pages.Admin.DashboardModel
+@{
+    ViewData["Title"] = "Admin Control Center - The Old Pavement";
+}
+
+<!-- Google Fonts Outfit -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Outfit', sans-serif;
+    }
+    .admin-card {
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(229, 231, 235, 0.5);
+    }
+    .tab-btn.active {
+        background-color: #000000;
+        color: #FFFFFF;
+    }
+</style>
+
+<main class="pt-24 px-4 md:px-8 lg:px-16 max-w-[1600px] mx-auto pb-16 min-h-[90vh]">
+    <!-- Header -->
+    <div class="border-b border-gray-200 pb-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="bg-red-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 uppercase tracking-widest rounded-full">SYSTEM PANEL</span>
+                <span class="text-xs text-gray-500 font-semibold uppercase">ROLE: ADMINISTRATOR</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-black tracking-tight text-gray-950 uppercase">ADMIN CONTROL HUB</h1>
+        </div>
+        
+        <div class="flex gap-3">
+            <a href="/" class="bg-white border border-gray-300 text-black px-5 py-2.5 text-sm font-semibold hover:border-black transition-colors rounded uppercase flex items-center gap-2">
+                <i data-lucide="external-link" class="w-4 h-4"></i>
+                Xem trang chủ
+            </a>
+            <a href="/Public/Account/Logout" class="bg-red-600 text-white px-5 py-2.5 text-sm font-semibold hover:bg-red-700 transition-colors rounded uppercase flex items-center gap-2">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                Đăng xuất
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="mb-8 p-4 bg-emerald-50 border border-emerald-500 text-emerald-800 font-medium flex items-center justify-between rounded animate-fade-in shadow-sm">
+            <div class="flex items-center gap-2">
+                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>
+                <span>@TempData["SuccessMessage"]</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="hover:opacity-60">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+    }
+
+    <!-- Analytics Dashboard Overview Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Revenue -->
+        <div class="admin-card p-6 rounded-xl flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">TỔNG DOANH THU</span>
+                <h3 class="text-3xl font-black text-emerald-600 mt-1">@Model.TotalRevenue.ToString("N0")₫</h3>
+                <span class="text-[11px] text-emerald-600 font-bold flex items-center gap-1 mt-1">
+                    <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+                    Tính từ dữ liệu hóa đơn thật
+                </span>
+            </div>
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center">
+                <i data-lucide="dollar-sign" class="w-6 h-6"></i>
+            </div>
+        </div>
+
+        <!-- Orders -->
+        <div class="admin-card p-6 rounded-xl flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">TỔNG ĐƠN HÀNG</span>
+                <h3 class="text-3xl font-black text-amber-600 mt-1">@Model.TotalOrdersCount</h3>
+                <span class="text-[11px] text-amber-600 font-bold flex items-center gap-1 mt-1">
+                    <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+                    @Model.Orders.Count(o => o.Status == "pending") đơn hàng chờ xử lý
+                </span>
+            </div>
+            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center">
+                <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+            </div>
+        </div>
+
+        <!-- Products -->
+        <div class="admin-card p-6 rounded-xl flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">SẢN PHẨM HOẠT ĐỘNG</span>
+                <h3 class="text-3xl font-black text-indigo-600 mt-1">@Model.TotalProductsCount</h3>
+                <span class="text-[11px] text-indigo-600 font-bold flex items-center gap-1 mt-1">
+                    <i data-lucide="package" class="w-3.5 h-3.5"></i>
+                    Lấy trực tiếp từ database
+                </span>
+            </div>
+            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+            </div>
+        </div>
+
+        <!-- Users -->
+        <div class="admin-card p-6 rounded-xl flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">KHÁCH HÀNG</span>
+                <h3 class="text-3xl font-black text-pink-600 mt-1">@Model.TotalUsersCount</h3>
+                <span class="text-[11px] text-pink-600 font-bold flex items-center gap-1 mt-1">
+                    <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                    Thành viên đăng ký hệ thống
+                </span>
+            </div>
+            <div class="w-12 h-12 bg-pink-50 text-pink-600 rounded-lg flex items-center justify-center">
+                <i data-lucide="user-check" class="w-6 h-6"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Workspace Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <!-- Left Sidebar Navigation -->
+        <div class="lg:col-span-1 space-y-2">
+            <button onclick="switchTab('analytics')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50 active">
+                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                Analytics / Overview
+            </button>
+            <button onclick="switchTab('products')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50">
+                <i data-lucide="package" class="w-5 h-5"></i>
+                Quản lý sản phẩm
+            </button>
+            <button onclick="switchTab('orders')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50">
+                <i data-lucide="receipt" class="w-5 h-5"></i>
+                Quản lý Orders
+            </button>
+            <button onclick="switchTab('inventory')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50">
+                <i data-lucide="boxes" class="w-5 h-5"></i>
+                Quản lý Inventory
+            </button>
+            <button onclick="switchTab('coupons')" class="tab-btn w-full text-left px-5 py-4 font-bold text-sm tracking-wide rounded-lg uppercase flex items-center gap-3 transition-all admin-card hover:bg-gray-50">
+                <i data-lucide="ticket" class="w-5 h-5"></i>
+                Khuyến mãi
+            </button>
+        </div>
+
+        <!-- Right Side Panel Content Areas -->
+        <div class="lg:col-span-4 min-h-[60vh]">
+            <!-- Tab: Analytics Overview -->
+            <div id="tab-content-analytics" class="tab-content space-y-6">
+                <div class="admin-card p-8 rounded-xl shadow-sm space-y-6">
+                    <h2 class="text-2xl font-black tracking-tight text-gray-950 uppercase flex items-center gap-2">
+                        <i data-lucide="trending-up" class="w-6 h-6 text-red-600"></i>
+                        HIỆU SUẤT BÁN HÀNG THEO NGÀY (TUẦN NÀY)
+                    </h2>
+                    
+                    <!-- SVG Chart Representation -->
+                    <div class="h-64 bg-gray-50 border border-gray-100 rounded-lg p-6 flex flex-col justify-between">
+                        <div class="flex items-end justify-between h-48 gap-3">
+                            @{
+                                var maxDaySales = Model.SalesByDay.Max();
+                                var weekdays = new string[] { "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "CN" };
+                                for (int i = 0; i < 7; i++)
+                                {
+                                    var daySales = Model.SalesByDay[i];
+                                    var heightPercent = maxDaySales > 0 ? (daySales * 100 / maxDaySales) : 10;
+                                    <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                                        <div class="w-full bg-emerald-500 rounded-t transition-all duration-500" 
+                                             style="height: @(heightPercent)%" 
+                                             title="@(weekdays[i]): @(daySales.ToString("N0"))₫"></div>
+                                        <span class="text-[10px] text-gray-400 font-bold">@(weekdays[i])</span>
+                                        <span class="text-[9px] text-gray-500 font-bold">@(daySales > 0 ? daySales.ToString("N0") + "₫" : "0đ")</span>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="p-6 border border-gray-100 rounded-lg">
+                            <h4 class="font-bold text-sm text-gray-400 uppercase tracking-wider mb-4">SẢN PHẨM BÁN CHẠY NHẤT</h4>
+                            <div class="space-y-4">
+                                @if (Model.TopSellingProducts.Any())
+                                {
+                                    int index = 1;
+                                    foreach (var tp in Model.TopSellingProducts)
+                                    {
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-bold text-sm text-gray-900">@(index++). @tp.Name</span>
+                                            <span class="text-xs bg-red-50 text-red-600 px-2 py-0.5 font-bold">@tp.SalesCount Lượt mua</span>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="text-xs text-gray-400 py-4 italic">Chưa có dữ liệu bán hàng.</div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="p-6 border border-gray-100 rounded-lg">
+                            <h4 class="font-bold text-sm text-gray-400 uppercase tracking-wider mb-4">KÊNH DOANH THU CHÍNH</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-xs font-bold text-gray-700 mb-1">
+                                        <span>THANH TOÁN KHI NHẬN HÀNG (COD)</span>
+                                        <span>@Model.CodPercentage%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-indigo-600 h-full rounded-full" style="width: @(Model.CodPercentage)%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-bold text-gray-700 mb-1">
+                                        <span>CHUYỂN KHOẢN / THẺ NGÂN HÀNG</span>
+                                        <span>@Model.TransferPercentage%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-indigo-600 h-full rounded-full" style="width: @(Model.TransferPercentage)%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Product Management -->
+            <div id="tab-content-products" class="tab-content space-y-6 hidden">
+                <div class="admin-card p-6 rounded-xl shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-black text-gray-950 uppercase">QUẢN LÝ SẢN PHẨM</h2>
+                        <button onclick="openProductModal()" class="bg-black text-white px-4 py-2 text-xs font-bold tracking-wider hover:bg-gray-800 transition-colors uppercase rounded flex items-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            Thêm sản phẩm mới
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-gray-200 text-xs font-bold text-gray-400 uppercase bg-gray-50/50">
+                                    <th class="py-3 px-4">Tên sản phẩm</th>
+                                    <th class="py-3 px-4">Slug</th>
+                                    <th class="py-3 px-4">Đơn giá</th>
+                                    <th class="py-3 px-4">Danh mục</th>
+                                    <th class="py-3 px-4">Trạng thái</th>
+                                    <th class="py-3 px-4 text-right">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @foreach (var prod in Model.Products)
+                                {
+                                    var primaryImg = prod.ProductImages.FirstOrDefault(img => img.IsPrimary == true)?.ImageUrl 
+                                        ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+                                    <tr class="hover:bg-gray-50/50 transition-colors">
+                                        <td class="py-4 px-4 font-bold text-gray-950 flex items-center gap-3">
+                                            <img src="@primaryImg" alt="@prod.Name" class="w-10 h-10 object-cover border rounded bg-gray-50 flex-shrink-0" />
+                                            <span class="truncate max-w-[200px]">@prod.Name</span>
+                                        </td>
+                                        <td class="py-4 px-4 text-xs font-mono text-gray-500">@prod.Slug</td>
+                                        <td class="py-4 px-4 font-semibold text-gray-800">@prod.Price.ToString("N0")₫</td>
+                                        <td class="py-4 px-4 text-xs font-bold uppercase text-gray-500">@prod.Category</td>
+                                        <td class="py-4 px-4">
+                                            @if (prod.Status?.ToLower() == "available")
+                                            {
+                                                <span class="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-300 uppercase">Còn hàng</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="bg-red-50 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded border border-red-300 uppercase">Hết hàng</span>
+                                            }
+                                        </td>
+                                        <td class="py-4 px-4 text-right flex justify-end gap-2 items-center">
+                                            <button onclick="editProduct(@prod.Id, '@Html.Raw(prod.Name)', '@prod.Slug', @prod.Price, '@prod.Category', '@prod.Status', '@primaryImg')" class="text-xs font-bold text-indigo-600 hover:underline">
+                                                Sửa
+                                            </button>
+                                            <span class="text-gray-300">|</span>
+                                            <form method="post" asp-page-handler="DeleteProduct" asp-route-id="@prod.Id" onsubmit="return confirm('Bạn chắc chắn muốn xóa sản phẩm này?');" class="inline">
+                                                <button type="submit" class="text-xs font-bold text-red-600 hover:underline">
+                                                    Xóa
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Order Management -->
+            <div id="tab-content-orders" class="tab-content space-y-6 hidden">
+                <div class="admin-card p-6 rounded-xl shadow-sm">
+                    <h2 class="text-2xl font-black text-gray-950 uppercase mb-6">QUẢN LÝ ORDERS</h2>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-gray-200 text-xs font-bold text-gray-400 uppercase bg-gray-50/50">
+                                    <th class="py-3 px-4">Mã đơn hàng</th>
+                                    <th class="py-3 px-4">Ngày đặt</th>
+                                    <th class="py-3 px-4">Giá trị</th>
+                                    <th class="py-3 px-4">Cổng thanh toán</th>
+                                    <th class="py-3 px-4">Trạng thái</th>
+                                    <th class="py-3 px-4 text-right">Cập nhật</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @foreach (var order in Model.Orders)
+                                {
+                                    <tr class="hover:bg-gray-50/50 transition-colors">
+                                        <td class="py-4 px-4 font-bold text-gray-950">@order.OrderNumber</td>
+                                        <td class="py-4 px-4 text-xs font-medium text-gray-500">@(order.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? DateTime.Now.ToString("dd/MM/yyyy"))</td>
+                                        <td class="py-4 px-4 font-bold text-gray-900">@order.TotalAmount.ToString("N0")₫</td>
+                                        <td class="py-4 px-4 text-xs font-bold text-gray-500 uppercase">
+                                            @order.PaymentMethod 
+                                            (@(order.PaymentStatus?.ToLower() == "paid" ? "Đã thanh toán" : 
+                                               order.PaymentStatus?.ToLower() == "failed" ? "Thất bại" : 
+                                               order.PaymentStatus?.ToLower() == "cancelled" ? "Đã hủy" : "Chưa thanh toán"))
+                                        </td>
+                                        <td class="py-4 px-4">
+                                            @if (order.Status?.ToLower() == "delivered")
+                                            {
+                                                <span class="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-300 uppercase">Đã giao</span>
+                                            }
+                                            else if (order.Status?.ToLower() == "processing")
+                                            {
+                                                <span class="bg-indigo-50 text-indigo-700 text-[10px] font-bold px-2 py-0.5 rounded border border-indigo-300 uppercase">Đang làm</span>
+                                            }
+                                            else if (order.Status?.ToLower() == "shipped")
+                                            {
+                                                <span class="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-300 uppercase">Đang giao</span>
+                                            }
+                                            else if (order.Status?.ToLower() == "cancelled")
+                                            {
+                                                <span class="bg-red-50 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded border border-red-300 uppercase">Đã hủy</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-300 uppercase">Chờ xử lý</span>
+                                            }
+                                        </td>
+                                        <td class="py-4 px-4 text-right">
+                                            <form method="post" asp-page-handler="UpdateOrderStatus" class="inline-flex gap-2">
+                                                <input type="hidden" name="orderId" value="@order.Id" />
+                                                <select name="status" onchange="this.form.submit()" class="text-xs bg-white border border-gray-300 rounded px-2 py-1 font-bold text-gray-800 focus:outline-none focus:border-black">
+                                                    <option value="pending" selected="@(order.Status == "pending")">Chờ xử lý</option>
+                                                    <option value="processing" selected="@(order.Status == "processing")">Đang xử lý</option>
+                                                    <option value="shipped" selected="@(order.Status == "shipped")">Đang giao</option>
+                                                    <option value="delivered" selected="@(order.Status == "delivered")">Đã giao</option>
+                                                    <option value="cancelled" selected="@(order.Status == "cancelled")">Đã hủy</option>
+                                                </select>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Inventory Management -->
+            <div id="tab-content-inventory" class="tab-content space-y-6 hidden">
+                <div class="admin-card p-6 rounded-xl shadow-sm">
+                    <h2 class="text-2xl font-black text-gray-950 uppercase mb-6">QUẢN LÝ INVENTORY</h2>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-gray-200 text-xs font-bold text-gray-400 uppercase bg-gray-50/50">
+                                    <th class="py-3 px-4">Tên sản phẩm</th>
+                                    <th class="py-3 px-4">SKU</th>
+                                    <th class="py-3 px-4">Kích thước</th>
+                                    <th class="py-3 px-4">Màu sắc</th>
+                                    <th class="py-3 px-4">Kho hàng</th>
+                                    <th class="py-3 px-4 text-right">Cập nhật nhanh</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @if (Model.ProductVariants.Any())
+                                {
+                                    foreach (var variant in Model.ProductVariants)
+                                    {
+                                        <tr class="hover:bg-gray-50/50 transition-colors">
+                                            <td class="py-4 px-4 font-bold text-gray-950">@(variant.Product?.Name ?? "Sản phẩm")</td>
+                                            <td class="py-4 px-4 text-xs font-mono text-gray-500 uppercase">@variant.Sku</td>
+                                            <td class="py-4 px-4 font-semibold text-gray-800">@variant.Size</td>
+                                            <td class="py-4 px-4 text-gray-600">@variant.Color</td>
+                                            <td class="py-4 px-4">
+                                                <span class="bg-gray-100 px-3 py-1 rounded font-bold text-sm">@variant.StockQuantity cái</span>
+                                            </td>
+                                            <td class="py-4 px-4 text-right">
+                                                <form method="post" asp-page-handler="UpdateStock" class="inline-flex items-center gap-2">
+                                                    <input type="hidden" name="variantId" value="@variant.Id" />
+                                                    <input type="number" name="stockQuantity" value="@variant.StockQuantity" class="w-16 text-center border border-gray-300 rounded px-2 py-1 text-xs font-bold focus:outline-none focus:border-black" />
+                                                    <button type="submit" class="bg-black text-white px-3 py-1.5 text-[10px] font-bold tracking-wider hover:bg-gray-800 rounded uppercase">Lưu</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="py-8 text-center text-gray-400 italic">Không tìm thấy phân loại tồn kho nào trong DB</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Coupon Management -->
+            <div id="tab-content-coupons" class="tab-content space-y-6 hidden">
+                <div class="admin-card p-6 rounded-xl shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-black text-gray-950 uppercase flex items-center gap-2">
+                            <i data-lucide="ticket" class="w-6 h-6 text-purple-600"></i>
+                            QUẢN LÝ MÃ KHUYẾN MÃI
+                        </h2>
+                        <button onclick="openPromoModal()" class="bg-black text-white px-5 py-2.5 text-xs font-bold tracking-wider hover:bg-gray-800 transition-colors uppercase rounded flex items-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            Thêm mã mới
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-gray-200 text-xs font-bold text-gray-400 uppercase bg-gray-50/50">
+                                    <th class="py-3 px-4">Mã</th>
+                                    <th class="py-3 px-4">Loại</th>
+                                    <th class="py-3 px-4">Giá trị</th>
+                                    <th class="py-3 px-4">Đơn tối thiểu</th>
+                                    <th class="py-3 px-4">Lượt dùng</th>
+                                    <th class="py-3 px-4">Thời hạn</th>
+                                    <th class="py-3 px-4">Trạng thái</th>
+                                    <th class="py-3 px-4 text-right">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @if (Model.PromoCodes.Any())
+                                {
+                                    foreach (var promo in Model.PromoCodes)
+                                    {
+                                        var isExpired = promo.EndDate < DateTime.Now;
+                                        var isActiveNow = promo.IsActive == true && !isExpired;
+                                        <tr class="hover:bg-gray-50/50 transition-colors">
+                                            <td class="py-4 px-4">
+                                                <span class="bg-purple-50 text-purple-700 px-3 py-1 rounded font-mono font-bold text-sm">@promo.Code</span>
+                                            </td>
+                                            <td class="py-4 px-4 font-semibold text-sm">
+                                                @(promo.Type == "percent" ? "Phần trăm (%)" : "Cố định (₫)")
+                                            </td>
+                                            <td class="py-4 px-4 font-bold text-sm">
+                                                @(promo.Type == "percent" ? promo.Value.ToString("N0") + "%" : promo.Value.ToString("N0") + "₫")
+                                            </td>
+                                            <td class="py-4 px-4 text-sm text-gray-600">
+                                                @(promo.MinOrderValue.HasValue ? promo.MinOrderValue.Value.ToString("N0") + "₫" : "Không")
+                                            </td>
+                                            <td class="py-4 px-4 text-sm">
+                                                <span class="font-bold">@(promo.UsedCount ?? 0)</span><span class="text-gray-400">/@(promo.UsageLimit?.ToString() ?? "∞")</span>
+                                            </td>
+                                            <td class="py-4 px-4 text-xs text-gray-500">
+                                                @promo.StartDate.ToString("dd/MM/yyyy") - @promo.EndDate.ToString("dd/MM/yyyy")
+                                            </td>
+                                            <td class="py-4 px-4">
+                                                @if (isActiveNow)
+                                                {
+                                                    <span class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded text-xs font-bold">Đang hoạt động</span>
+                                                }
+                                                else if (isExpired)
+                                                {
+                                                    <span class="bg-gray-100 text-gray-500 px-3 py-1 rounded text-xs font-bold">Hết hạn</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="bg-red-50 text-red-600 px-3 py-1 rounded text-xs font-bold">Vô hiệu</span>
+                                                }
+                                            </td>
+                                            <td class="py-4 px-4 text-right">
+                                                <div class="flex gap-2 justify-end">
+                                                    <button onclick="editPromo(@promo.Id, '@promo.Code', '@promo.Type', @promo.Value, @(promo.MinOrderValue?.ToString() ?? "null"), @(promo.UsageLimit?.ToString() ?? "null"), '@promo.StartDate.ToString("yyyy-MM-dd")', '@promo.EndDate.ToString("yyyy-MM-dd")', @(promo.IsActive == true ? "true" : "false"))"
+                                                            class="bg-indigo-50 text-indigo-600 px-3 py-1.5 text-[10px] font-bold tracking-wider hover:bg-indigo-100 rounded uppercase">
+                                                        Sửa
+                                                    </button>
+                                                    <form method="post" asp-page-handler="DeletePromoCode" onsubmit="return confirm('Bạn có chắc muốn vô hiệu hóa mã khuyến mãi này?');">
+                                                        <input type="hidden" name="id" value="@promo.Id" />
+                                                        <button type="submit" class="bg-red-50 text-red-600 px-3 py-1.5 text-[10px] font-bold tracking-wider hover:bg-red-100 rounded uppercase">Vô hiệu</button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="8" class="py-8 text-center text-gray-400 italic">Chưa có mã khuyến mãi nào. Hãy bấm "Thêm mã mới" để tạo.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Product Add / Edit Modal -->
+<div id="product-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white p-8 rounded-xl shadow-xl max-w-md w-full border animate-fade-in relative">
+        <h3 id="modal-title" class="text-xl font-black uppercase text-gray-950 mb-6 flex items-center gap-2">
+            <i data-lucide="package" class="w-5 h-5 text-red-600"></i>
+            Thêm sản phẩm mới
+        </h3>
+        
+        <form method="post" asp-page-handler="SaveProduct" enctype="multipart/form-data" class="space-y-4">
+            <input type="hidden" name="id" id="prod-id" value="" />
+            
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Tên sản phẩm</label>
+                <input type="text" name="name" id="prod-name" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black" />
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Slug</label>
+                <input type="text" name="slug" id="prod-slug" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black" />
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Đơn giá (₫)</label>
+                <input type="number" name="price" id="prod-price" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black" />
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Ảnh sản phẩm (tối đa 3 ảnh, chọn màu tương ứng)</label>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <input type="file" name="imageFiles" id="prod-imagefile-0" accept="image/*" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 cursor-pointer" />
+                        <select name="imageColor" class="w-full mt-2 border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black">
+                            <option value="white">White / Trắng</option>
+                            <option value="black">Black / Đen</option>
+                            <option value="gray">Gray / Xám</option>
+                            <option value="red">Red / Đỏ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <input type="file" name="imageFiles" id="prod-imagefile-1" accept="image/*" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 cursor-pointer" />
+                        <select name="imageColor" class="w-full mt-2 border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black">
+                            <option value="white">White / Trắng</option>
+                            <option value="black">Black / Đen</option>
+                            <option value="gray">Gray / Xám</option>
+                            <option value="red">Red / Đỏ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <input type="file" name="imageFiles" id="prod-imagefile-2" accept="image/*" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 cursor-pointer" />
+                        <select name="imageColor" class="w-full mt-2 border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black">
+                            <option value="white">White / Trắng</option>
+                            <option value="black">Black / Đen</option>
+                            <option value="gray">Gray / Xám</option>
+                            <option value="red">Red / Đỏ</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="image-preview-container" class="mt-3 hidden">
+                    <span class="block text-[10px] text-gray-400 font-bold uppercase mb-1">Xem trước / Ảnh hiện tại</span>
+                    <div class="flex gap-2">
+                        <img id="prod-image-preview-0" src="" class="w-24 h-24 object-cover border rounded-lg shadow-sm" />
+                        <img id="prod-image-preview-1" src="" class="w-24 h-24 object-cover border rounded-lg shadow-sm" />
+                        <img id="prod-image-preview-2" src="" class="w-24 h-24 object-cover border rounded-lg shadow-sm" />
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Danh mục</label>
+                <select name="category" id="prod-category" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black">
+                    <option value="tee">Tee</option>
+                    <option value="hoodie">Hoodie</option>
+                    <option value="accessories">Accessories</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Trạng thái kho hàng</label>
+                <select name="status" id="prod-status" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black">
+                    <option value="available">Còn hàng</option>
+                    <option value="sold_out">Hết hàng</option>
+                </select>
+            </div>
+
+            <div class="flex gap-3 pt-4">
+                <button type="button" onclick="closeProductModal()" class="flex-1 border border-gray-300 text-black py-2.5 text-xs font-bold tracking-wider hover:border-black transition-colors uppercase rounded">Hủy</button>
+                <button type="submit" class="flex-1 bg-black text-white py-2.5 text-xs font-bold tracking-wider hover:bg-gray-800 transition-colors uppercase rounded">Lưu sản phẩm</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- PromoCode Add / Edit Modal -->
+<div id="promo-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white p-8 rounded-xl shadow-xl max-w-lg w-full border animate-fade-in relative">
+        <h3 id="promo-modal-title" class="text-xl font-black uppercase text-gray-950 mb-6 flex items-center gap-2">
+            <i data-lucide="ticket" class="w-5 h-5 text-purple-600"></i>
+            Thêm mã khuyến mãi
+        </h3>
+
+        <form method="post" asp-page-handler="SavePromoCode" class="space-y-4">
+            <input type="hidden" name="id" id="promo-id" value="" />
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Mã giảm giá</label>
+                <input type="text" name="code" id="promo-code" required placeholder="Ví dụ: SUMMER2026" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black uppercase" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Loại giảm giá</label>
+                    <select name="promoType" id="promo-type" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black">
+                        <option value="percent">Phần trăm (%)</option>
+                        <option value="fixed">Cố định (₫)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Giá trị giảm</label>
+                    <input type="number" name="value" id="promo-value" required step="0.01" min="0" placeholder="Ví dụ: 10 hoặc 50000" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Đơn hàng tối thiểu (₫)</label>
+                    <input type="number" name="minOrderValue" id="promo-min" placeholder="Tùy chọn" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Số lần dùng tối đa</label>
+                    <input type="number" name="usageLimit" id="promo-limit" placeholder="Không giới hạn" class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Ngày bắt đầu</label>
+                    <input type="date" name="startDate" id="promo-start" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Ngày kết thúc</label>
+                    <input type="date" name="endDate" id="promo-end" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:border-black" />
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <input type="checkbox" name="isActive" id="promo-active" value="true" checked class="w-4 h-4 rounded border-gray-300 text-black focus:ring-black" />
+                <label for="promo-active" class="text-sm font-semibold text-gray-700">Kích hoạt ngay</label>
+            </div>
+
+            <div class="flex gap-3 pt-4">
+                <button type="button" onclick="closePromoModal()" class="flex-1 border border-gray-300 text-black py-2.5 text-xs font-bold tracking-wider hover:border-black transition-colors uppercase rounded">Hủy</button>
+                <button type="submit" class="flex-1 bg-black text-white py-2.5 text-xs font-bold tracking-wider hover:bg-gray-800 transition-colors uppercase rounded">Lưu mã khuyến mãi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabId) {
+        // Toggle tab content visibility
+        const contents = document.querySelectorAll(".tab-content");
+        contents.forEach(content => content.classList.add("hidden"));
+        document.getElementById("tab-content-" + tabId).classList.remove("hidden");
+
+        // Toggle button states
+        const buttons = document.querySelectorAll(".tab-btn");
+        buttons.forEach(btn => btn.classList.remove("active"));
+        event.currentTarget.classList.add("active");
+    }
+
+    function openProductModal() {
+        document.getElementById("modal-title").innerText = "Thêm sản phẩm mới";
+        document.getElementById("prod-id").value = "";
+        document.getElementById("prod-name").value = "";
+        document.getElementById("prod-slug").value = "";
+        document.getElementById("prod-price").value = "";
+        document.getElementById("prod-category").value = "tee";
+        document.getElementById("prod-status").value = "available";
+        
+        // Reset the three image inputs and color selects
+        for (let i = 0; i < 3; i++) {
+            const fi = document.getElementById(`prod-imagefile-${i}`);
+            if (fi) fi.value = "";
+            const sel = document.querySelectorAll('select[name="imageColor"]')[i];
+            if (sel) sel.value = 'white';
+        }
+        const previewContainer = document.getElementById("image-preview-container");
+        previewContainer.classList.add("hidden");
+        for (let i = 0; i < 3; i++) {
+            const pimg = document.getElementById(`prod-image-preview-${i}`);
+            if (pimg) pimg.src = "";
+        }
+        
+        document.getElementById("product-modal").classList.remove("hidden");
+    }
+
+    function closeProductModal() {
+        document.getElementById("product-modal").classList.add("hidden");
+    }
+
+    function editProduct(id, name, slug, price, category, status, imageUrl) {
+        document.getElementById("modal-title").innerText = "Chỉnh sửa sản phẩm";
+        document.getElementById("prod-id").value = id;
+        document.getElementById("prod-name").value = name;
+        document.getElementById("prod-slug").value = slug;
+        document.getElementById("prod-price").value = price;
+        document.getElementById("prod-category").value = category;
+        document.getElementById("prod-status").value = status;
+        
+        // Reset file inputs and show existing image (primary) in first preview if provided
+        for (let i = 0; i < 3; i++) {
+            const fi = document.getElementById(`prod-imagefile-${i}`);
+            if (fi) fi.value = "";
+            const pimg = document.getElementById(`prod-image-preview-${i}`);
+            if (pimg) pimg.src = "";
+        }
+        const previewContainer = document.getElementById("image-preview-container");
+        if (imageUrl) {
+            const pimg0 = document.getElementById('prod-image-preview-0');
+            if (pimg0) pimg0.src = imageUrl;
+            previewContainer.classList.remove('hidden');
+        } else {
+            previewContainer.classList.add('hidden');
+        }
+
+        document.getElementById("product-modal").classList.remove("hidden");
+    }
+
+    // Live preview event listeners for up to 3 image inputs
+    for (let i = 0; i < 3; i++) {
+        const input = document.getElementById(`prod-imagefile-${i}`);
+        const previewImg = document.getElementById(`prod-image-preview-${i}`);
+        if (input) {
+            input.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                const previewContainer = document.getElementById('image-preview-container');
+                if (file && previewImg) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        previewContainer.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    }
+
+    // ===== PromoCode Modal Functions =====
+    function openPromoModal() {
+        document.getElementById("promo-modal-title").innerText = "Thêm mã khuyến mãi";
+        document.getElementById("promo-id").value = "";
+        document.getElementById("promo-code").value = "";
+        document.getElementById("promo-type").value = "percent";
+        document.getElementById("promo-value").value = "";
+        document.getElementById("promo-min").value = "";
+        document.getElementById("promo-limit").value = "";
+        document.getElementById("promo-start").value = new Date().toISOString().split('T')[0];
+        document.getElementById("promo-end").value = "";
+        document.getElementById("promo-active").checked = true;
+        document.getElementById("promo-modal").classList.remove("hidden");
+    }
+
+    function closePromoModal() {
+        document.getElementById("promo-modal").classList.add("hidden");
+    }
+
+    function editPromo(id, code, type, value, minOrderValue, usageLimit, startDate, endDate, isActive) {
+        document.getElementById("promo-modal-title").innerText = "Chỉnh sửa mã khuyến mãi";
+        document.getElementById("promo-id").value = id;
+        document.getElementById("promo-code").value = code;
+        document.getElementById("promo-type").value = type;
+        document.getElementById("promo-value").value = value;
+        document.getElementById("promo-min").value = minOrderValue || "";
+        document.getElementById("promo-limit").value = usageLimit || "";
+        document.getElementById("promo-start").value = startDate;
+        document.getElementById("promo-end").value = endDate;
+        document.getElementById("promo-active").checked = isActive;
+        document.getElementById("promo-modal").classList.remove("hidden");
+    }
+
+</script>

@@ -1,0 +1,160 @@
+@page
+@model TheOldPavement.Web.Pages.AboutModel
+@{
+    ViewData["Title"] = "Về chúng tôi";
+}
+
+<main class="pt-24 pb-16">
+    <!-- Hero Section -->
+    <div class="relative h-[60vh] min-h-[400px] bg-gray-900 text-white flex items-center justify-center overflow-hidden mb-16">
+        <div class="absolute inset-0">
+            <img src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aWV0bmFtJTIwc3RyZWV0fGVufDB8fHx8MTcwMDAwMDAwMHww&ixlib=rb-4.1.0&q=80&w=1920"
+                 alt="Hanoi Old Quarter"
+                 class="w-full h-full object-cover opacity-40" />
+            <div class="absolute inset-0 bg-gradient-to-b from-black/50 to-black/70"></div>
+        </div>
+        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
+            <h1 class="text-5xl md:text-6xl lg:text-7xl mb-6 tracking-tight font-extrabold uppercase">THE OLD PAVEMENT</h1>
+            <p class="text-xl md:text-2xl font-light uppercase tracking-widest">Nơi di sản Hà Nội hoà nhịp streetwear đương đại</p>
+        </div>
+    </div>
+
+    <div class="px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
+        <!-- Brand Story -->
+        <div class="mb-20 max-w-4xl mx-auto">
+            <h2 class="text-3xl md:text-4xl mb-8 tracking-tight text-center font-bold uppercase">CÂU CHUYỆN THƯƠNG HIỆU</h2>
+            <div class="prose prose-lg max-w-none text-gray-700 space-y-6">
+                <p class="text-lg leading-relaxed">
+                    Sinh ra từ những con phố cổ kính của Hà Nội, <strong>The Old Pavement</strong> không chỉ là một thương hiệu thời trang - đó là một câu chuyện về sự giao thoa giữa truyền thống và hiện đại, giữa quá khứ và tương lai.
+                </p>
+                <p class="text-lg leading-relaxed">
+                    Năm 2022, giữa lòng phố cổ 36 phố phường, chúng tôi bắt đầu hành trình với một mục tiêu đơn giản: Tôn vinh di sản văn hóa Hà Nội qua ngôn ngữ streetwear đương đại. Mỗi thiết kế của chúng tôi đều mang trong mình một mảnh ghép của thành phố ngàn năm - từ tiếng kèn xe xích lô, mùi cà phê vỉa hè, đến những bức tường mốc thời gian.
+                </p>
+                <p class="text-lg leading-relaxed italic">
+                    "The Old Pavement" - Mặt đường cũ - đại diện cho những con đường đá ong mà hàng triệu bước chân đã đi qua, tạo nên nét đẹp riêng biệt của Hà Nội. Chúng tôi tin rằng, cũng như những viên đá lát đường ấy, mỗi người đều mang trong mình một câu chuyện đáng kể.
+                </p>
+            </div>
+        </div>
+
+        <!-- Values -->
+        <div class="mb-20">
+            <h2 class="text-3xl md:text-4xl mb-12 tracking-tight text-center font-bold uppercase">GIÁ TRỊ CỐT LÕI</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center space-y-3">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-black text-white rounded-full mb-4">
+                        <i data-lucide="heart" class="w-10 h-10"></i>
+                    </div>
+                    <h3 class="text-xl font-bold uppercase tracking-wider">AUTHENTICITY</h3>
+                    <p class="text-gray-600 leading-relaxed text-sm">
+                        Mỗi sản phẩm đều mang đậm dấu ấn văn hóa Việt Nam chân thực, không sao chép khiên cưỡng.
+                    </p>
+                </div>
+
+                <div class="text-center space-y-3">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-black text-white rounded-full mb-4">
+                        <i data-lucide="target" class="w-10 h-10"></i>
+                    </div>
+                    <h3 class="text-xl font-bold uppercase tracking-wider">QUALITY</h3>
+                    <p class="text-gray-600 leading-relaxed text-sm">
+                        Chất lượng cao cấp từ chất liệu đến từng đường may, đảm bảo sản phẩm bền vững theo thời gian.
+                    </p>
+                </div>
+
+                <div class="text-center space-y-3">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-black text-white rounded-full mb-4">
+                        <i data-lucide="users" class="w-10 h-10"></i>
+                    </div>
+                    <h3 class="text-xl font-bold uppercase tracking-wider">COMMUNITY</h3>
+                    <p class="text-gray-600 leading-relaxed text-sm">
+                        Xây dựng cộng đồng yêu văn hóa Việt, kết nối những con người cùng niềm đam mê văn hoá streetwear.
+                    </p>
+                </div>
+
+                <div class="text-center space-y-3">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-black text-white rounded-full mb-4">
+                        <i data-lucide="award" class="w-10 h-10"></i>
+                    </div>
+                    <h3 class="text-xl font-bold uppercase tracking-wider">INNOVATION</h3>
+                    <p class="text-gray-600 leading-relaxed text-sm">
+                        Không ngừng sáng tạo, kết hợp nét vẽ truyền thống với xu hướng thời trang đương đại thế giới.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vision & Mission -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
+            <div class="bg-black text-white p-12 space-y-4">
+                <h2 class="text-3xl font-bold uppercase tracking-wide">TẦM NHÌN</h2>
+                <p class="text-lg leading-relaxed opacity-95">
+                    Trở thành thương hiệu streetwear Việt Nam hàng đầu, được công nhận toàn cầu với những thiết kế độc đáo mang đậm bản sắc văn hóa dân tộc, góp phần quảng bá hình ảnh Việt Nam ra thế giới.
+                </p>
+            </div>
+
+            <div class="bg-gray-50 p-12 space-y-4 border">
+                <h2 class="text-3xl font-bold uppercase tracking-wide">SỨ MỆNH</h2>
+                <p class="text-lg leading-relaxed text-gray-700">
+                    Tạo ra những sản phẩm thời trang chất lượng cao, kết hợp hài hòa giữa di sản văn hóa Việt và phong cách streetwear quốc tế, mang lại cho thế hệ trẻ trải nghiệm văn hóa sống động.
+                </p>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="mb-20">
+            <h2 class="text-3xl md:text-4xl mb-12 tracking-tight text-center font-bold uppercase">HÀNH TRÌNH PHÁT TRIỂN</h2>
+            <div class="space-y-8 max-w-3xl mx-auto">
+                <div class="flex gap-6 border-l-4 border-black pl-6 pb-8">
+                    <div class="flex-shrink-0">
+                        <div class="text-2xl font-extrabold text-black">2022</div>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="text-xl font-bold uppercase">KHỞI ĐẦU</h3>
+                        <p class="text-gray-600">The Old Pavement ra mắt bộ sưu tập đầu tiên mang tên "36 Phố Phường", thổi hồn văn hoá phố cổ vào trang phục hàng ngày.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-6 border-l-4 border-black pl-6 pb-8">
+                    <div class="flex-shrink-0">
+                        <div class="text-2xl font-extrabold text-black">2023</div>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="text-xl font-bold uppercase">FLAGSHIP</h3>
+                        <p class="text-gray-600">Khai trương không gian trưng bày đầu tiên tại trung tâm phố cổ. Đồng sáng tạo nhiều sản phẩm limited cùng các họa sĩ độc lập.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-6 border-l-4 border-black pl-6 pb-8">
+                    <div class="flex-shrink-0">
+                        <div class="text-2xl font-extrabold text-black">2024</div>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="text-xl font-bold uppercase">KẾT NỐI</h3>
+                        <p class="text-gray-600">Ghi dấu với dự án Collab đỉnh cao cùng DirtyCoins. Góp mặt tại nhiều sự kiện thời trang đường phố lớn toàn quốc.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-6 border-l-4 border-black pl-6">
+                    <div class="flex-shrink-0">
+                        <div class="text-2xl font-extrabold text-black">2026</div>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="text-xl font-bold uppercase">VƯƠN XA</h3>
+                        <p class="text-gray-600">Hợp tác quốc tế chính thức cùng ban nhạc huyền thoại The Rolling Stones, đánh dấu bước phát triển mới vươn ra biển lớn.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact CTA -->
+        <div class="text-center bg-gray-50 border p-12 max-w-4xl mx-auto space-y-6">
+            <h2 class="text-3xl font-bold tracking-tight uppercase">KẾT NỐI VỚI CHÚNG TÔI</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto">
+                Bạn hứng thú với các bộ sưu tập của chúng tôi hoặc muốn thảo luận về cơ hội hợp tác kinh doanh? Hãy liên hệ ngay.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="mailto:hello@theoldpavement.com" class="inline-block bg-black text-white px-8 py-4 font-semibold hover:bg-gray-800 transition-colors uppercase text-sm">Gửi Email</a>
+                <a href="tel:0987654321" class="inline-block border-2 border-black px-8 py-4 font-semibold hover:bg-black hover:text-white transition-colors uppercase text-sm">Gọi Hotline</a>
+            </div>
+        </div>
+    </div>
+</main>

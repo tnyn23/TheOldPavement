@@ -1,0 +1,158 @@
+@page "/Shop"
+@model TheOldPavement.Web.Pages.Public.ShopModel
+@{
+    ViewData["Title"] = "Cửa hàng - Tất cả sản phẩm";
+}
+
+<main class="pt-24 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-20">
+    
+    <!-- Header -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">MUA SẮM</h1>
+        <p class="text-gray-500 max-w-xl mx-auto text-sm">Khám phá toàn bộ bộ sưu tập của The Old Pavement. Thiết kế đường phố mang dấu ấn Hà Nội, chất liệu cao cấp và form dáng chuẩn streetwear.</p>
+    </div>
+
+    <!-- Horizontal Filter Toolbar -->
+    <div class="bg-gray-50 p-4 border border-gray-200 mb-8 sticky top-16 z-20">
+        <form method="get" class="flex flex-wrap items-end gap-4" id="filter-form">
+            <!-- Search -->
+            <div class="flex-grow min-w-[200px]">
+                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tìm kiếm</label>
+                <div class="relative">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                    <input asp-for="SearchQuery" type="text" placeholder="Tìm sản phẩm..." 
+                           class="w-full bg-white border border-gray-300 pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-black transition-colors" />
+                </div>
+            </div>
+
+            <!-- Category -->
+            <div class="min-w-[150px]">
+                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Danh mục</label>
+                <select asp-for="Category" onchange="document.getElementById('filter-form').submit()" 
+                        class="w-full bg-white border border-gray-300 px-4 py-2 text-sm font-semibold focus:outline-none focus:border-black cursor-pointer">
+                    <option value="all">Tất cả sản phẩm</option>
+                    <option value="Tee">Áo Thun (Tee)</option>
+                    <option value="Pants">Quần (Pants)</option>
+                    <option value="Accessories">Phụ kiện (Accessories)</option>
+                    <option value="Outerwear">Áo Khoác (Outerwear)</option>
+                </select>
+            </div>
+
+            <!-- Price -->
+            <div class="min-w-[250px] flex gap-2 items-center">
+                <div class="flex-1">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Giá tối thiểu (₫)</label>
+                    <input asp-for="MinPrice" type="number" placeholder="0" 
+                           class="w-full bg-white border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-black" />
+                </div>
+                <div class="mt-5 text-gray-400">-</div>
+                <div class="flex-1">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Giá tối đa (₫)</label>
+                    <input asp-for="MaxPrice" type="number" placeholder="Vô hạn" 
+                           class="w-full bg-white border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-black" />
+                </div>
+            </div>
+
+            <!-- Sort -->
+            <div class="min-w-[150px]">
+                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Sắp xếp theo</label>
+                <select asp-for="SortBy" onchange="document.getElementById('filter-form').submit()" 
+                        class="w-full bg-white border border-gray-300 px-4 py-2 text-sm font-semibold focus:outline-none focus:border-black cursor-pointer">
+                    <option value="newest">Mới nhất</option>
+                    <option value="bestselling">Bán chạy nhất</option>
+                    <option value="price_asc">Giá: Thấp đến cao</option>
+                    <option value="price_desc">Giá: Cao đến thấp</option>
+                    <option value="name_asc">Tên: A-Z</option>
+                    <option value="name_desc">Tên: Z-A</option>
+                </select>
+            </div>
+
+            <!-- Submit Filters -->
+            <button type="submit" class="bg-black text-white px-6 py-2 h-[38px] text-xs font-bold tracking-widest hover:bg-gray-800 transition-colors uppercase border border-black mb-0.5">
+                Lọc
+            </button>
+            <a href="/Shop" class="bg-white text-gray-500 px-4 py-2 h-[38px] text-xs font-bold tracking-widest hover:bg-gray-100 transition-colors uppercase border border-gray-300 mb-0.5 flex items-center justify-center" title="Xóa bộ lọc">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </a>
+        </form>
+    </div>
+
+    <!-- Results Overview -->
+    <div class="mb-6 flex justify-between items-center text-sm font-medium text-gray-500">
+        <p>Đang hiển thị <span class="font-bold text-black">@Model.Products.Count</span> sản phẩm</p>
+    </div>
+
+    <!-- Product Grid -->
+    @if (Model.Products.Any())
+    {
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-12">
+            @foreach (var p in Model.Products)
+            {
+                var img = p.ProductImages?.FirstOrDefault()?.ImageUrl ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+                
+                <div class="group cursor-pointer flex flex-col h-full relative" onclick="window.location.href='/Product/@p.Slug'">
+                    <!-- Badges -->
+                    <div class="absolute top-2 left-2 z-10 flex flex-col gap-1 pointer-events-none">
+                        @if (p.IsOnSale == true || p.DiscountPercentage > 0)
+                        {
+                            <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">Sale @(p.DiscountPercentage)%</span>
+                        }
+                        @if (p.IsCollab == true)
+                        {
+                            <span class="bg-black text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">Collab</span>
+                        }
+                        @if ((DateTime.Now - p.CreatedAt.GetValueOrDefault(DateTime.Now)).TotalDays < 14)
+                        {
+                            <span class="bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">New</span>
+                        }
+                    </div>
+
+                    <!-- Image -->
+                    <div class="relative bg-gray-50 mb-4 overflow-hidden aspect-square border-b-2 border-transparent group-hover:border-black transition-colors">
+                        <img src="@img" alt="@p.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                        
+                        <!-- Quick Add to Cart (Hover) -->
+                        <div class="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100 flex gap-2">
+                            <form method="post" asp-page="/Product/Detail" asp-page-handler="AddToCart" asp-route-slug="@p.Slug" class="w-full" onclick="event.stopPropagation();">
+                                <button type="submit" class="w-full bg-black/90 backdrop-blur-sm text-white py-3 text-xs font-bold tracking-widest hover:bg-black uppercase border border-transparent">
+                                    Thêm nhanh
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Details -->
+                    <div class="flex-grow flex flex-col">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">@p.Category</p>
+                        <h3 class="text-sm font-bold leading-tight uppercase tracking-wide group-hover:text-gray-600 transition-colors line-clamp-2 mb-2">@p.Name</h3>
+                        
+                        <div class="mt-auto pt-2 flex items-center gap-2">
+                            @if (p.IsOnSale == true && p.OriginalPrice > 0)
+                            {
+                                <p class="font-black text-red-600">@p.Price.ToString("N0")₫</p>
+                                <p class="text-xs font-bold text-gray-400 line-through">@p.OriginalPrice?.ToString("N0")₫</p>
+                            }
+                            else
+                            {
+                                <p class="font-black text-gray-900">@p.Price.ToString("N0")₫</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="py-20 text-center border-2 border-dashed border-gray-200">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                <i data-lucide="package-open" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Không tìm thấy sản phẩm nào!</h3>
+            <p class="text-gray-500 text-sm mb-6 max-w-md mx-auto">Bộ lọc của bạn không khớp với bất kỳ sản phẩm nào trong cửa hàng. Vui lòng thử lại với các tiêu chí khác.</p>
+            <a href="/Shop" class="inline-block bg-black text-white px-8 py-3 text-xs font-bold tracking-widest hover:bg-gray-800 transition-colors uppercase">
+                Xóa bộ lọc
+            </a>
+        </div>
+    }
+</main>

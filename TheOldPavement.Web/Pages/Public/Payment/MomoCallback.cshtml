@@ -1,0 +1,104 @@
+@page
+@model TheOldPavement.Web.Pages.Public.Payment.MomoCallbackModel
+@{
+    ViewData["Title"] = Model.IsSuccess ? "Thanh Toán Thành Công" : "Thanh Toán Thất Bại";
+}
+
+<main class="max-w-3xl mx-auto px-4 py-20 min-h-[70vh] flex flex-col justify-center">
+    <div class="bg-white border border-gray-200 p-8 md:p-12 text-center space-y-8 shadow-sm">
+        
+        @if (Model.IsSuccess)
+        {
+            <!-- Success Icon -->
+            <div class="flex justify-center">
+                <div class="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center animate-bounce">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-10 h-10">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Success Message -->
+            <div class="space-y-3">
+                <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 uppercase">THANH TOÁN THÀNH CÔNG</h1>
+                <p class="text-gray-500 max-w-md mx-auto text-sm">@Model.Message</p>
+            </div>
+
+            <!-- Order Details Box -->
+            <div class="bg-gray-50 border border-gray-200 p-6 text-left space-y-4 max-w-md mx-auto">
+                <h3 class="font-bold text-xs uppercase tracking-wider text-gray-400 border-b pb-2">Thông tin giao dịch</h3>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Mã đơn hàng:</span>
+                    <span class="font-semibold text-gray-900">@Model.OrderNumber</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Tổng thanh toán:</span>
+                    <span class="font-bold text-emerald-600">@Model.Amount.ToString("N0")₫</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Phương thức:</span>
+                    <span class="font-semibold text-gray-900 uppercase">Ví điện tử MoMo</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Trạng thái:</span>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">Đã thanh toán</span>
+                </div>
+            </div>
+
+            <p class="text-xs text-gray-400 max-w-sm mx-auto leading-relaxed">
+                Hóa đơn chi tiết và trạng thái đơn hàng đã được gửi trực tiếp tới email của bạn. Xin vui lòng kiểm tra hòm thư (bao gồm cả thư rác/spam).
+            </p>
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                <a href="/" class="bg-black text-white px-8 py-3.5 text-xs font-bold tracking-widest hover:bg-gray-800 transition-colors uppercase border border-black">
+                    TIẾP TỤC MUA SẮM
+                </a>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a href="/Customer/Orders" class="bg-white text-black px-8 py-3.5 text-xs font-bold tracking-widest hover:bg-gray-50 transition-colors uppercase border border-gray-300">
+                        XEM LỊCH SỬ ĐƠN HÀNG
+                    </a>
+                }
+            </div>
+        }
+        else
+        {
+            <!-- Error Icon -->
+            <div class="flex justify-center">
+                <div class="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center animate-pulse">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-10 h-10">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div class="space-y-3">
+                <h1 class="text-3xl font-extrabold tracking-tight text-red-600 uppercase">THANH TOÁN THẤT BẠI</h1>
+                <p class="text-gray-500 max-w-md mx-auto text-sm leading-relaxed">@Model.Message</p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.OrderNumber))
+            {
+                <div class="bg-gray-50 border border-gray-200 p-4 text-sm max-w-md mx-auto">
+                    Mã đơn hàng liên quan: <span class="font-bold text-gray-900">@Model.OrderNumber</span>
+                </div>
+            }
+
+            <p class="text-xs text-gray-400 max-w-md mx-auto leading-relaxed">
+                Đơn hàng của bạn chưa được thanh toán thành công. Giỏ hàng của bạn vẫn đang được lưu trữ, bạn có thể quay lại giỏ hàng và thực hiện thanh toán lại hoặc thay đổi phương thức thanh toán.
+            </p>
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                <a href="/Cart" class="bg-black text-white px-8 py-3.5 text-xs font-bold tracking-widest hover:bg-gray-800 transition-colors uppercase border border-black">
+                    QUAY LẠI GIỎ HÀNG
+                </a>
+                <a href="/" class="bg-white text-black px-8 py-3.5 text-xs font-bold tracking-widest hover:bg-gray-50 transition-colors uppercase border border-gray-300">
+                    QUAY VỀ TRANG CHỦ
+                </a>
+            </div>
+        }
+    </div>
+</main>

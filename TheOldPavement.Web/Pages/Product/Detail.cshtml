@@ -1,0 +1,475 @@
+@page "/Product/{slug}"
+@model TheOldPavement.Web.Pages.Product.DetailModel
+@{
+    ViewData["Title"] = Model.Product?.Name ?? "Chi tiết sản phẩm";
+    var productImages = Model.ProductImagesList.ToArray();
+    var imagesByColorJson = System.Text.Json.JsonSerializer.Serialize(Model.ProductImagesByColor);
+    var selectedColor = Model.SelectedColor ?? "white";
+}
+
+<main class="pt-24 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-8 text-sm font-semibold tracking-wide uppercase" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="/" class="text-gray-500 hover:text-black transition-colors">TRANG CHỦ</a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <span class="mx-2.5 text-gray-400">/</span>
+                    <span class="text-black">@Model.Product?.Name</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-8" role="alert">
+            <p class="font-bold">Thành công</p>
+            <p>@TempData["SuccessMessage"]</p>
+        </div>
+    }
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+        <!-- Product Images -->
+        <div class="space-y-4">
+            <div class="relative bg-gray-50 aspect-square group">
+                <img id="main-product-image"
+                     src="@(productImages.Length > 0 ? productImages[0] : "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080")"
+                     alt="@Model.Product?.Name"
+                     class="w-full h-full object-cover transition-opacity duration-300" />
+                
+                <!-- Overlay logo cyclo if white shirt selected -->
+                <div id="cyclo-overlay" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div class="w-1/3">
+                        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full text-black opacity-80">
+                            <!-- Simple Cyclo Line Art -->
+                            <circle cx="35" cy="75" r="10"></circle>
+                            <circle cx="75" cy="75" r="10"></circle>
+                            <path d="M 35 65 L 45 45 L 75 45 L 75 75"></path>
+                            <path d="M 45 45 L 35 25 L 20 25"></path>
+                            <path d="M 55 45 L 55 75"></path>
+                            <path d="M 65 35 L 75 45"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Navigation Arrows -->
+                <button onclick="prevImage()"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white border border-gray-200">
+                    <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                </button>
+                <button onclick="nextImage()"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white border border-gray-200">
+                    <i data-lucide="chevron-right" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- Thumbnail Images -->
+            <div id="thumbnails-container" class="grid grid-cols-3 gap-4">
+                @for (int i = 0; i < productImages.Length; i++)
+                {
+                    <button onclick="selectImage(@i)"
+                            class="thumbnail-btn bg-gray-50 aspect-square overflow-hidden border-2 transition-colors @(i == 0 ? "border-black" : "border-transparent")"
+                            data-index="@i">
+                        <img src="@productImages[i]"
+                             alt="View @(i + 1)"
+                             class="w-full h-full object-cover" />
+                    </button>
+                }
+            </div>
+        </div>
+
+        <!-- Product Info & Order Form -->
+        <div class="space-y-8">
+            <div>
+                <p class="text-sm tracking-wider mb-2 opacity-60">THE OLD PAVEMENT</p>
+                <h1 class="text-4xl md:text-5xl mb-4 tracking-tight uppercase">
+                    @Model.Product?.Name
+                </h1>
+                <p class="text-2xl font-semibold mb-6">@Model.Product?.Price.ToString("N0")₫</p>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    @Model.Product?.Description
+                </p>
+            </div>
+
+            <form method="post" asp-page-handler="AddToCart" asp-route-slug="@Model.Product?.Slug" class="space-y-8">
+                <!-- Color Selection -->
+                <div>
+                    <p class="font-semibold mb-3 tracking-wide">
+                        MÀU SẮC: <span id="selected-color-label" class="font-normal">White</span>
+                    </p>
+                    <div class="flex gap-3">
+                        @foreach (var color in Model.Colors)
+                        {
+                            <button type="button"
+                                    onclick="selectColor('@color.Value', '@color.Name')"
+                                    class="color-btn w-12 h-12 rounded-full border-2 transition-all @(color.Value == "white" ? "border-black scale-110" : "border-gray-300")"
+                                    style="background-color: @color.Hex"
+                                    title="@color.Name"
+                                    data-color="@color.Value"></button>
+                        }
+                    </div>
+                    <input type="hidden" asp-for="SelectedColor" id="hidden-color" value="white" />
+                </div>
+
+                <!-- Size Selection -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <p class="font-semibold tracking-wide">
+                            KÍCH THƯỚC: <span id="selected-size-label" class="font-normal">L</span>
+                        </p>
+                        <button type="button" onclick="toggleSizeGuide()" class="text-sm font-semibold underline hover:opacity-60 transition-opacity">
+                            Bảng size
+                        </button>
+                    </div>
+                    <div class="flex gap-3">
+                        @foreach (var size in Model.Sizes)
+                        {
+                            <button type="button"
+                                    onclick="selectSize('@size')"
+                                    class="size-btn w-14 h-14 border-2 font-semibold transition-all @(size == "L" ? "border-black bg-black text-white" : "border-gray-300 hover:border-black")"
+                                    data-size="@size">
+                                @size
+                            </button>
+                        }
+                    </div>
+                    <input type="hidden" asp-for="SelectedSize" id="hidden-size" value="L" />
+                </div>
+
+                <!-- Quantity -->
+                <div>
+                    <p class="font-semibold mb-3 tracking-wide">SỐ LƯỢNG</p>
+                    <div class="flex items-center gap-4">
+                        <button type="button"
+                                onclick="adjustQuantity(-1)"
+                                class="w-10 h-10 border-2 border-gray-300 hover:border-black transition-colors font-semibold flex items-center justify-center">
+                            −
+                        </button>
+                        <span id="quantity-display" class="text-xl font-medium w-12 text-center">1</span>
+                        <button type="button"
+                                onclick="adjustQuantity(1)"
+                                class="w-10 h-10 border-2 border-gray-300 hover:border-black transition-colors font-semibold flex items-center justify-center">
+                            +
+                        </button>
+                        <input type="hidden" asp-for="Quantity" id="hidden-quantity" value="1" />
+                    </div>
+                </div>
+
+                <!-- Add to Cart Button -->
+                <button type="submit"
+                        class="w-full bg-black text-white py-4 font-semibold tracking-wider hover:bg-gray-800 transition-colors">
+                    THÊM VÀO GIỎ HÀNG
+                </button>
+            </form>
+
+            <form method="post" asp-page-handler="AddToWishlist" asp-route-slug="@Model.Product?.Slug" class="mt-4">
+                <button type="submit"
+                        class="w-full border border-gray-300 text-black py-4 font-semibold tracking-wider hover:border-black transition-colors uppercase flex items-center justify-center gap-2">
+                    <i data-lucide="heart" class="w-5 h-5 @(TheOldPavement.Web.Helpers.WishlistManager.IsInWishlist(HttpContext.Session, Model.Product?.Id ?? 0) ? "fill-red-600 stroke-red-600 text-red-600" : "")"></i>
+                    @(TheOldPavement.Web.Helpers.WishlistManager.IsInWishlist(HttpContext.Session, Model.Product?.Id ?? 0) ? "Đã yêu thích" : "Thêm vào yêu thích")
+                </button>
+            </form>
+
+            <!-- Product Details -->
+            <div class="border-t border-gray-200 pt-8 space-y-4">
+                <h3 class="font-semibold tracking-wide text-lg">CHI TIẾT SẢN PHẨM</h3>
+                <ul class="space-y-2 text-gray-600">
+                    <li>• 100% Premium Cotton</li>
+                    <li>• Heavyweight fabric (220 GSM)</li>
+                    <li>• Oversized, boxy fit với vai trễ</li>
+                    <li>• Đã co rút tối thiểu khi giặt</li>
+                    <li>• Kết cấu mềm mại, thoáng khí</li>
+                    <li>• Họa tiết xích lô vẽ tay độc đáo</li>
+                    <li>• Sản xuất tại Việt Nam</li>
+                </ul>
+            </div>
+
+            <!-- Care Instructions -->
+            <div class="border-t border-gray-200 pt-8 space-y-4">
+                <h3 class="font-semibold tracking-wide text-lg">HƯỚNG DẪN BẢO QUẢN</h3>
+                <ul class="space-y-2 text-gray-600">
+                    <li>• Giặt máy ở chế độ lạnh cùng các sản phẩm cùng màu</li>
+                    <li>• Không sử dụng chất tẩy mạnh</li>
+                    <li>• Phơi khô hoặc sấy ở nhiệt độ thấp</li>
+                    <li>• Ủi mặt trong ở nhiệt độ thấp</li>
+                    <li>• Không ủi trực tiếp lên hình in</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Reviews -->
+    <section class="mt-24 border-t border-gray-200 pt-16">
+        <h2 class="text-2xl md:text-3xl mb-8 tracking-tight font-bold">ĐÁNH GIÁ KHÁCH HÀNG</h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <!-- Reviews List -->
+            <div class="lg:col-span-2 space-y-8">
+                @if (Model.Reviews != null && Model.Reviews.Any())
+                {
+                    foreach (var review in Model.Reviews)
+                    {
+                        <div class="border-b border-gray-100 pb-6">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="flex text-yellow-400">
+                                    @for (int i = 0; i < 5; i++)
+                                    {
+                                        <i data-lucide="star" class="w-4 h-4 @(i < review.Rating ? "fill-yellow-400" : "text-gray-300")"></i>
+                                    }
+                                </div>
+                                <span class="text-sm font-bold text-gray-900">@(review.Title ?? "Khách hàng")</span>
+                                <span class="text-xs text-gray-400 ml-2">@review.CreatedAt?.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <p class="text-gray-600 text-sm leading-relaxed">
+                                @review.Comment
+                            </p>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-gray-500 italic text-sm">Chưa có đánh giá nào cho sản phẩm này. Hãy trở thành người đầu tiên đánh giá!</p>
+                }
+            </div>
+
+            <!-- Add Review Form -->
+            <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 h-fit">
+                <h3 class="font-bold text-lg mb-6">VIẾT ĐÁNH GIÁ CỦA BẠN</h3>
+                <form method="post" asp-page-handler="AddReview" asp-route-slug="@Model.Product?.Slug" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Đánh giá (Sao)</label>
+                        <select asp-for="Rating" class="w-full bg-white border border-gray-300 rounded px-4 py-3 text-sm focus:outline-none focus:border-black">
+                            <option value="5">5 Sao - Rất tuyệt vời</option>
+                            <option value="4">4 Sao - Hài lòng</option>
+                            <option value="3">3 Sao - Bình thường</option>
+                            <option value="2">2 Sao - Kém</option>
+                            <option value="1">1 Sao - Quá tệ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Tên của bạn</label>
+                        <input asp-for="ReviewerName" type="text" placeholder="Nhập tên (tùy chọn)" class="w-full bg-white border border-gray-300 rounded px-4 py-3 text-sm focus:outline-none focus:border-black" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Nhận xét chi tiết</label>
+                        <textarea asp-for="ReviewContent" rows="4" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm này..." required class="w-full bg-white border border-gray-300 rounded px-4 py-3 text-sm focus:outline-none focus:border-black resize-none"></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-black text-white py-3.5 text-sm font-bold tracking-wider hover:bg-gray-800 transition-colors uppercase rounded">
+                        Gửi đánh giá
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Related Products -->
+    @if (Model.RelatedProducts != null && Model.RelatedProducts.Any())
+    {
+        <section class="mt-24 border-t border-gray-200 pt-16">
+            <h2 class="text-3xl md:text-4xl mb-8 tracking-tight">SẢN PHẨM LIÊN QUAN</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12">
+                @foreach (var p in Model.RelatedProducts)
+                {
+                    var img = p.ProductImages?.FirstOrDefault()?.ImageUrl ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+                    <div class="group cursor-pointer" onclick="window.location.href='/Product/@p.Slug'">
+                        <div class="relative bg-gray-50 mb-4 overflow-hidden aspect-square">
+                            <img src="@img" alt="@p.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            @if (p.IsCollab == true)
+                            {
+                                <div class="absolute bottom-3 left-3 bg-black text-white px-3 py-1 text-xs font-bold tracking-wide">Collab</div>
+                            }
+                        </div>
+                        <h3 class="text-sm font-medium leading-tight uppercase tracking-wide group-hover:opacity-60 transition-opacity">@p.Name</h3>
+                        <p class="font-semibold mt-2">@p.Price.ToString("N0")₫</p>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+</main>
+
+<!-- Size Guide Dialog Modal -->
+<div id="size-guide-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 hidden transition-opacity duration-300">
+    <div class="bg-white p-8 max-w-lg w-full relative mx-4">
+        <button onclick="toggleSizeGuide()" class="absolute top-4 right-4 text-gray-500 hover:text-black">
+            <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+        <h3 class="text-2xl font-bold mb-6 tracking-tight">BẢNG HƯỚNG DẪN CHỌN SIZE</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-center border-collapse">
+                <thead>
+                    <tr class="border-b-2 border-black font-semibold">
+                        <th class="py-2">SIZE</th>
+                        <th class="py-2">RỘNG ÁO (cm)</th>
+                        <th class="py-2">DÀI ÁO (cm)</th>
+                        <th class="py-2">CHIỀU CAO (m)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <tr>
+                        <td class="py-3 font-semibold">S</td>
+                        <td class="py-3">54</td>
+                        <td class="py-3">68</td>
+                        <td class="py-3">1.50 - 1.65</td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 font-semibold">M</td>
+                        <td class="py-3">56</td>
+                        <td class="py-3">70</td>
+                        <td class="py-3">1.60 - 1.72</td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 font-semibold">L</td>
+                        <td class="py-3">58</td>
+                        <td class="py-3">72</td>
+                        <td class="py-3">1.70 - 1.80</td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 font-semibold">XL</td>
+                        <td class="py-3">60</td>
+                        <td class="py-3">74</td>
+                        <td class="py-3">1.78 - 1.85</td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 font-semibold">XXL</td>
+                        <td class="py-3">62</td>
+                        <td class="py-3">76</td>
+                        <td class="py-3">1.82 - 1.95</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="text-xs text-gray-500 mt-6 leading-relaxed">
+            * Form dáng áo thun của The Old Pavement là dáng **oversized rộng rãi**, thoải mái. Nếu bạn muốn mặc ôm gọn hơn, hãy cân nhắc giảm 1 size.
+        </p>
+    </div>
+</div>
+
+<script>
+    const imagesByColor = @Html.Raw(imagesByColorJson);
+    let currentColor = '@selectedColor';
+    let images = (imagesByColor && imagesByColor[currentColor]) ? imagesByColor[currentColor] : (Object.values(imagesByColor)[0] || []);
+    let selectedImageIndex = 0;
+
+    function renderThumbnails() {
+        const thumbsContainer = document.getElementById('thumbnails-container');
+        if (!thumbsContainer) return;
+        thumbsContainer.innerHTML = '';
+        for (let i = 0; i < images.length; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'thumbnail-btn bg-gray-50 aspect-square overflow-hidden border-2 transition-colors ' + (i === 0 ? 'border-black' : 'border-transparent');
+            btn.setAttribute('data-index', i);
+            btn.onclick = (function(index) { return function() { selectImage(index); }; })(i);
+
+            const img = document.createElement('img');
+            img.src = images[i];
+            img.alt = 'View ' + (i + 1);
+            img.className = 'w-full h-full object-cover';
+            btn.appendChild(img);
+            thumbsContainer.appendChild(btn);
+        }
+    }
+
+    function selectImage(index) {
+        if (!images || images.length === 0) return;
+        selectedImageIndex = index;
+        const mainImg = document.getElementById('main-product-image');
+        if (mainImg) mainImg.src = images[selectedImageIndex];
+
+        // Highlight active thumbnail
+        const thumbs = document.querySelectorAll('.thumbnail-btn');
+        thumbs.forEach((t, i) => {
+            if (i === index) {
+                t.classList.add('border-black');
+                t.classList.remove('border-transparent');
+            } else {
+                t.classList.remove('border-black');
+                t.classList.add('border-transparent');
+            }
+        });
+
+        // Toggle Cyclo Overlay for white (keep original behavior: show overlay for first image)
+        const cycloOverlay = document.getElementById('cyclo-overlay');
+        if (cycloOverlay) {
+            if (currentColor === 'white' && index === 0) cycloOverlay.classList.remove('hidden');
+            else cycloOverlay.classList.add('hidden');
+        }
+    }
+
+    function nextImage() {
+        if (!images || images.length === 0) return;
+        let nextIdx = (selectedImageIndex + 1) % images.length;
+        selectImage(nextIdx);
+    }
+
+    function prevImage() {
+        if (!images || images.length === 0) return;
+        let prevIdx = (selectedImageIndex - 1 + images.length) % images.length;
+        selectImage(prevIdx);
+    }
+
+    function selectColor(value, name) {
+        document.getElementById('selected-color-label').innerText = name;
+        document.getElementById('SelectedColor').value = value;
+
+        // Highlight selected color button
+        const colorBtns = document.querySelectorAll('.color-btn');
+        colorBtns.forEach(btn => {
+            if (btn.getAttribute('data-color') === value) {
+                btn.classList.add('border-black', 'scale-110');
+                btn.classList.remove('border-gray-300');
+            } else {
+                btn.classList.remove('border-black', 'scale-110');
+                btn.classList.add('border-gray-300');
+            }
+        });
+
+        // Switch image set for selected color
+        currentColor = value;
+        images = (imagesByColor && imagesByColor[currentColor]) ? imagesByColor[currentColor] : (Object.values(imagesByColor)[0] || []);
+        selectedImageIndex = 0;
+        renderThumbnails();
+        selectImage(0);
+    }
+
+    // Initialize thumbnails on load
+    document.addEventListener('DOMContentLoaded', function() {
+        renderThumbnails();
+        selectImage(0);
+    });
+
+    function selectSize(size) {
+        document.getElementById('selected-size-label').innerText = size;
+        document.getElementById('SelectedSize').value = size;
+
+        // Highlight selected size button
+        const sizeBtns = document.querySelectorAll('.size-btn');
+        sizeBtns.forEach(btn => {
+            if (btn.getAttribute('data-size') === size) {
+                btn.classList.add('border-black', 'bg-black', 'text-white');
+                btn.classList.remove('border-gray-300');
+            } else {
+                btn.classList.remove('border-black', 'bg-black', 'text-white');
+                btn.classList.add('border-gray-300');
+            }
+        });
+    }
+
+    function adjustQuantity(amount) {
+        const qtyDisplay = document.getElementById('quantity-display');
+        const hiddenQty = document.getElementById('Quantity');
+        let currentQty = parseInt(hiddenQty.value);
+        let newQty = currentQty + amount;
+        if (newQty < 1) newQty = 1;
+        
+        qtyDisplay.innerText = newQty;
+        hiddenQty.value = newQty;
+    }
+
+    function toggleSizeGuide() {
+        const modal = document.getElementById('size-guide-modal');
+        modal.classList.toggle('hidden');
+    }
+</script>

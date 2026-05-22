@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - The Old Pavement</title>
+    <!-- Tailwind CSS (via CDN for Development) -->
+    <script src="https://unpkg.com/@@tailwindcss/browser@4"></script>
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        html, body { height: 100%; margin: 0; }
+        /* Add some padding to body to account for fixed header */
+        body { padding-top: 80px; }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen bg-white flex flex-col">
+        <!-- Header -->
+        <partial name="_Header" />
+
+        <!-- Main Content -->
+        <div class="flex-1">
+            <main role="main">
+                @RenderBody()
+            </main>
+        </div>
+
+        <!-- Footer -->
+        <partial name="_Footer" />
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

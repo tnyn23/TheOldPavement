@@ -1,0 +1,11 @@
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Core\obj\Debug\net9.0\TheOldPavement.Core.GeneratedMSBuildEditorConfig.editorconfig
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Core\obj\Debug\net9.0\TheOldPavement.Core.AssemblyInfoInputs.cache
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Core\obj\Debug\net9.0\TheOldPavement.Core.AssemblyInfo.cs
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Core\obj\Debug\net9.0\TheOldPavement.Core.csproj.CoreCompileInputs.cache
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Core\bin\Debug\net9.0\TheOldPavement.Core.deps.json
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Core\bin\Debug\net9.0\TheOldPavement.Core.dll
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Core\bin\Debug\net9.0\TheOldPavement.Core.pdb
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Core\obj\Debug\net9.0\TheOldPavement.Core.dll
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Core\obj\Debug\net9.0\refint\TheOldPavement.Core.dll
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Core\obj\Debug\net9.0\TheOldPavement.Core.pdb
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Core\obj\Debug\net9.0\ref\TheOldPavement.Core.dll

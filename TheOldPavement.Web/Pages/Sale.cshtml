@@ -1,0 +1,158 @@
+@page
+@model TheOldPavement.Web.Pages.SaleModel
+@{
+    ViewData["Title"] = "Flash Sale";
+    
+    // Dynamically calculate sale prices (20% off for Flash Sale!)
+    var saleProducts = Model.Products.Select(p => {
+        var discountPercent = 20; // 20% discount!
+        var salePriceVal = Math.Round(p.Price * 0.8m);
+        var primaryImg = p.ProductImages?.FirstOrDefault(img => img.IsPrimary == true)?.ImageUrl 
+            ?? p.ProductImages?.FirstOrDefault()?.ImageUrl 
+            ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+        return new {
+            Id = p.Id,
+            Name = p.Name,
+            Price = salePriceVal.ToString("N0") + "₫",
+            PriceVal = salePriceVal,
+            OriginalPrice = p.Price.ToString("N0") + "₫",
+            Discount = $"-{discountPercent}%",
+            Image = primaryImg,
+            IsCollab = p.Name.ToLower().Contains("collab") || p.Slug.ToLower().Contains("collab"),
+            Slug = p.Slug
+        };
+    }).ToArray();
+
+    var sortedProducts = saleProducts;
+
+    if (Model.SortBy == "discount")
+    {
+        sortedProducts = saleProducts.OrderByDescending(p => p.Discount).ToArray();
+    }
+    else if (Model.SortBy == "price-low")
+    {
+        sortedProducts = saleProducts.OrderBy(p => p.PriceVal).ToArray();
+    }
+    else if (Model.SortBy == "price-high")
+    {
+        sortedProducts = saleProducts.OrderByDescending(p => p.PriceVal).ToArray();
+    }
+}
+
+<main class="pt-24 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="mb-8">
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4" role="alert">
+                <p class="font-bold">Thành công</p>
+                <p>@TempData["SuccessMessage"]</p>
+            </div>
+        </div>
+    }
+
+    <!-- Hero Banner -->
+    <div class="relative bg-red-600 text-white py-16 px-8 mb-12 overflow-hidden border">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-0 left-0 w-full h-full" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.05) 10px, rgba(255,255,255,.05) 20px);"></div>
+        </div>
+        <div class="relative z-10 max-w-3xl mx-auto text-center space-y-4">
+            <div class="inline-flex items-center gap-2 bg-white text-red-600 px-4 py-2 font-bold text-sm uppercase tracking-widest">
+                <i data-lucide="trending-down" class="w-5 h-5"></i>
+                FLASH SALE
+            </div>
+            <h1 class="text-5xl md:text-6xl lg:text-7xl mb-4 tracking-tight font-extrabold">
+                SALE UP TO 30%
+            </h1>
+            <p class="text-xl md:text-2xl font-light opacity-90">
+                Sản phẩm chọn lọc chất lượng cao giảm giá kịch sàn
+            </p>
+            <p class="text-xs text-red-200 uppercase tracking-widest font-semibold">
+                * Số lượng có hạn. Chương trình khuyến mại kết thúc khi hết hàng hoặc ngày 31/05/2026.
+            </p>
+        </div>
+    </div>
+
+    <!-- Filter & Sort -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b pb-4">
+        <div class="flex items-center gap-2">
+            <i data-lucide="tag" class="w-5 h-5"></i>
+            <h2 class="text-2xl font-bold tracking-tight uppercase">
+                @sortedProducts.Length SẢN PHẨM ĐANG SALE
+            </h2>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <label class="text-sm font-semibold uppercase tracking-wider">Sắp xếp:</label>
+            <select onchange="changeSort(this.value)"
+                    class="border-2 border-gray-300 px-4 py-2 font-semibold outline-none focus:border-black bg-transparent">
+                <option value="discount" selected="@(Model.SortBy == "discount")">Giảm nhiều nhất</option>
+                <option value="price-low" selected="@(Model.SortBy == "price-low")">Giá: Thấp đến cao</option>
+                <option value="price-high" selected="@(Model.SortBy == "price-high")">Giá: Cao đến thấp</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
+        @foreach (var product in sortedProducts)
+        {
+            var decimalPrice = product.PriceVal;
+            
+            <div class="group relative block cursor-pointer">
+                <a href="/Product/@product.Slug" class="block">
+                    <!-- Discount Badge -->
+                    <div class="absolute top-3 left-3 bg-red-600 text-white px-3 py-1 text-sm font-bold uppercase tracking-wider z-10">
+                        @product.Discount
+                    </div>
+
+                    <!-- Product Image -->
+                    <div class="relative bg-gray-50 mb-4 overflow-hidden aspect-square border">
+                        <img src="@product.Image"
+                             alt="@product.Name"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        
+                        @if (product.IsCollab)
+                        {
+                            <div class="absolute bottom-3 left-3 bg-black text-white px-3 py-1 text-xs font-bold uppercase tracking-wider">
+                                Collab
+                            </div>
+                        }
+                    </div>
+                </a>
+
+                <!-- Floating Quick Add Button Form -->
+                <form method="post" asp-page-handler="QuickAdd" class="absolute bottom-20 right-4 z-20">
+                    <input type="hidden" name="productId" value="@product.Id" />
+                    <input type="hidden" name="productName" value="@product.Name" />
+                    <input type="hidden" name="price" value="@decimalPrice" />
+                    <input type="hidden" name="slug" value="@product.Slug" />
+                    <button type="submit" 
+                            class="bg-black text-white p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-gray-800 hover:scale-110 flex items-center justify-center"
+                            title="Thêm nhanh vào giỏ hàng">
+                        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    </button>
+                </form>
+
+                <a href="/Product/@product.Slug" class="block">
+                    <!-- Product Info -->
+                    <div class="space-y-2">
+                        <h3 class="text-sm font-bold leading-tight uppercase tracking-wider group-hover:opacity-60 transition-opacity">
+                            @product.Name
+                        </h3>
+                        
+                        <div class="flex items-center gap-2 font-semibold">
+                            <p class="text-red-600 text-lg">@product.Price</p>
+                            <p class="text-sm text-gray-500 line-through">@product.OriginalPrice</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+</main>
+
+<script>
+    function changeSort(val) {
+        window.location.href = '?sortBy=' + val;
+    }
+</script>

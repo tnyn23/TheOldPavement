@@ -1,0 +1,146 @@
+@page "/commercial-project"
+@model TheOldPavement.Web.Pages.CommercialProjectModel
+@{
+    ViewData["Title"] = "Dự án thương mại";
+}
+
+<main class="pt-24 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16">
+    <!-- Header -->
+    <div class="mb-12">
+        <h1 class="text-4xl md:text-5xl mb-4 tracking-tight font-light uppercase">TỔNG QUAN DỰ ÁN THƯƠNG MẠI</h1>
+        <p class="text-lg text-gray-600 max-w-3xl">
+            Bộ nhận diện thương hiệu hoàn chỉnh và thiết kế bao bì cho **The Old Pavement** - Thương hiệu thời trang lấy cảm hứng từ phố cổ Hà Nội.
+        </p>
+    </div>
+
+    <!-- Product Menu List -->
+    <section class="mb-16">
+        <div class="flex items-center gap-3 mb-6">
+            <i data-lucide="file-text" class="w-6 h-6"></i>
+            <h2 class="text-2xl font-bold tracking-wide uppercase">DANH MỤC SẢN PHẨM</h2>
+        </div>
+        
+        <div class="overflow-x-auto border border-gray-200">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="border-b-2 border-black bg-gray-50">
+                        <th class="text-left py-4 px-6 font-bold uppercase tracking-wider text-sm">TÊN SẢN PHẨM</th>
+                        <th class="text-left py-4 px-6 font-bold uppercase tracking-wider text-sm">BỘ SƯU TẬP</th>
+                        <th class="text-left py-4 px-6 font-bold uppercase tracking-wider text-sm">KÍCH CỠ</th>
+                        <th class="text-left py-4 px-6 font-bold uppercase tracking-wider text-sm">MÀU SẮC</th>
+                        <th class="text-left py-4 px-6 font-bold uppercase tracking-wider text-sm">GIÁ NIÊM YẾT</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="py-4 px-6 font-semibold uppercase">36 Phố Phường - Hồn Hà Nội Tee</td>
+                        <td class="py-4 px-6 text-gray-600">Main Collection</td>
+                        <td class="py-4 px-6 text-gray-600">S, M, L, XL, XXL</td>
+                        <td class="py-4 px-6 text-gray-600">White, Black, Slate Gray</td>
+                        <td class="py-4 px-6 font-bold">425.000₫</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="py-4 px-6 font-semibold uppercase">The Old Pavement Logo Tee</td>
+                        <td class="py-4 px-6 text-gray-600">Basics</td>
+                        <td class="py-4 px-6 text-gray-600">S, M, L, XL, XXL</td>
+                        <td class="py-4 px-6 text-gray-600">White, Black</td>
+                        <td class="py-4 px-6 font-bold">399.000₫</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="py-4 px-6 font-semibold uppercase">Vintage Hanoi Hoodie</td>
+                        <td class="py-4 px-6 text-gray-600">Main Collection</td>
+                        <td class="py-4 px-6 text-gray-600">M, L, XL, XXL</td>
+                        <td class="py-4 px-6 text-gray-600">Black, Gray</td>
+                        <td class="py-4 px-6 font-bold">650.000₫</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Deliverables Grid -->
+    <section>
+        <div class="flex items-center gap-3 mb-6">
+            <i data-lucide="package" class="w-6 h-6"></i>
+            <h2 class="text-2xl font-bold tracking-wide uppercase">CÁC HẠNG MỤC THIẾT KẾ (DELIVERABLES)</h2>
+        </div>
+        
+        <p class="text-gray-600 mb-8 font-medium">
+            Bộ giải pháp nhận diện trọn gói bao gồm bao bì, tem nhãn, thẻ cảm ơn và các ấn phẩm hỗ trợ truyền thông.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <!-- Packaging Box -->
+            <div class="group border border-gray-200 p-4 space-y-4 hover:border-black transition-colors bg-white">
+                <div class="relative bg-gray-100 aspect-square overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1667314614945-23d667783bb4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjbG90aGluZyUyMHBhY2thZ2luZyUyMGJveCUyMG1vY2t1cHxlbnwxfHx8fDE3NzM3NTM3Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080" alt="Box" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div class="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md"><i data-lucide="package" class="w-5 h-5"></i></div>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="font-bold text-lg uppercase tracking-wide">Hộp đựng Carton</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed min-h-[40px]">Hộp kraft cao cấp in logo phục vụ đóng gói và vận chuyển quà tặng sang xịn mịn.</p>
+                    <p class="text-xs text-gray-500 pt-2 border-t border-gray-200">300x250x50mm | Kraft | Mực đen</p>
+                </div>
+            </div>
+
+            <!-- Labels -->
+            <div class="group border border-gray-200 p-4 space-y-4 hover:border-black transition-colors bg-white">
+                <div class="relative bg-gray-100 aspect-square overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1732544849032-ed1f082520aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjbG90aGluZyUyMGxhYmVsJTIwdGFnJTIwZGVzaWdufGVufDF8fHx8MTc3Mzc1Mzc3OHww&ixlib=rb-4.1.0&q=80&w=1080" alt="Tags" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div class="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md"><i data-lucide="tag" class="w-5 h-5"></i></div>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="font-bold text-lg uppercase tracking-wide">Mác dệt cổ áo</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed min-h-[40px]">Tem cổ áo dệt sắc nét đính kèm chỉ dẫn bảo quản chi tiết.</p>
+                    <p class="text-xs text-gray-500 pt-2 border-t border-gray-200">50x30mm | Sợi Polyester dệt mật độ cao</p>
+                </div>
+            </div>
+
+            <!-- Thank You Card -->
+            <div class="group border border-gray-200 p-4 space-y-4 hover:border-black transition-colors bg-white">
+                <div class="relative bg-gray-100 aspect-square overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1769276029481-1ece5f343a01?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0aGFuayUyMHlvdSUyMGNhcmQlMjBtaW5pbWFsJTIwZGVzaWdufGVufDF8fHx8MTc3Mzc1Mzc3OHww&ixlib=rb-4.1.0&q=80&w=1080" alt="Card" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div class="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md"><i data-lucide="mail" class="w-5 h-5"></i></div>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="font-bold text-lg uppercase tracking-wide">Thẻ cảm ơn</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed min-h-[40px]">Thẻ cảm ơn thiết kế tối giản kèm theo bức thông điệp nhỏ của nhóm sáng lập.</p>
+                    <p class="text-xs text-gray-500 pt-2 border-t border-gray-200">100x150mm | Giấy Mỹ thuật 300gsm</p>
+                    <a href="/ThankYouCard" class="text-sm text-black underline font-bold mt-2 block">Xem Thiết Kế</a>
+                </div>
+            </div>
+
+            <!-- Stickers -->
+            <div class="group border border-gray-200 p-4 space-y-4 hover:border-black transition-colors bg-white">
+                <div class="relative bg-gray-100 aspect-square overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1761178334144-9715e83bf64b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxicmFuZCUyMHN0aWNrZXIlMjBzaGVldCUyMG1vY2t1cHxlbnwxfHx8fDE3NzM3NTM3Nzl8MA&ixlib=rb-4.1.0&q=80&w=1080" alt="Stickers" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div class="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md"><i data-lucide="smile" class="w-5 h-5"></i></div>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="font-bold text-lg uppercase tracking-wide">Bộ hình dán Sticker</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed min-h-[40px]">Sticker chống nước cực ngầu tặng kèm trong mỗi đơn hàng.</p>
+                    <p class="text-xs text-gray-500 pt-2 border-t border-gray-200">Khổ A6 | Nhựa Vinyl chống thấm nước</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Summary Section -->
+    <section class="mt-16 bg-gray-50 p-8 border">
+        <h3 class="text-xl font-bold mb-4 uppercase tracking-wide">TỔNG HỢP TIẾN ĐỘ</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
+            <div>
+                <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Mã sản phẩm thiết kế</p>
+                <p class="text-3xl font-extrabold">3</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Ấn phẩm phụ trợ</p>
+                <p class="text-3xl font-extrabold">8</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Trạng thái dự án</p>
+                <p class="text-3xl font-extrabold text-green-600 uppercase">Hoàn tất</p>
+            </div>
+        </div>
+    </section>
+</main>

@@ -1,0 +1,15 @@
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\bin\Debug\net9.0\TheOldPavement.Application.deps.json
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\bin\Debug\net9.0\TheOldPavement.Application.dll
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\bin\Debug\net9.0\TheOldPavement.Application.pdb
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\bin\Debug\net9.0\TheOldPavement.Core.dll
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\bin\Debug\net9.0\TheOldPavement.Core.pdb
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Debug\net9.0\TheOldPavement.Application.csproj.AssemblyReference.cache
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Debug\net9.0\TheOldPavement.Application.GeneratedMSBuildEditorConfig.editorconfig
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Debug\net9.0\TheOldPavement.Application.AssemblyInfoInputs.cache
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Debug\net9.0\TheOldPavement.Application.AssemblyInfo.cs
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Debug\net9.0\TheOldPavement.Application.csproj.CoreCompileInputs.cache
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Debug\net9.0\TheOldPa.C3FAFFED.Up2Date
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Debug\net9.0\TheOldPavement.Application.dll
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Debug\net9.0\refint\TheOldPavement.Application.dll
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Debug\net9.0\TheOldPavement.Application.pdb
+F:\FPT\Ky8_SU26\EXE201\Product\TheOldPavement\TheOldPavement.Application\obj\Debug\net9.0\ref\TheOldPavement.Application.dll
