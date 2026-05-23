@@ -1,0 +1,87 @@
+@page
+@model Web.Pages.WishlistModel
+@{
+    ViewData["Title"] = "Danh sách yêu thích - The Old Pavement";
+}
+
+<main class="pt-24 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16 min-h-[70vh]">
+    <div class="border-b border-gray-200 pb-6 mb-10">
+        <h1 class="text-4xl md:text-5xl font-bold tracking-tight uppercase">DANH SÁCH YÊU THÍCH</h1>
+        <p class="text-gray-500 mt-2">Lưu giữ những sản phẩm bạn yêu thích để dễ dàng mua sắm sau.</p>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="mb-8 p-4 bg-emerald-50 border border-emerald-500 text-emerald-800 font-medium flex items-center justify-between animate-fade-in">
+            <div class="flex items-center gap-2">
+                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>
+                <span>@TempData["SuccessMessage"]</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="hover:opacity-60">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+    }
+
+    @if (!Model.WishlistItems.Any())
+    {
+        <div class="text-center py-20 border border-dashed border-gray-300 bg-gray-50 max-w-2xl mx-auto rounded-lg">
+            <i data-lucide="heart" class="w-16 h-16 mx-auto text-gray-300 mb-6 stroke-1"></i>
+            <h2 class="text-2xl font-semibold mb-2">Danh sách yêu thích đang trống</h2>
+            <p class="text-gray-500 max-w-md mx-auto mb-8 text-sm">Hãy khám phá bộ sưu tập của chúng tôi và chọn những sản phẩm ưng ý nhất.</p>
+            <a href="/" class="inline-block bg-black text-white px-8 py-3.5 text-sm font-semibold tracking-wider hover:bg-gray-800 transition-colors uppercase">
+                Khám phá ngay
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            @foreach (var item in Model.WishlistItems)
+            {
+                <div class="group border border-gray-200 bg-white relative flex flex-col justify-between overflow-hidden transition-all duration-300 hover:shadow-lg">
+                    <!-- Image Area -->
+                    <div class="relative bg-gray-50 aspect-[4/5] overflow-hidden">
+                        <img src="@item.ImageUrl" alt="@item.ProductName" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        
+                        <!-- Remove button -->
+                        <form method="post" asp-page-handler="Remove" asp-route-productId="@item.ProductId" class="absolute top-4 right-4">
+                            <button type="submit" class="w-8 h-8 rounded-full bg-white text-gray-500 hover:text-red-600 hover:scale-110 flex items-center justify-center transition-all shadow-sm border" title="Xóa khỏi yêu thích">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Info Area -->
+                    <div class="p-6 flex-1 flex flex-col justify-between">
+                        <div class="mb-4">
+                            <h3 class="font-bold text-lg mb-1 tracking-tight text-gray-900 group-hover:text-red-600 transition-colors">
+                                <a href="/Product/@item.Slug">@item.ProductName</a>
+                            </h3>
+                            <p class="font-semibold text-gray-900">@item.Price.ToString("N0")₫</p>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="space-y-2">
+                            <form method="post" asp-page-handler="AddToCart">
+                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <input type="hidden" name="name" value="@item.ProductName" />
+                                <input type="hidden" name="price" value="@item.Price" />
+                                <input type="hidden" name="slug" value="@item.Slug" />
+                                <input type="hidden" name="imageUrl" value="@item.ImageUrl" />
+                                <button type="submit" class="w-full bg-black text-white py-3 text-xs font-bold tracking-wider hover:bg-gray-800 transition-colors uppercase flex items-center justify-center gap-2">
+                                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                                    Thêm vào giỏ hàng
+                                </button>
+                            </form>
+                            <a href="/Product/@item.Slug" class="w-full border border-gray-300 text-black py-3 text-xs font-bold tracking-wider hover:border-black transition-colors uppercase block text-center">
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</main>
+

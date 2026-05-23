@@ -1,0 +1,228 @@
+@page
+@model Web.Pages.CheckoutModel
+@{
+    ViewData["Title"] = "Thanh toán";
+}
+
+<main class="pt-24 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16">
+    <h1 class="text-4xl md:text-5xl mb-8 tracking-tight font-light">THANH TOÁN</h1>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-8" role="alert">
+            <p class="font-bold">Lỗi nhập liệu</p>
+            <div asp-validation-summary="All" class="text-sm"></div>
+        </div>
+    }
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <!-- Checkout Form -->
+        <form method="post" asp-page-handler="SubmitOrder" class="lg:col-span-2 space-y-8">
+            <input type="hidden" asp-for="PromoCodeId" id="applied-promo-id" />
+            <!-- Contact Information -->
+            <div class="bg-white border border-gray-200 p-8 space-y-6">
+                <h2 class="text-2xl font-bold tracking-tight border-b pb-4">THÔNG TIN LIÊN HỆ</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold mb-2 uppercase tracking-wider">Họ và tên <span class="text-red-600">*</span></label>
+                        <input type="text" asp-for="FullName" class="w-full border border-gray-300 px-4 py-3 outline-none focus:border-black transition-colors" required />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 uppercase tracking-wider">Email <span class="text-red-600">*</span></label>
+                        <input type="email" asp-for="Email" class="w-full border border-gray-300 px-4 py-3 outline-none focus:border-black transition-colors" required />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 uppercase tracking-wider">Số điện thoại <span class="text-red-600">*</span></label>
+                        <input type="tel" asp-for="Phone" class="w-full border border-gray-300 px-4 py-3 outline-none focus:border-black transition-colors" required />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Address -->
+            <div class="bg-white border border-gray-200 p-8 space-y-6">
+                <h2 class="text-2xl font-bold tracking-tight border-b pb-4">ĐỊA CHỈ GIAO HÀNG</h2>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 uppercase tracking-wider">Địa chỉ giao hàng <span class="text-red-600">*</span></label>
+                        <input type="text" asp-for="Address" placeholder="Số nhà, tên đường, ngõ..." class="w-full border border-gray-300 px-4 py-3 outline-none focus:border-black transition-colors" required />
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 uppercase tracking-wider">Tỉnh/Thành phố <span class="text-red-600">*</span></label>
+                            <select asp-for="City" class="w-full border border-gray-300 px-4 py-3 outline-none focus:border-black bg-transparent transition-colors" required>
+                                <option value="">Chọn</option>
+                                <option value="Hà Nội">Hà Nội</option>
+                                <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                                <option value="Đà Nẵng">Đà Nẵng</option>
+                                <option value="Hải Phòng">Hải Phòng</option>
+                                <option value="Cần Thơ">Cần Thơ</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 uppercase tracking-wider">Quận/Huyện</label>
+                            <input type="text" asp-for="District" class="w-full border border-gray-300 px-4 py-3 outline-none focus:border-black transition-colors" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 uppercase tracking-wider">Phường/Xã</label>
+                            <input type="text" asp-for="Ward" class="w-full border border-gray-300 px-4 py-3 outline-none focus:border-black transition-colors" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 uppercase tracking-wider">Ghi chú đơn hàng (tùy chọn)</label>
+                        <textarea asp-for="Note" rows="4" placeholder="Ghi chú về thời gian giao hàng hoặc hướng dẫn đường đi chi tiết..." class="w-full border border-gray-300 px-4 py-3 outline-none focus:border-black resize-none transition-colors"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="bg-white border border-gray-200 p-8 space-y-6">
+                <h2 class="text-2xl font-bold tracking-tight border-b pb-4">PHƯƠNG THỨC THANH TOÁN</h2>
+                <div class="space-y-4">
+                    <!-- COD -->
+                    <label class="flex items-center gap-4 p-4 border border-gray-300 cursor-pointer hover:border-black transition-colors">
+                        <input type="radio" asp-for="PaymentMethod" value="cod" class="w-4 h-4 text-black focus:ring-black border-gray-300" checked />
+                        <div>
+                            <p class="font-bold uppercase tracking-wider text-sm">Thanh toán khi nhận hàng (COD)</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Quý khách thanh toán tiền mặt trực tiếp cho shipper khi nhận được hàng</p>
+                        </div>
+                    </label>
+
+                    <!-- MoMo -->
+                    <label class="flex items-center gap-4 p-4 border border-gray-300 cursor-pointer hover:border-black transition-colors">
+                        <input type="radio" asp-for="PaymentMethod" value="momo" class="w-4 h-4 text-black focus:ring-black border-gray-300" />
+                        <div>
+                            <p class="font-bold uppercase tracking-wider text-sm">Ví điện tử MoMo</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Thanh toán trực tuyến bảo mật qua Ví điện tử MoMo (Quét mã QR hoặc Chuyển khoản ví)</p>
+                        </div>
+                    </label>
+
+                    <!-- Bank Transfer -->
+                    <label class="flex items-center gap-4 p-4 border border-gray-300 cursor-pointer hover:border-black transition-colors">
+                        <input type="radio" asp-for="PaymentMethod" value="bank" class="w-4 h-4 text-black focus:ring-black border-gray-300" />
+                        <div>
+                            <p class="font-bold uppercase tracking-wider text-sm">Chuyển khoản ngân hàng</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Chuyển tiền trực tiếp vào số tài khoản của cửa hàng để được xử lý nhanh hơn</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Action Submit -->
+            <button type="submit" class="w-full bg-black text-white py-4 font-bold tracking-widest hover:bg-gray-800 transition-colors uppercase text-sm">
+                XÁC NHẬN ĐẶT HÀNG
+            </button>
+        </form>
+
+        <!-- Order Summary Column -->
+        <div class="lg:col-span-1">
+            <div class="bg-gray-50 p-8 sticky top-28 border border-gray-200 space-y-6">
+                <h2 class="text-2xl font-bold tracking-tight border-b pb-4">ĐƠN HÀNG CỦA BẠN</h2>
+
+                <!-- Items list -->
+                <div class="space-y-4 max-h-[350px] overflow-y-auto pr-2 divide-y divide-gray-200">
+                    @foreach (var item in Model.CartItems)
+                    {
+                        <div class="flex gap-4 pt-4 first:pt-0">
+                            <div class="w-16 h-16 bg-gray-100 flex-shrink-0">
+                                <img src="@item.ProductThumbnail" alt="@item.ProductName" class="w-full h-full object-cover" />
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-sm truncate uppercase">@item.ProductName</p>
+                                <p class="text-xs text-gray-500 mt-0.5">MÀU: @item.Color.ToUpper() / SIZE: @item.Size / SL: @item.Quantity</p>
+                                <p class="font-semibold text-sm mt-1 text-black">@item.TotalPrice.ToString("N0")₫</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Coupon input UI -->
+                <div class="border-t border-gray-200 pt-4 space-y-3">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Mã giảm giá / Quà tặng</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="coupon-code-input" placeholder="Nhập mã..." class="flex-1 border border-gray-300 px-3 py-2 text-sm font-semibold outline-none uppercase focus:border-black" />
+                        <button type="button" onclick="applyCoupon()" class="bg-black text-white px-4 py-2 text-xs font-bold tracking-wider hover:bg-gray-800 transition-colors uppercase">Áp dụng</button>
+                    </div>
+                    <div id="coupon-message" class="text-xs font-semibold hidden"></div>
+                </div>
+
+                <!-- Price totals -->
+                <div class="border-t border-gray-200 pt-4 space-y-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600 font-medium">Tạm tính</span>
+                        <span class="font-semibold text-black">@Model.TotalPrice.ToString("N0")₫</span>
+                    </div>
+                    <div id="discount-row" class="flex justify-between text-sm hidden">
+                        <span class="text-gray-600 font-medium">Giảm giá (<span id="applied-code-text"></span>)</span>
+                        <span class="font-semibold text-red-600">-<span id="discount-amount-text">0</span>₫</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600 font-medium">Phí vận chuyển</span>
+                        <span class="font-semibold text-green-600">Miễn phí</span>
+                    </div>
+                    <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-3">
+                        <span>TỔNG CỘNG</span>
+                        <span id="final-total-text">@Model.TotalPrice.ToString("N0")₫</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    async function applyCoupon() {
+        const codeInput = document.getElementById("coupon-code-input");
+        const code = codeInput.value.trim();
+        const messageDiv = document.getElementById("coupon-message");
+        const subtotal = @Model.TotalPrice;
+
+        if (!code) {
+            messageDiv.textContent = "Vui lòng nhập mã giảm giá.";
+            messageDiv.className = "text-xs font-semibold text-red-600 block";
+            return;
+        }
+
+        // Get antiforgery token
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenInput ? tokenInput.value : "";
+
+        try {
+            const response = await fetch('/Checkout?handler=ApplyCoupon', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify({ code: code, subtotal: subtotal })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Update UI with coupon info
+                document.getElementById("applied-promo-id").value = result.promoId;
+                document.getElementById("applied-code-text").textContent = result.code;
+                document.getElementById("discount-amount-text").textContent = result.discountAmount.toLocaleString('vi-VN');
+                document.getElementById("final-total-text").textContent = result.finalTotal.toLocaleString('vi-VN') + "₫";
+                
+                document.getElementById("discount-row").classList.remove("hidden");
+                
+                messageDiv.textContent = result.message;
+                messageDiv.className = "text-xs font-semibold text-emerald-600 block animate-fade-in";
+            } else {
+                // Reset/remove coupon inputs
+                document.getElementById("applied-promo-id").value = "";
+                document.getElementById("discount-row").classList.add("hidden");
+                document.getElementById("final-total-text").textContent = subtotal.toLocaleString('vi-VN') + "₫";
+                
+                messageDiv.textContent = result.message;
+                messageDiv.className = "text-xs font-semibold text-red-600 block";
+            }
+        } catch (error) {
+            console.error('Error applying coupon:', error);
+            messageDiv.textContent = "Đã xảy ra lỗi khi kiểm tra mã giảm giá.";
+            messageDiv.className = "text-xs font-semibold text-red-600 block";
+        }
+    }
+</script>
+

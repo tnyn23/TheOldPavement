@@ -1,0 +1,147 @@
+@page
+@model Web.Pages.ThankYouCardModel
+@{
+    ViewData["Title"] = "Cảm ơn bạn";
+}
+
+<main class="pt-24 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16">
+    @if (!string.IsNullOrEmpty(Model.OrderNumber))
+    {
+        <!-- Order Success Message -->
+        <div class="bg-green-50 border border-green-200 p-8 text-center rounded-none mb-12 space-y-4 max-w-2xl mx-auto">
+            <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
+                <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+            <h1 class="text-3xl font-bold tracking-tight text-green-800">ĐẶT HÀNG THÀNH CÔNG!</h1>
+            <p class="text-gray-600">Cảm ơn bạn đã mua hàng tại **The Old Pavement**. Đơn hàng của bạn đang được xử lý.</p>
+            <div class="bg-white border p-4 max-w-sm mx-auto">
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">MÃ ĐƠN HÀNG</p>
+                <p class="text-xl font-bold text-black mt-1">@Model.OrderNumber</p>
+            </div>
+            <p class="text-xs text-gray-500">Chúng tôi đã gửi email xác nhận thông tin đơn hàng tới hòm thư của bạn.</p>
+            <div class="pt-4">
+                <a href="/" class="inline-block bg-black text-white px-8 py-3 font-semibold hover:bg-gray-800 transition-colors uppercase text-sm">TIẾP TỤC MUA SẮM</a>
+            </div>
+        </div>
+    }
+
+    <!-- Header for card design showcase -->
+    <div class="flex items-center justify-between mb-8">
+        <a href="/commercial-project" class="flex items-center gap-2 hover:opacity-60 transition-opacity">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            <span class="font-semibold uppercase tracking-wider text-sm">Quay lại Dự án</span>
+        </a>
+        <button onclick="window.print()" class="flex items-center gap-2 px-6 py-3 bg-black text-white font-semibold hover:bg-gray-800 transition-colors uppercase text-sm">
+            <i data-lucide="download" class="w-5 h-5"></i>
+            Tải thiết kế
+        </button>
+    </div>
+
+    <h1 class="text-3xl md:text-4xl font-light mb-8 tracking-tight uppercase">THIẾT KẾ THẺ CẢM ƠN (THANK YOU CARD)</h1>
+
+    <!-- Card Preview Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+        <!-- Front Side -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4 uppercase tracking-wider text-gray-600">Mặt trước (Front Side)</h2>
+            <div class="bg-white border-2 border-gray-300 aspect-[2/3] max-w-md mx-auto p-12 flex flex-col items-center justify-center shadow-lg">
+                <!-- Logo -->
+                <div class="mb-8">
+                    <svg viewBox="0 0 100 100" class="w-24 h-24">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="black" stroke-width="2"/>
+                        <text x="50" y="58" text-anchor="middle" font-size="28" font-weight="bold" fill="black" font-family="sans-serif">OP</text>
+                    </svg>
+                </div>
+
+                <!-- Main Text -->
+                <div class="text-center space-y-6">
+                    <h3 class="text-4xl font-extrabold tracking-tight">CẢM ƠN BẠN</h3>
+                    <div class="w-16 h-0.5 bg-black mx-auto"></div>
+                    <p class="text-lg tracking-widest font-medium">THANK YOU</p>
+                </div>
+
+                <!-- Small Cyclo Icon -->
+                <div class="mt-12">
+                    <svg viewBox="0 0 100 60" class="w-20 h-auto" fill="none" stroke="black" stroke-width="1.5">
+                        <circle cx="25" cy="45" r="12" />
+                        <circle cx="75" cy="45" r="12" />
+                        <line x1="25" y1="45" x2="25" y2="30" />
+                        <line x1="25" y1="30" x2="50" y2="30" />
+                        <line x1="50" y1="30" x2="50" y2="42" />
+                        <line x1="50" y1="42" x2="75" y2="45" />
+                        <path d="M 35 20 L 50 20 L 53 30 L 32 30 Z" />
+                        <path d="M 33 20 Q 42 15 52 20" stroke-width="2" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back Side -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4 uppercase tracking-wider text-gray-600">Mặt sau (Back Side)</h2>
+            <div class="bg-white border-2 border-gray-300 aspect-[2/3] max-w-md mx-auto p-12 flex flex-col justify-between shadow-lg">
+                <!-- Message -->
+                <div class="space-y-6 text-center">
+                    <p class="text-base leading-relaxed text-gray-700 font-medium">
+                        Cảm ơn bạn đã tin tưởng và đồng hành cùng **The Old Pavement**. 
+                        Mỗi sản phẩm của chúng tôi đều mang theo câu chuyện về Hà Nội - 
+                        nơi mà truyền thống và hiện đại giao thoa.
+                    </p>
+                    
+                    <div class="pt-4 border-t border-gray-200">
+                        <p class="text-sm text-gray-600 italic">
+                            "36 phố phường, một tâm hồn"
+                        </p>
+                    </div>
+
+                    <div class="pt-6 space-y-2">
+                        <p class="font-bold text-sm tracking-widest uppercase">THE OLD PAVEMENT</p>
+                        <p class="text-xs text-gray-500 font-medium">Hanoi Streetwear | Est. 2024</p>
+                    </div>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="space-y-2 text-center text-xs text-gray-500 pt-8 border-t border-gray-200 font-semibold tracking-wider">
+                    <p>INSTAGRAM: @@theoldpavement</p>
+                    <p>EMAIL: hello@@com</p>
+                    <p>WEBSITE: com</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Specifications -->
+    <div class="bg-gray-50 p-8 rounded-none border">
+        <h3 class="text-xl font-semibold mb-6 tracking-wide uppercase">Thông số kỹ thuật</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div>
+                <p class="text-sm text-gray-500 mb-1 uppercase tracking-wider font-semibold">Kích thước</p>
+                <p class="font-bold">100 x 150mm</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 mb-1 uppercase tracking-wider font-semibold">Chất liệu giấy</p>
+                <p class="font-bold">300gsm Card Stock</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 mb-1 uppercase tracking-wider font-semibold">Hoàn thiện</p>
+                <p class="font-bold">Cán mờ (Matte Lamination)</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 mb-1 uppercase tracking-wider font-semibold">Quy cách in</p>
+                <p class="font-bold">In 2 mặt, mực đen tinh tế</p>
+            </div>
+        </div>
+
+        <div class="mt-8 pt-8 border-t border-gray-200">
+            <h4 class="font-semibold mb-3 uppercase tracking-wider">Lưu ý thiết kế:</h4>
+            <ul class="space-y-2 text-sm text-gray-700">
+                <li>• Thiết kế tối giản mang đậm phong cách đường phố (streetwear).</li>
+                <li>• Logo thương hiệu nổi bật ngay ở mặt trước.</li>
+                <li>• Biểu tượng xích lô truyền thống vẽ tay mang hồn Hà Nội.</li>
+                <li>• Thông tin liên hệ đầy đủ ở mặt sau giúp kết nối với khách hàng.</li>
+                <li>• Lựa chọn giấy tái chế thân thiện với môi trường.</li>
+            </ul>
+        </div>
+    </div>
+</main>
+
