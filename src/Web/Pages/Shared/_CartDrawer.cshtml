@@ -1,0 +1,210 @@
+@using Web.Helpers
+@{
+    var cartItems = CartManager.GetCart(Context.Session);
+    var totalPrice = CartManager.GetTotalPrice(Context.Session);
+    var totalItems = CartManager.GetTotalItems(Context.Session);
+}
+
+<!-- Cart Drawer Overlay -->
+<div id="cart-drawer-overlay"
+     class="fixed inset-0 bg-black/40 z-[9998] hidden transition-opacity duration-300 ease-in-out opacity-0"
+     onclick="closeCartDrawer()"></div>
+
+<!-- Cart Drawer Panel -->
+<div id="cart-drawer"
+     class="fixed top-0 right-0 h-full w-full max-w-[420px] bg-white z-[9999] flex flex-col shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out">
+
+    <!-- Drawer Header -->
+    <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+        <div class="flex items-center gap-3">
+            <h2 class="text-sm font-black uppercase tracking-[0.15em]">Giỏ hàng</h2>
+            <span id="drawer-item-count"
+                  class="bg-gray-900 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center leading-none">@totalItems</span>
+        </div>
+        <button onclick="closeCartDrawer()"
+                class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Đóng">
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+    </div>
+
+    <!-- Items List -->
+    <div id="drawer-items" class="flex-1 overflow-y-auto">
+        @if (!cartItems.Any())
+        {
+            <div id="drawer-empty" class="flex flex-col items-center justify-center h-full py-20 px-6 text-center">
+                <div class="w-16 h-16 bg-gray-50 border border-gray-200 rounded-full flex items-center justify-center mb-4">
+                    <i data-lucide="shopping-bag" class="w-7 h-7 text-gray-300"></i>
+                </div>
+                <p class="text-sm font-bold text-gray-400 uppercase tracking-wider">Giỏ hàng trống</p>
+                <p class="text-xs text-gray-400 mt-1">Hãy thêm sản phẩm vào giỏ để tiếp tục</p>
+                <a href="/Shop"
+                   onclick="closeCartDrawer()"
+                   class="mt-6 inline-block bg-black text-white px-6 py-2.5 text-xs font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors">
+                    Khám phá Shop
+                </a>
+            </div>
+        }
+        else
+        {
+            <ul id="drawer-item-list" class="divide-y divide-gray-100 px-6">
+                @foreach (var item in cartItems)
+                {
+                    <li class="py-5 flex gap-4" id="drawer-item-@item.Id">
+                        <!-- Thumbnail -->
+                        <div class="w-20 h-20 bg-gray-50 border border-gray-100 flex-shrink-0 overflow-hidden">
+                            <img src="@(item.ProductThumbnail ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400")"
+                                 alt="@item.ProductName"
+                                 class="w-full h-full object-cover" />
+                        </div>
+
+                        <!-- Info -->
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-black uppercase tracking-wide text-gray-900 leading-tight line-clamp-2">@item.ProductName</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5 uppercase font-semibold tracking-wide">@item.Size · @item.Color</p>
+                            <p class="text-sm font-black text-gray-900 mt-1">@item.UnitPrice.ToString("N0")₫</p>
+
+                            <!-- Qty controls -->
+                            <div class="flex items-center gap-2 mt-2">
+                                <button onclick="drawerUpdateQty(@item.Id, @(item.Quantity - 1))"
+                                        class="w-7 h-7 border border-gray-300 hover:border-black flex items-center justify-center text-sm font-bold transition-colors"
+                                        aria-label="Giảm">−</button>
+                                <span id="qty-@item.Id" class="text-sm font-bold w-6 text-center">@item.Quantity</span>
+                                <button onclick="drawerUpdateQty(@item.Id, @(item.Quantity + 1))"
+                                        class="w-7 h-7 border border-gray-300 hover:border-black flex items-center justify-center text-sm font-bold transition-colors"
+                                        aria-label="Tăng">+</button>
+                                <button onclick="drawerRemoveItem(@item.Id)"
+                                        class="ml-auto text-gray-400 hover:text-red-500 transition-colors"
+                                        aria-label="Xóa">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Line total -->
+                        <p id="line-total-@item.Id" class="text-sm font-black text-gray-900 flex-shrink-0 self-start pt-0.5">
+                            @item.TotalPrice.ToString("N0")₫
+                        </p>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+    <!-- Drawer Footer (only shown when cart has items) -->
+    @if (cartItems.Any())
+    {
+        <div class="border-t border-gray-100 px-6 py-5 space-y-3 bg-white">
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Tạm tính</span>
+                <span id="drawer-total" class="text-lg font-black text-gray-900">@totalPrice.ToString("N0")₫</span>
+            </div>
+            <p class="text-[10px] text-gray-400">Phí vận chuyển & giảm giá sẽ được tính khi thanh toán.</p>
+            <a href="/Checkout"
+               class="block w-full bg-black text-white text-center py-3.5 text-xs font-black uppercase tracking-[0.15em] hover:bg-gray-800 transition-colors">
+                Thanh toán ngay
+            </a>
+            <a href="/Cart"
+               onclick="closeCartDrawer()"
+               class="block w-full text-center py-2.5 text-xs font-bold uppercase tracking-wider text-gray-600 hover:text-black transition-colors">
+                Xem giỏ hàng đầy đủ →
+            </a>
+        </div>
+    }
+</div>
+
+<script>
+    // ── Cart Drawer State ──────────────────────────────────────────────
+    function openCartDrawer() {
+        const drawer = document.getElementById('cart-drawer');
+        const overlay = document.getElementById('cart-drawer-overlay');
+        overlay.classList.remove('hidden');
+        // Force reflow so transition fires
+        overlay.offsetHeight;
+        overlay.classList.remove('opacity-0');
+        drawer.classList.remove('translate-x-full');
+        document.body.style.overflow = 'hidden';
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function closeCartDrawer() {
+        const drawer = document.getElementById('cart-drawer');
+        const overlay = document.getElementById('cart-drawer-overlay');
+        drawer.classList.add('translate-x-full');
+        overlay.classList.add('opacity-0');
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        }, 300);
+    }
+
+    // ── Async helpers ─────────────────────────────────────────────────
+    function getAntiForgeryToken() {
+        const el = document.querySelector('input[name="__RequestVerificationToken"]');
+        return el ? el.value : '';
+    }
+
+    async function drawerUpdateQty(itemId, newQty) {
+        if (newQty < 1) { drawerRemoveItem(itemId); return; }
+
+        const res = await fetch('/Cart?handler=UpdateQuantityJson', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+            body: JSON.stringify({ itemId, quantity: newQty })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.removed) {
+                drawerRemoveItem(itemId, true);
+                return;
+            }
+            document.getElementById(`qty-${itemId}`).textContent = newQty;
+            document.getElementById(`line-total-${itemId}`).textContent = formatVND(data.lineTotal);
+            document.getElementById('drawer-total').textContent = formatVND(data.cartTotal);
+            document.getElementById('drawer-item-count').textContent = data.totalItems;
+            updateHeaderBadge(data.totalItems);
+        }
+    }
+
+    async function drawerRemoveItem(itemId, skipFetch) {
+        if (!skipFetch) {
+            await fetch('/Cart?handler=RemoveJson', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+                body: JSON.stringify({ itemId })
+            });
+        }
+        const el = document.getElementById(`drawer-item-${itemId}`);
+        if (el) {
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(20px)';
+            el.style.transition = 'all 0.2s ease';
+            setTimeout(() => el.remove(), 200);
+        }
+
+        // Re-fetch totals
+        const res = await fetch('/Cart?handler=SummaryJson');
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById('drawer-item-count').textContent = data.totalItems;
+            updateHeaderBadge(data.totalItems);
+            if (data.totalItems === 0) {
+                location.reload(); // reload drawer to show empty state
+            } else {
+                document.getElementById('drawer-total').textContent = formatVND(data.cartTotal);
+            }
+        }
+    }
+
+    function updateHeaderBadge(count) {
+        const badge = document.getElementById('header-cart-badge');
+        if (badge) {
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'flex' : 'none';
+        }
+    }
+
+    function formatVND(amount) {
+        return new Intl.NumberFormat('vi-VN').format(amount) + '₫';
+    }
+</script>

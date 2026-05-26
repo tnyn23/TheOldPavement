@@ -107,33 +107,54 @@
                     </div>
 
                     <!-- Order Timeline -->
-                    <div class="px-6 py-4 border-b border-gray-100">
-                        <div class="flex items-center justify-between max-w-lg">
-                            @{
-                                var steps = new[] { "pending", "shipped", "delivered" };
-                                var stepLabels = new[] { "Đặt hàng", "Vận chuyển", "Giao hàng" };
-                                var stepIcons = new[] { "package", "truck", "check-circle" };
-                                var currentStepIndex = status == "cancelled" ? -1 : Array.IndexOf(steps, status);
-                            }
-                            @for (int i = 0; i < steps.Length; i++)
-                            {
-                                var isActive = i <= currentStepIndex && status != "cancelled";
-                                var isCurrent = i == currentStepIndex && status != "cancelled";
-                                <div class="flex flex-col items-center text-center flex-1">
-                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold @(isActive ? "bg-black text-white" : "bg-gray-200 text-gray-400") @(status == "cancelled" ? "bg-red-100 text-red-400" : "")">
-                                        <i data-lucide="@stepIcons[i]" class="w-4 h-4 stroke-[1.5]"></i>
-                                    </div>
-                                    <span class="text-[10px] font-semibold mt-1.5 uppercase tracking-wider @(isActive ? "text-gray-900" : "text-gray-400") @(status == "cancelled" ? "text-red-400" : "")">@stepLabels[i]</span>
-                                </div>
-                                @if (i < steps.Length - 1)
-                                {
-                                    <div class="flex-1 h-0.5 mt-[-12px] @(i < currentStepIndex && status != "cancelled" ? "bg-black" : "bg-gray-200")"></div>
-                                }
-                            }
-                        </div>
+                    <div class="px-6 py-5 border-b border-gray-100">
                         @if (status == "cancelled")
                         {
-                            <p class="text-xs text-red-500 mt-2 font-medium">Đơn hàng này đã bị hủy. Tồn kho đã được hoàn lại.</p>
+                            <div class="flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-2.5 rounded">
+                                <i data-lucide="ban" class="w-4 h-4 text-red-500 flex-shrink-0 stroke-[1.5]"></i>
+                                <span class="text-xs font-bold text-red-700 uppercase tracking-wide">Đơn hàng đã bị hủy — Tồn kho đã được hoàn lại.</span>
+                            </div>
+                        }
+                        else
+                        {
+                            @{
+                                var steps = new[] { "pending", "shipped", "delivered" };
+                                var stepLabels = new[] { "Đặt hàng", "Đang giao", "Hoàn thành" };
+                                var stepIcons = new[] { "package", "truck", "check-circle" };
+                                var stepDescs = new[] { "Đã xác nhận", "Đang vận chuyển", "Giao thành công" };
+                                var currentStepIndex = Array.IndexOf(steps, status);
+                                if (currentStepIndex < 0) currentStepIndex = 0;
+                            }
+                            <div class="relative flex items-start max-w-xl">
+                                @* Connecting line rail *@
+                                <div class="absolute left-4 right-4 top-4 h-[2px] bg-gray-200" style="z-index:0"></div>
+                                <div class="absolute left-4 top-4 h-[2px] bg-black transition-all duration-700"
+                                     style="width: calc(@(currentStepIndex) * ((100% - 2rem) / @(steps.Length - 1))); z-index:1"></div>
+
+                                @for (int i = 0; i < steps.Length; i++)
+                                {
+                                    var isCompleted = i < currentStepIndex;
+                                    var isCurrent   = i == currentStepIndex;
+
+                                    <div class="flex-1 flex flex-col items-center" style="position:relative;z-index:2">
+                                        @* Step circle *@
+                                        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300
+                                                    @(isCompleted ? "bg-black text-white"
+                                                    : isCurrent  ? "bg-black text-white ring-4 ring-gray-200"
+                                                    : "bg-white border-2 border-gray-300 text-gray-400")">
+                                            <i data-lucide="@stepIcons[i]" class="w-3.5 h-3.5 stroke-[2]"></i>
+                                        </div>
+                                        @* Labels *@
+                                        <span class="mt-2 text-[10px] font-black uppercase tracking-wider text-center leading-tight
+                                                     @(isCompleted || isCurrent ? "text-gray-900" : "text-gray-400")">
+                                            @stepLabels[i]
+                                        </span>
+                                        <span class="text-[9px] text-center @(isCurrent ? "text-[#D0151C] font-bold" : "text-gray-400") tracking-wide mt-0.5">
+                                            @(isCurrent ? "● HIỆN TẠI" : (isCompleted ? stepDescs[i] : "Chờ xử lý"))
+                                        </span>
+                                    </div>
+                                }
+                            </div>
                         }
                     </div>
 

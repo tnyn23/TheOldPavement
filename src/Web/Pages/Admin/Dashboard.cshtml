@@ -264,7 +264,7 @@
                                         </div>
                                     }
                                 }
-                                else
+                                 else
                                 {
                                     <div class="text-xs text-emerald-600 py-4 font-bold flex items-center gap-1.5">
                                         <i data-lucide="check-circle-2" class="w-4 h-4"></i>
@@ -273,6 +273,134 @@
                                 }
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders Live Feed + Quick Actions -->
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+                    <!-- Recent Orders Feed (3/5) -->
+                    <div class="lg:col-span-3 admin-card rounded-xl shadow-sm overflow-hidden">
+                        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                                <h3 class="font-black text-sm uppercase tracking-widest text-gray-950">Đơn hàng gần nhất</h3>
+                            </div>
+                            <button onclick="switchTab(event,'orders')"
+                                    class="text-[10px] font-bold text-gray-400 hover:text-black uppercase tracking-wider transition-colors">
+                                Xem tất cả →
+                            </button>
+                        </div>
+                        <ul class="divide-y divide-gray-100">
+                            @{
+                                var recentOrders = Model.Orders.OrderByDescending(o => o.CreatedAt).Take(8).ToList();
+                            }
+                            @if (recentOrders.Any())
+                            {
+                                foreach (var ro in recentOrders)
+                                {
+                                    var roStatus = ro.Status?.ToLower() ?? "pending";
+                                    var (chipBg, chipText) = roStatus switch
+                                    {
+                                        "delivered"  => ("bg-emerald-50 text-emerald-700 border-emerald-200",  "Đã giao"),
+                                        "shipped"    => ("bg-blue-50 text-blue-700 border-blue-200",           "Đang giao"),
+                                        "processing" => ("bg-indigo-50 text-indigo-700 border-indigo-200",     "Xử lý"),
+                                        "cancelled"  => ("bg-red-50 text-red-700 border-red-200",              "Đã hủy"),
+                                        _            => ("bg-amber-50 text-amber-700 border-amber-200",        "Chờ")
+                                    };
+                                    <li class="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50/60 transition-colors">
+                                        <!-- Avatar placeholder -->
+                                        <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
+                                            <i data-lucide="user" class="w-3.5 h-3.5 text-gray-400"></i>
+                                        </div>
+                                        <!-- Order info -->
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs font-black text-gray-900 truncate">@ro.OrderNumber</p>
+                                            <p class="text-[10px] text-gray-400 font-medium">
+                                                @(ro.CreatedAt?.ToString("dd/MM HH:mm") ?? "—") ·
+                                                <span class="font-bold text-gray-600">@ro.TotalAmount.ToString("N0")₫</span>
+                                            </p>
+                                        </div>
+                                        <!-- Status chip -->
+                                        <span class="text-[9px] font-black px-2.5 py-1 border rounded uppercase tracking-wide flex-shrink-0 @chipBg">
+                                            @chipText
+                                        </span>
+                                        <!-- Quick update -->
+                                        <form method="post" asp-page-handler="UpdateOrderStatus" class="flex-shrink-0">
+                                            <input type="hidden" name="orderId" value="@ro.Id" />
+                                            <select name="status" onchange="this.form.submit()"
+                                                    class="text-[9px] bg-white border border-gray-200 rounded px-1.5 py-1 font-bold text-gray-700 focus:outline-none focus:border-black cursor-pointer">
+                                                <option value="pending"     selected="@(roStatus=="pending")"    >Chờ xử lý</option>
+                                                <option value="processing"  selected="@(roStatus=="processing")" >Đang xử lý</option>
+                                                <option value="shipped"     selected="@(roStatus=="shipped")"    >Đang giao</option>
+                                                <option value="delivered"   selected="@(roStatus=="delivered")"  >Đã giao</option>
+                                                <option value="cancelled"   selected="@(roStatus=="cancelled")"  >Đã hủy</option>
+                                            </select>
+                                        </form>
+                                    </li>
+                                }
+                            }
+                            else
+                            {
+                                <li class="px-6 py-8 text-center text-xs text-gray-400 italic">Chưa có đơn hàng nào.</li>
+                            }
+                        </ul>
+                    </div>
+
+                    <!-- Quick Actions (2/5) -->
+                    <div class="lg:col-span-2 admin-card rounded-xl shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-100">
+                            <h3 class="font-black text-sm uppercase tracking-widest text-gray-950">Thao tác nhanh</h3>
+                        </div>
+                        <div class="p-5 grid grid-cols-2 gap-3">
+                            <!-- Add Product -->
+                            <button onclick="switchTab(event,'products'); setTimeout(openProductModal,100)"
+                                    class="flex flex-col items-center gap-2 p-4 bg-gray-900 text-white hover:bg-black transition-colors rounded-lg group">
+                                <i data-lucide="plus-circle" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-[10px] font-black uppercase tracking-wider leading-tight text-center">Thêm sản phẩm</span>
+                            </button>
+                            <!-- Manage Orders -->
+                            <button onclick="switchTab(event,'orders')"
+                                    class="flex flex-col items-center gap-2 p-4 bg-amber-500 text-white hover:bg-amber-600 transition-colors rounded-lg group">
+                                <i data-lucide="clipboard-list" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-[10px] font-black uppercase tracking-wider leading-tight text-center">Quản lý đơn</span>
+                            </button>
+                            <!-- Inventory -->
+                            <button onclick="switchTab(event,'inventory')"
+                                    class="flex flex-col items-center gap-2 p-4 bg-indigo-600 text-white hover:bg-indigo-700 transition-colors rounded-lg group">
+                                <i data-lucide="boxes" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-[10px] font-black uppercase tracking-wider leading-tight text-center">Tồn kho</span>
+                            </button>
+                            <!-- Promotions -->
+                            <button onclick="switchTab(event,'coupons')"
+                                    class="flex flex-col items-center gap-2 p-4 bg-purple-600 text-white hover:bg-purple-700 transition-colors rounded-lg group">
+                                <i data-lucide="ticket" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-[10px] font-black uppercase tracking-wider leading-tight text-center">Khuyến mãi</span>
+                            </button>
+                            <!-- View Storefront -->
+                            <a href="/Shop" target="_blank"
+                               class="flex flex-col items-center gap-2 p-4 bg-white border-2 border-gray-200 text-gray-700 hover:border-black hover:text-black transition-colors rounded-lg group col-span-2">
+                                <i data-lucide="store" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-[10px] font-black uppercase tracking-wider">Xem cửa hàng</span>
+                            </a>
+                        </div>
+                        <!-- Pending Orders Alert -->
+                        @{
+                            var pendingCount = Model.Orders.Count(o => o.Status == "pending");
+                        }
+                        @if (pendingCount > 0)
+                        {
+                            <div class="mx-5 mb-5 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
+                                <i data-lucide="bell-ring" class="w-4 h-4 text-amber-600 flex-shrink-0 animate-bounce"></i>
+                                <p class="text-[10px] font-black text-amber-800 uppercase tracking-wide">
+                                    @pendingCount đơn hàng đang chờ xử lý!
+                                </p>
+                                <button onclick="switchTab(event,'orders')"
+                                        class="ml-auto text-[9px] font-black text-amber-700 hover:text-amber-900 uppercase tracking-wider underline">
+                                    Xử lý ngay
+                                </button>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>

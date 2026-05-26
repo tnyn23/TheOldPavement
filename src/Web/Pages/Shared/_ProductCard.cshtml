@@ -6,38 +6,55 @@
     var mainImage = (!string.IsNullOrWhiteSpace(firstImg) && (firstImg.StartsWith("/") || firstImg.StartsWith("http")))
         ? firstImg
         : "https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&fit=crop&w=1080&q=80";
-        
+
     var secondImg = Model.ProductImages?.ElementAtOrDefault(1)?.ImageUrl;
     var hoverImage = (!string.IsNullOrWhiteSpace(secondImg) && (secondImg.StartsWith("/") || secondImg.StartsWith("http")))
         ? secondImg
         : mainImage;
-        
-    var isSale = Model.IsOnSale == true || (Model.DiscountPercentage.GetValueOrDefault() > 0);
-    var badgeList = new List<(string Text, string Classes)>();
-    if (isSale)
-    {
-        badgeList.Add(($"Sale {Model.DiscountPercentage.GetValueOrDefault(0)}%", "bg-red-600 text-white"));
-    }
-    if (Model.IsCollab == true)
-    {
-        badgeList.Add(("Collab", "bg-black text-white"));
-    }
-    if ((DateTime.Now - Model.CreatedAt.GetValueOrDefault(DateTime.Now)).TotalDays < 14)
-    {
-        badgeList.Add(("New", "bg-emerald-500 text-white"));
-    }
+
+    var isSale       = Model.IsOnSale == true || (Model.DiscountPercentage.GetValueOrDefault() > 0);
+    var isNew        = (DateTime.Now - Model.CreatedAt.GetValueOrDefault(DateTime.Now)).TotalDays < 14;
+    var isCollab     = Model.IsCollab == true;
+    var discountPct  = Model.DiscountPercentage.GetValueOrDefault(0);
+    var hasOriginal  = isSale && Model.OriginalPrice.GetValueOrDefault() > 0;
+
+    // Determine primary badge priority: Sale > Collab > New
+    string? primaryBadgeText   = isSale ? $"-{discountPct}%" : isCollab ? "COLLAB" : isNew ? "NEW IN" : null;
+    string  primaryBadgeStyle  = isSale   ? "bg-[#D0151C] text-white"
+                               : isCollab ? "bg-black text-white border border-white/20"
+                               : isNew    ? "bg-gray-900 text-white"
+                               : "";
 }
 
 <article class="product-card-card product-card-clickable group" data-product-url="/Product/@Model.Slug" tabindex="0">
     <div class="product-card-media">
         <img src="@mainImage" alt="@Model.Name" class="product-card-image product-card-image-main" loading="lazy" />
         <img src="@hoverImage" alt="@Model.Name alternate view" class="product-card-image product-card-image-back" loading="lazy" />
+
+        <!-- Premium Badges Stack -->
         <div class="product-card-badges">
-            @foreach (var badge in badgeList)
+            @if (primaryBadgeText != null)
             {
-                <span class="product-card-badge @badge.Classes">@badge.Text</span>
+                <span class="product-card-badge @primaryBadgeStyle font-black tracking-widest text-[9px] uppercase px-2 py-0.5">
+                    @primaryBadgeText
+                </span>
+            }
+            @if (isSale && isCollab)
+            {
+                <!-- Secondary collab badge when also on sale -->
+                <span class="product-card-badge bg-black text-white font-black tracking-widest text-[9px] uppercase px-2 py-0.5">
+                    COLLAB
+                </span>
+            }
+            @if (isSale && isNew)
+            {
+                <span class="product-card-badge bg-gray-800 text-white font-black tracking-widest text-[9px] uppercase px-2 py-0.5">
+                    NEW
+                </span>
             }
         </div>
+
+        <!-- Hover Overlay -->
         <div class="product-card-overlay">
             <div class="overlay-copy">
                 <span class="overlay-label">Xem nhanh</span>
@@ -59,14 +76,20 @@
 
         <div class="product-card-footer">
             <div class="product-card-price-group">
-                <span class="product-card-price">@Model.Price.ToString("N0")₫</span>
-                @if (isSale && Model.OriginalPrice.GetValueOrDefault() > 0)
+                <span class="product-card-price @(isSale ? "text-[#D0151C]" : "")">@Model.Price.ToString("N0")₫</span>
+                @if (hasOriginal)
                 {
-                    <span class="product-card-original">@Model.OriginalPrice?.ToString("N0")₫</span>
+                    <span class="product-card-original line-through text-gray-400">@Model.OriginalPrice?.ToString("N0")₫</span>
                 }
             </div>
-            <span class="product-card-meta">Minimal streetwear silhouette</span>
+            @if (isCollab)
+            {
+                <span class="text-[9px] font-black tracking-widest text-gray-400 uppercase">LIMITED EDITION</span>
+            }
+            else
+            {
+                <span class="product-card-meta">Minimal streetwear silhouette</span>
+            }
         </div>
     </div>
 </article>
-
