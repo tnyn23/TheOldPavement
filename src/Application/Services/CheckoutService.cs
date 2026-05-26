@@ -187,15 +187,18 @@ public class CheckoutService : ICheckoutService
             }
         }
 
+        // --- Calculate Shipping Fee ---
+        decimal shippingFee = CalculateShippingFee(request.City, request.TotalPrice);
+
         var order = new Order
         {
             OrderNumber = "TOP" + DateTime.Now.ToString("yyyyMMdd") + new Random().Next(1000, 9999),
             UserId = finalUserId,
             Status = "pending",
             Subtotal = request.TotalPrice,
-            ShippingFee = 0,
+            ShippingFee = shippingFee,
             DiscountAmount = discountAmount,
-            TotalAmount = request.TotalPrice - discountAmount,
+            TotalAmount = request.TotalPrice - discountAmount + shippingFee,
             PromoCodeId = request.PromoCodeId,
             PaymentMethod = request.PaymentMethod,
             PaymentStatus = "pending",
@@ -241,5 +244,27 @@ public class CheckoutService : ICheckoutService
             OrderNumber = order.OrderNumber, 
             TotalAmount = order.TotalAmount 
         };
+    }
+
+    /// <summary>
+    /// Calculate shipping fee based on city.
+    /// Free shipping for orders over 500,000₫.
+    /// HCM/Hanoi: 30,000₫, Other cities: 45,000₫.
+    /// </summary>
+    private static decimal CalculateShippingFee(string city, decimal subtotal)
+    {
+        // Free shipping for orders over 500k
+        if (subtotal >= 500000)
+            return 0;
+
+        var normalizedCity = city?.Trim().ToLower() ?? "";
+        
+        // Major cities: lower shipping fee
+        var majorCities = new[] { "hồ chí minh", "ho chi minh", "hcm", "tp.hcm", "tp hcm", "hà nội", "ha noi", "hanoi" };
+        
+        if (majorCities.Any(c => normalizedCity.Contains(c)))
+            return 30000;
+
+        return 45000;
     }
 }
