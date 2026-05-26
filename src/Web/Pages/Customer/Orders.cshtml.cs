@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Application.Interfaces;
 using Domain.Interfaces;
 using Domain.Models;
 
@@ -9,12 +10,16 @@ namespace Web.Pages.Customer;
 public class OrdersModel : PageModel
 {
     private readonly IOrderRepository _orderRepository;
+    private readonly IOrderService _orderService;
 
     public List<Order> Orders { get; set; } = new();
+    public string? SuccessMessage { get; set; }
+    public string? ErrorMessage { get; set; }
 
-    public OrdersModel(IOrderRepository orderRepository)
+    public OrdersModel(IOrderRepository orderRepository, IOrderService orderService)
     {
         _orderRepository = orderRepository;
+        _orderService = orderService;
     }
 
     public async Task<IActionResult> OnGetAsync()
@@ -24,70 +29,43 @@ public class OrdersModel : PageModel
             return RedirectToPage("/Public/Account/Login");
         }
 
+        SuccessMessage = TempData["SuccessMessage"] as string;
+        ErrorMessage = TempData["ErrorMessage"] as string;
+
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
         {
             var dbOrders = await _orderRepository.GetOrdersByUserIdAsync(userId);
             if (dbOrders != null)
             {
-                Orders = dbOrders.ToList();
+                Orders = dbOrders.OrderByDescending(o => o.CreatedAt).ToList();
             }
-        }
-
-        // Mock fallback orders if none exist, so the user can test the visual interface instantly
-        if (Orders.Count == 0)
-        {
-            Orders = new List<Order>
-            {
-                new Order
-                {
-                    Id = 8801,
-                    OrderNumber = "TOP202605191182",
-                    CreatedAt = DateTime.Now.AddDays(-2),
-                    Status = "delivered",
-                    TotalAmount = 850000,
-                    PaymentMethod = "cod",
-                    PaymentStatus = "paid",
-                    OrderItems = new List<OrderItem>
-                    {
-                        new OrderItem
-                        {
-                            ProductName = "36 Phố Phường - Hồn Hà Nội Tee",
-                            Quantity = 2,
-                            UnitPrice = 425000,
-                            Size = "XL",
-                            Color = "White",
-                            Subtotal = 850000
-                        }
-                    }
-                },
-                new Order
-                {
-                    Id = 8802,
-                    OrderNumber = "TOP202605179024",
-                    CreatedAt = DateTime.Now.AddDays(-7),
-                    Status = "pending",
-                    TotalAmount = 399000,
-                    PaymentMethod = "vnpay",
-                    PaymentStatus = "pending",
-                    OrderItems = new List<OrderItem>
-                    {
-                        new OrderItem
-                        {
-                            ProductName = "The Old Pavement Logo Tee White",
-                            Quantity = 1,
-                            UnitPrice = 399000,
-                            Size = "M",
-                            Color = "White",
-                            Subtotal = 399000
-                        }
-                    }
-                }
-            };
         }
 
         return Page();
     }
+
+    public async Task<IActionResult> OnPostCancelOrderAsync(int orderId)
+    {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return RedirectToPage("/Public/Account/Login");
+        }
+
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+        {
+            var result = await _orderService.CancelOrderAsync(orderId, userId);
+            if (result)
+            {
+                TempData["SuccessMessage"] = "Đơn hàng đã được hủy thành công. Tồn kho đã được hoàn lại.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Không thể hủy đơn hàng. Chỉ các đơn hàng đang chờ xử lý mới có thể hủy.";
+            }
+        }
+
+        return RedirectToPage();
+    }
 }
-
-

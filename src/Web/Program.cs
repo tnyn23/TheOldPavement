@@ -24,9 +24,12 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Add Services
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IMomoService, MomoService>();
+builder.Services.AddScoped<ICheckoutService, CheckoutService>();
 
 // Add Razor Pages
 builder.Services.AddRazorPages();

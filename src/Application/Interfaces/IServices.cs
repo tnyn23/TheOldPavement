@@ -20,6 +20,7 @@ public interface IOrderService
     Task<IEnumerable<OrderDTO>> GetOrdersByUserIdAsync(int userId);
     Task<int> CreateOrderAsync(CreateOrderDTO dto);
     Task UpdateOrderStatusAsync(int id, string status);
+    Task<bool> CancelOrderAsync(int orderId, int userId);
 }
 
 public interface IUserService
@@ -51,6 +52,8 @@ public interface IAuthService
     Task<AuthResultDTO?> LoginAsync(string email, string password);
     Task<bool> RegisterAsync(CreateUserDTO dto);
     Task<bool> ChangePasswordAsync(int userId, string oldPassword, string newPassword);
+    Task<bool> ForgotPasswordAsync(string email);
+    Task<bool> ResetPasswordAsync(string email, string token, string newPassword);
     string GenerateToken(UserDTO user);
 }
 

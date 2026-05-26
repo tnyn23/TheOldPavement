@@ -2,36 +2,28 @@
 @model Web.Pages.OutletModel
 @{
     ViewData["Title"] = "Outlet Clearance";
-    
-    // We map Model.Products to the mock outlet format dynamically (calculating a huge 40% discount!)
-    var outletProducts = Model.Products.Select(p => {
-        var discountPercent = 40; // 40% discount for clearance!
-        var outletPriceVal = Math.Round(p.Price * 0.6m);
-        var primaryImg = p.ProductImages?.FirstOrDefault(img => img.IsPrimary == true)?.ImageUrl 
-            ?? p.ProductImages?.FirstOrDefault()?.ImageUrl 
-            ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
-        var sizesList = p.ProductVariants?.Select(v => v.Size).Distinct().ToArray();
-        if (sizesList == null || !sizesList.Any())
-        {
-            sizesList = new[] { "M", "L", "XL" };
-        }
-        return new {
-            Id = p.Id,
-            Name = p.Name + " - OUTLET",
-            Price = outletPriceVal.ToString("N0") + "đ",
-            OriginalPrice = p.Price.ToString("N0") + "đ",
-            Discount = $"-{discountPercent}%",
-            Image = primaryImg,
-            Sizes = sizesList,
-            Condition = "new",
-            Reason = p.Category == "tee" ? "Discontinued Style" : "End of Season",
-            Slug = p.Slug
-        };
-    }).ToArray();
 
-    var filteredProducts = Model.SelectedCondition == "all"
-        ? outletProducts
-        : outletProducts.Where(p => p.Condition == Model.SelectedCondition).ToArray();
+    // Clone products with 40% discount for outlet display, reusing _ProductCard partial
+    var outletProducts = Model.Products.Select(p => {
+        var clone = new Domain.Models.Product
+        {
+            Id = p.Id,
+            Name = p.Name,
+            Slug = p.Slug,
+            Description = p.Description,
+            Price = Math.Round(p.Price * 0.6m),
+            OriginalPrice = p.Price,
+            DiscountPercentage = 40,
+            IsOnSale = true,
+            IsOutlet = true,
+            Category = p.Category,
+            IsCollab = p.IsCollab,
+            CreatedAt = p.CreatedAt,
+            ProductImages = p.ProductImages,
+            ProductVariants = p.ProductVariants
+        };
+        return clone;
+    }).ToArray();
 }
 
 <main class="pt-8 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16">
@@ -49,26 +41,26 @@
                 UP TO 40% OFF
             </h1>
             <p class="text-sm md:text-base tracking-widest text-gray-400 uppercase">
-                San pham cuoi mua, so luong co han - Khong ap dung doi tra
+                San pham cuoi mua, so luong co han
             </p>
             <div class="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
                 <i data-lucide="package" class="w-4 h-4"></i>
-                <span>Mien phi van chuyen cho don tu 300.000đ</span>
+                <span>Khong ap dung doi tra. Mien phi van chuyen cho don tu 300.000d</span>
             </div>
         </div>
     </div>
 
     <!-- Info Alert -->
-    <div class="bg-gray-50 border-l-4 border-black p-6 mb-8 rounded-none border">
+    <div class="bg-gray-50 border-l-4 border-black p-6 mb-8">
         <div class="flex gap-3">
             <i data-lucide="alert-circle" class="w-6 h-6 text-black flex-shrink-0"></i>
             <div>
                 <h3 class="font-bold text-gray-950 mb-2 uppercase tracking-wide text-sm">DIEU KHOAN OUTLET</h3>
                 <ul class="text-xs text-gray-600 space-y-1 font-semibold uppercase tracking-wider">
-                    <li>• Tat ca san pham outlet deu la hang moi 100%, chua qua su dung.</li>
-                    <li>• Khong ap dung chinh sach doi tra - Quy khach vui long chon size can than.</li>
-                    <li>• So luong co han theo size thuc te con trong kho.</li>
-                    <li>• Khong ap dung cung luc voi cac chuong trinh khuyen mai khac.</li>
+                    <li>&bull; Tat ca san pham outlet deu la hang moi 100%.</li>
+                    <li>&bull; Khong ap dung chinh sach doi tra.</li>
+                    <li>&bull; So luong co han theo size thuc te con trong kho.</li>
+                    <li>&bull; Khong ap dung cung luc voi cac chuong trinh khuyen mai khac.</li>
                 </ul>
             </div>
         </div>
@@ -76,47 +68,43 @@
 
     <!-- Filter & Count -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b pb-4">
-        <h2 class="text-2xl font-black tracking-tight uppercase">
-            @filteredProducts.Length SAN PHAM OUTLET
-        </h2>
-
-        <div class="flex items-center gap-3">
-            <label class="text-xs font-bold uppercase tracking-widest text-gray-500">Loc theo:</label>
-            <select onchange="filterCondition(this.value)"
-                    class="border border-gray-300 px-4 py-2 font-semibold text-sm outline-none focus:border-black bg-transparent cursor-pointer">
-                <option value="all" selected="@(Model.SelectedCondition == "all")">Tat ca san pham</option>
-                <option value="new" selected="@(Model.SelectedCondition == "new")">Hang moi</option>
-            </select>
+        <div class="flex items-center gap-2">
+            <i data-lucide="tag" class="w-5 h-5"></i>
+            <h2 class="text-2xl font-black tracking-tight uppercase">
+                @outletProducts.Length SAN PHAM OUTLET
+            </h2>
         </div>
     </div>
 
-    <!-- Products Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-12 mb-16">
-        @foreach (var product in filteredProducts)
-        {
-            <div class="group cursor-pointer" onclick="window.location.href='/Product/@product.Slug'">
-                <!-- Image with badges -->
-                <div class="relative bg-gray-50 mb-4 overflow-hidden aspect-square border">
-                    <img src="@product.Image" alt="@product.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div class="absolute top-3 left-3 flex flex-col gap-2">
-                        <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-wide">@product.Discount</span>
-                        <span class="bg-black text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-wide">@product.Reason</span>
-                    </div>
-                </div>
-
-                <!-- Info -->
-                <h3 class="text-sm font-medium leading-tight uppercase tracking-wide group-hover:opacity-60 transition-opacity">@product.Name</h3>
-                <div class="flex items-center gap-2 mt-2">
-                    <span class="font-semibold text-gray-900">@product.Price</span>
-                    <span class="text-xs line-through text-gray-400 font-medium">@product.OriginalPrice</span>
-                </div>
+    <!-- Products Grid - using shared _ProductCard -->
+    @if (outletProducts.Any())
+    {
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-12">
+            @foreach (var product in outletProducts)
+            {
+                @await Html.PartialAsync("_ProductCard", product)
+            }
+        </div>
+    }
+    else
+    {
+        <div class="py-20 text-center border-2 border-dashed border-gray-200">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                <i data-lucide="package-open" class="w-8 h-8"></i>
             </div>
-        }
-    </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Hien tai khong co san pham outlet nao!</h3>
+            <p class="text-gray-500 text-sm mb-6 max-w-md mx-auto">Vui long quay lai sau de xem cac san pham outlet moi nhat.</p>
+            <a href="/Shop" class="inline-block bg-black text-white px-8 py-3 text-xs font-bold tracking-widest hover:bg-gray-800 transition-colors uppercase">
+                XEM CUA HANG
+            </a>
+        </div>
+    }
 </main>
 
-<script>
-    function filterCondition(val) {
-        window.location.href = '?condition=' + val;
-    }
-</script>
+@section Styles {
+    <link rel="stylesheet" href="~/css/product-card.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/product-card.js" asp-append-version="true"></script>
+}
