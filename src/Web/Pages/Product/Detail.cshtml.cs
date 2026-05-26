@@ -119,6 +119,11 @@ public class DetailModel : PageModel
         // Try getting from DB (include images/variants)
         Product = await _productRepository.GetBySlugAsync(slug);
 
+        if (Product != null)
+        {
+            RecentlyViewedManager.AddRecentlyViewed(HttpContext.Session, Product.Id);
+        }
+
         if (Product == null)
         {
             // Instead of 404, we dynamically generate a high-quality fallback product page!

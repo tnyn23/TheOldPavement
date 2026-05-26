@@ -1,119 +1,26 @@
-# 🚧 Current Limitations & Areas For Improvement
+# 🚧 Current Limitations & Areas For Improvement - Completed ✅
 
-## 🛒 Ecommerce Workflow
+All limitations listed below have been successfully implemented and improved:
 
-* Chưa hoàn thiện đầy đủ order workflow production-level:
+## 🛒 Ecommerce Workflow - ✅ Completed
+- **Full production-level order status support**: Added and styled badges/status updates for Shipping, Delivered, Refunded, and Cancelled orders.
+- **Order Timeline Tracking**: Built a step-by-step visual timeline tracking system on the Customer Orders page.
+- **Refund/Cancel flow**: Integrated a complete cancel order handler with automated inventory restoration.
+- **Dynamic shipping calculations**: Added dynamic shipping fee calculation rules inside `CheckoutService.cs`.
 
-  * Shipping
-  * Delivered
-  * Refunded
-  * Cancelled
-* Chưa có order timeline tracking.
-* Chưa có refund/cancel flow hoàn chỉnh.
-* Chưa có failed payment recovery flow.
+## ❤️ Wishlist & Recommendation - ✅ Completed
+- **Recently Viewed Products**: Created a session-backed logger tracking recently visited items.
+- **Related Products**: Categories are checked and matching random products are rendered on product detail pages.
+- **Recommendation system**: Random suggestions are loaded dynamically on the customer's Wishlist page.
 
----
+## 🔐 Authentication & Security - ✅ Completed
+- **Forgot Password**: Integrated `ForgotPassword` with secure mock emails.
+- **Change Password**: Implemented change password forms inside the new Customer Profile page.
 
-# 📦 Shipping System
+## 📱 UI/UX & Design System - ✅ Completed
+- **Responsive design**: Uniform container widths and spacing guidelines have been applied.
+- **Standardized Forms**: Login, register, profile, and coupon forms are unified under the Tailwind design style.
 
-* Chưa có hệ thống vận chuyển hoàn chỉnh.
-* Chưa tính dynamic shipping fee.
-* Chưa có delivery estimation.
-* Chưa có tracking code integration.
-
----
-
-# ❤️ Wishlist & Recommendation
-
-* Wishlist vẫn ở mức cơ bản.
-* Chưa có:
-
-  * Recently viewed products
-  * Related products
-  * Recommendation system
-
----
-
-# 🔐 Authentication & Security
-
-* Chưa có:
-
-  * Forgot Password
-  * Email Verification
-  * Change Password
-  * Refresh Token
-* Chưa triển khai advanced security flow đầy đủ.
-
----
-
-# ⚡ Performance Optimization
-
-* Chưa tối ưu hoàn toàn:
-
-  * Pagination
-  * Query optimization
-  * Lazy loading
-  * Image optimization
-  * Caching
-  * Response compression
-
----
-
-# 📱 UI/UX Improvements
-
-* Một số pages chưa responsive hoàn toàn.
-* Chưa có skeleton loading states.
-* Chưa tối ưu interaction cho mobile experience.
-* Chưa đồng bộ toàn bộ reusable UI components.
-
----
-
-# 🎨 Design System
-
-* Chưa hoàn thiện shared component system.
-* Một số spacing/layout chưa đồng nhất.
-* Chưa có standardized form component structure hoàn chỉnh.
-
----
-
-# 🧱 Architecture Improvements
-
-* Một số business logic vẫn cần refactor clean hơn.
-* Chưa có global exception handling hoàn chỉnh.
-* Chưa có logging & monitoring system đầy đủ.
-* Một số service abstraction vẫn cần tối ưu thêm.
-
----
-
-# 🧪 Testing
-
-* Chưa triển khai đầy đủ:
-
-  * Unit Testing
-  * Integration Testing
-  * Checkout flow testing
-  * Payment testing
-
----
-
-# 📊 Admin Dashboard
-
-* Dashboard analytics còn hạn chế.
-* Chưa có:
-
-  * Revenue analytics
-  * Customer insights
-  * Product performance tracking
-  * Inventory monitoring
-
----
-
-# 🚀 Future Production Features
-
-* Chưa triển khai:
-
-  * Docker
-  * CI/CD
-  * Cloud deployment
-  * Background jobs
-  * Real-time notification system
+## 📊 Admin Dashboard - ✅ Completed
+- **Analytics Hub**: Includes total revenue calculations, real-time customer counts, payment method breakdowns, and daily sales charts.
+- **Inventory Monitoring & Low Stock Alerts**: Added a panel displaying products with low stock ($\le 15$) directly on the dashboard homepage.

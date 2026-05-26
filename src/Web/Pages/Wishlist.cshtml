@@ -83,5 +83,55 @@
             }
         </div>
     }
+
+    <!-- Recently Viewed Products -->
+    @if (Model.RecentlyViewedProducts != null && Model.RecentlyViewedProducts.Any())
+    {
+        <section class="mt-20 border-t border-gray-200 pt-12">
+            <h2 class="text-2xl md:text-3xl font-bold tracking-tight uppercase mb-8">SẢN PHẨM ĐÃ XEM GẦN ĐÂY</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                @foreach (var p in Model.RecentlyViewedProducts)
+                {
+                    var img = p.ProductImages?.FirstOrDefault()?.ImageUrl ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+                    <div class="group cursor-pointer" onclick="window.location.href='/Product/@p.Slug'">
+                        <div class="relative bg-gray-50 mb-4 overflow-hidden aspect-[4/5] rounded border">
+                            <img src="@img" alt="@p.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            @if (p.IsCollab == true)
+                            {
+                                <div class="absolute bottom-3 left-3 bg-black text-white px-3 py-1 text-xs font-bold tracking-wide">Collab</div>
+                            }
+                        </div>
+                        <h3 class="text-sm font-bold uppercase tracking-wide group-hover:text-red-600 transition-colors truncate">@p.Name</h3>
+                        <p class="font-semibold text-gray-900 mt-1">@p.Price.ToString("N0")₫</p>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+
+    <!-- Recommended Products -->
+    @if (Model.RecommendedProducts != null && Model.RecommendedProducts.Any())
+    {
+        <section class="mt-20 border-t border-gray-200 pt-12">
+            <h2 class="text-2xl md:text-3xl font-bold tracking-tight uppercase mb-8">GỢI Ý DÀNH CHO BẠN</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                @foreach (var p in Model.RecommendedProducts)
+                {
+                    var img = p.ProductImages?.FirstOrDefault()?.ImageUrl ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+                    <div class="group cursor-pointer" onclick="window.location.href='/Product/@p.Slug'">
+                        <div class="relative bg-gray-50 mb-4 overflow-hidden aspect-[4/5] rounded border">
+                            <img src="@img" alt="@p.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            @if (p.IsCollab == true)
+                            {
+                                <div class="absolute bottom-3 left-3 bg-black text-white px-3 py-1 text-xs font-bold tracking-wide">Collab</div>
+                            }
+                        </div>
+                        <h3 class="text-sm font-bold uppercase tracking-wide group-hover:text-red-600 transition-colors truncate">@p.Name</h3>
+                        <p class="font-semibold text-gray-900 mt-1">@p.Price.ToString("N0")₫</p>
+                    </div>
+                }
+            </div>
+        </section>
+    }
 </main>
 

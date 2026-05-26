@@ -69,9 +69,9 @@ public class OrderService : IOrderService
         // Rollback inventory
         foreach (var item in order.OrderItems)
         {
-            if (item.VariantId.HasValue)
+            if (item.VariantId > 0)
             {
-                var variant = await _variantRepository.GetByIdAsync(item.VariantId.Value);
+                var variant = await _variantRepository.GetByIdAsync(item.VariantId);
                 if (variant != null)
                 {
                     variant.StockQuantity = (variant.StockQuantity ?? 0) + item.Quantity;
@@ -105,7 +105,7 @@ public class OrderService : IOrderService
             Items = order.OrderItems.Select(i => new OrderItemDTO
             {
                 Id = i.Id,
-                ProductId = i.ProductId ?? 0,
+                ProductId = i.ProductId,
                 ProductName = i.ProductName ?? "",
                 Quantity = i.Quantity,
                 UnitPrice = i.UnitPrice,

@@ -191,7 +191,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="p-6 border border-gray-100 rounded-lg">
                             <h4 class="font-bold text-sm text-gray-400 uppercase tracking-wider mb-4">SẢN PHẨM BÁN CHẠY NHẤT</h4>
                             <div class="space-y-4">
@@ -234,6 +234,43 @@
                                         <div class="bg-indigo-600 h-full rounded-full" style="width: @(Model.TransferPercentage)%"></div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Low Stock Warnings -->
+                        <div class="p-6 border border-gray-100 rounded-lg">
+                            <h4 class="font-bold text-sm text-red-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                                CẢNH BÁO HẾT HÀNG (≤ 15)
+                            </h4>
+                            <div class="space-y-4">
+                                @{
+                                    var lowStockVariants = Model.ProductVariants
+                                        .Where(v => v.StockQuantity <= 15)
+                                        .OrderBy(v => v.StockQuantity)
+                                        .Take(5)
+                                        .ToList();
+                                }
+                                @if (lowStockVariants.Any())
+                                {
+                                    foreach (var v in lowStockVariants)
+                                    {
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex flex-col">
+                                                <span class="font-bold text-xs text-gray-900 truncate max-w-[130px]" title="@v.Product?.Name">@v.Product?.Name</span>
+                                                <span class="text-[9px] text-gray-400 font-bold uppercase">Size: @v.Size | Color: @v.Color</span>
+                                            </div>
+                                            <span class="text-xs bg-red-50 text-red-600 px-2 py-0.5 font-bold rounded">@v.StockQuantity cái</span>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="text-xs text-emerald-600 py-4 font-bold flex items-center gap-1.5">
+                                        <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                                        Tất cả sản phẩm đều đủ hàng!
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>

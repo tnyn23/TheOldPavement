@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using Application.DTOs;
 using Web.Helpers;
 
@@ -7,11 +8,48 @@ namespace Web.Pages;
 
 public class WishlistModel : PageModel
 {
-    public List<WishlistItemDTO> WishlistItems { get; set; } = new();
+    private readonly Infrastructure.Context.TheOldPavementDbContext _context;
 
-    public void OnGet()
+    public List<WishlistItemDTO> WishlistItems { get; set; } = new();
+    public List<Domain.Models.Product> RecentlyViewedProducts { get; set; } = new();
+    public List<Domain.Models.Product> RecommendedProducts { get; set; } = new();
+
+    public WishlistModel(Infrastructure.Context.TheOldPavementDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task OnGetAsync()
     {
         WishlistItems = WishlistManager.GetWishlist(HttpContext.Session);
+
+        // Fetch recently viewed products from database
+        var recentlyViewedIds = RecentlyViewedManager.GetRecentlyViewed(HttpContext.Session);
+        if (recentlyViewedIds.Any())
+        {
+            var productsMap = await _context.Products
+                .Where(p => recentlyViewedIds.Contains(p.Id))
+                .Include(p => p.ProductImages)
+                .ToDictionaryAsync(p => p.Id);
+
+            // Maintain order of insertion
+            foreach (var id in recentlyViewedIds)
+            {
+                if (productsMap.TryGetValue(id, out var product))
+                {
+                    RecentlyViewedProducts.Add(product);
+                }
+            }
+        }
+
+        // Fetch recommended products (e.g. 4 random products, excluding wishlist items)
+        var wishlistProductIds = WishlistItems.Select(w => w.ProductId).ToList();
+        RecommendedProducts = await _context.Products
+            .Where(p => !wishlistProductIds.Contains(p.Id))
+            .OrderBy(p => Guid.NewGuid())
+            .Take(4)
+            .Include(p => p.ProductImages)
+            .ToListAsync();
     }
 
     public IActionResult OnPostRemove(int productId)
