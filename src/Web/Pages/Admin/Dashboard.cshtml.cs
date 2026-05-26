@@ -91,7 +91,107 @@ public class DashboardModel : PageModel
         }
 
         // Retrieve existing products including variants to link foreign keys correctly and avoid database constraint errors
-        var existingProducts = await _context.Products.Include(p => p.ProductVariants).ToListAsync();
+        var existingProducts = await _context.Products
+            .Include(p => p.ProductImages)
+            .Include(p => p.ProductVariants)
+            .ToListAsync();
+
+        // Force update existing seeded products to use correct Hanoi streetwear themed images
+        bool dbChanged = false;
+        foreach (var p in existingProducts)
+        {
+            // For any other product, if they have old sport images or no images, let's give them beautiful streetwear placeholders
+            bool hasOldImages = p.ProductImages.Any(img => img.ImageUrl.Contains("sport") || img.ImageUrl.Contains("jersey") || img.ImageUrl.Contains("soccer") || img.ImageUrl.Contains("shorts") || img.ImageUrl.Contains("socks") || img.ImageUrl.Contains("sweater") || img.ImageUrl.Contains("women"));
+            if (p.Slug == "classic-black-tee" && (hasOldImages || p.ProductImages.Count < 3))
+            {
+                _context.ProductImages.RemoveRange(p.ProductImages);
+                p.ProductImages.Clear();
+
+                p.ProductImages.Add(new ProductImage { ImageUrl = "https://images.unsplash.com/photo-1662103627854-ae7551d1eddb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", IsPrimary = true, DisplayOrder = 0, AltText = "black", CreatedAt = DateTime.Now });
+                p.ProductImages.Add(new ProductImage { ImageUrl = "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", IsPrimary = false, DisplayOrder = 1, AltText = "white", CreatedAt = DateTime.Now });
+                p.ProductImages.Add(new ProductImage { ImageUrl = "https://images.unsplash.com/photo-1695131023163-1e04e1345a91?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", IsPrimary = false, DisplayOrder = 2, AltText = "gray", CreatedAt = DateTime.Now });
+                dbChanged = true;
+            }
+            else if (p.Slug == "36-pho-phuong" && (hasOldImages || p.ProductImages.Count < 3))
+            {
+                _context.ProductImages.RemoveRange(p.ProductImages);
+                p.ProductImages.Clear();
+
+                p.ProductImages.Add(new ProductImage { ImageUrl = "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", IsPrimary = true, DisplayOrder = 0, AltText = "white", CreatedAt = DateTime.Now });
+                p.ProductImages.Add(new ProductImage { ImageUrl = "https://images.unsplash.com/photo-1662103627854-ae7551d1eddb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", IsPrimary = false, DisplayOrder = 1, AltText = "black", CreatedAt = DateTime.Now });
+                p.ProductImages.Add(new ProductImage { ImageUrl = "https://images.unsplash.com/photo-1695131023163-1e04e1345a91?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", IsPrimary = false, DisplayOrder = 2, AltText = "gray", CreatedAt = DateTime.Now });
+                dbChanged = true;
+            }
+            else if (hasOldImages || !p.ProductImages.Any())
+            {
+                _context.ProductImages.RemoveRange(p.ProductImages);
+                p.ProductImages.Clear();
+
+                if (p.Slug.Contains("black") || p.Slug.Contains("dark"))
+                {
+                    p.ProductImages.Add(new ProductImage { ImageUrl = "https://images.unsplash.com/photo-1662103627854-ae7551d1eddb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", IsPrimary = true, DisplayOrder = 0, AltText = "black", CreatedAt = DateTime.Now });
+                    p.ProductImages.Add(new ProductImage { ImageUrl = "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", IsPrimary = false, DisplayOrder = 1, AltText = "white", CreatedAt = DateTime.Now });
+                }
+                else
+                {
+                    p.ProductImages.Add(new ProductImage { ImageUrl = "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", IsPrimary = true, DisplayOrder = 0, AltText = "white", CreatedAt = DateTime.Now });
+                    p.ProductImages.Add(new ProductImage { ImageUrl = "https://images.unsplash.com/photo-1662103627854-ae7551d1eddb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", IsPrimary = false, DisplayOrder = 1, AltText = "black", CreatedAt = DateTime.Now });
+                }
+                dbChanged = true;
+            }
+        }
+        if (dbChanged)
+        {
+            await _context.SaveChangesAsync();
+        }
+
+        // Automated cleanup of duplicate or invalid display order images
+        dbChanged = false;
+        foreach (var prod in existingProducts)
+        {
+            if (prod.ProductImages.Count > 3 || prod.ProductImages.Any(img => img.DisplayOrder < 0 || img.DisplayOrder > 2))
+            {
+                var validImages = new List<ProductImage>();
+                var toDelete = new List<ProductImage>();
+                
+                // Group by DisplayOrder
+                var groups = prod.ProductImages.GroupBy(img => img.DisplayOrder);
+                foreach (var g in groups)
+                {
+                    if (g.Key >= 0 && g.Key <= 2)
+                    {
+                        // Keep only the last one (latest)
+                        var sorted = g.OrderByDescending(x => x.Id).ToList();
+                        validImages.Add(sorted[0]);
+                        toDelete.AddRange(sorted.Skip(1));
+                    }
+                    else
+                    {
+                        // Outside 0-2 range: delete all
+                        toDelete.AddRange(g);
+                    }
+                }
+                
+                foreach (var img in toDelete)
+                {
+                    if (img.ImageUrl.StartsWith("/images/products/"))
+                    {
+                        var filePath = Path.Combine(_environment.WebRootPath, img.ImageUrl.TrimStart('/'));
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            try { System.IO.File.Delete(filePath); } catch {}
+                        }
+                    }
+                    _context.ProductImages.Remove(img);
+                    dbChanged = true;
+                }
+            }
+        }
+        if (dbChanged)
+        {
+            await _context.SaveChangesAsync();
+        }
+
         var prod36 = existingProducts.FirstOrDefault(p => p.Slug == "36-pho-phuong") ?? existingProducts.FirstOrDefault();
         var prodClassic = existingProducts.FirstOrDefault(p => p.Slug == "classic-black-tee") ?? existingProducts.LastOrDefault();
 
@@ -231,31 +331,8 @@ public class DashboardModel : PageModel
 
     public async Task<IActionResult> OnPostSaveProductAsync(int? id, string name, string slug, decimal price, string category, string status)
     {
-        // Handle multiple uploaded images and their corresponding colors (stored in ProductImage.AltText)
-        var uploadedFiles = Request.Form.Files;
-        var colors = Request.Form["imageColor"].ToArray();
-        var savedImages = new List<(string Url, string? Color)>();
-        if (uploadedFiles != null && uploadedFiles.Count > 0)
-        {
-            var uploadDir = Path.Combine(_environment.WebRootPath, "images", "products");
-            if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
-
-            for (int i = 0; i < uploadedFiles.Count; i++)
-            {
-                var f = uploadedFiles[i];
-                if (f == null || f.Length == 0) continue;
-                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(f.FileName);
-                var filePath = Path.Combine(uploadDir, fileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await f.CopyToAsync(stream);
-                }
-                var imageUrl = "/images/products/" + fileName;
-                string? color = null;
-                if (colors != null && colors.Length > i) color = string.IsNullOrWhiteSpace(colors[i]) ? null : colors[i].ToString().ToLowerInvariant();
-                savedImages.Add((imageUrl, color));
-            }
-        }
+        var uploadDir = Path.Combine(_environment.WebRootPath, "images", "products");
+        if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
 
         if (id.HasValue && id.Value > 0)
         {
@@ -273,20 +350,74 @@ public class DashboardModel : PageModel
                 product.Status = status;
                 product.UpdatedAt = DateTime.Now;
 
-                // Add any newly uploaded images (preserve existing images)
-                if (savedImages.Any())
+                // Update images for slots 0, 1, 2
+                for (int i = 0; i < 3; i++)
                 {
-                    foreach (var si in savedImages)
+                    var f = Request.Form.Files[$"imageFiles[{i}]"];
+                    var colorValue = Request.Form[$"imageColor[{i}]"];
+                    string? color = string.IsNullOrWhiteSpace(colorValue) ? null : colorValue.ToString().ToLowerInvariant();
+
+                    var existingImage = product.ProductImages.FirstOrDefault(img => img.DisplayOrder == i);
+
+                    if (f != null && f.Length > 0)
                     {
-                        product.ProductImages.Add(new ProductImage
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(f.FileName);
+                        var filePath = Path.Combine(uploadDir, fileName);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
                         {
-                            ImageUrl = si.Url,
-                            AltText = si.Color,
-                            IsPrimary = product.ProductImages.All(pi => pi.IsPrimary != true),
-                            DisplayOrder = 0,
-                            CreatedAt = DateTime.Now
-                        });
+                            await f.CopyToAsync(stream);
+                        }
+                        var imageUrl = "/images/products/" + fileName;
+
+                        if (existingImage != null)
+                        {
+                            // Delete old file if it is local
+                            if (existingImage.ImageUrl.StartsWith("/images/products/"))
+                            {
+                                var oldPath = Path.Combine(_environment.WebRootPath, existingImage.ImageUrl.TrimStart('/'));
+                                if (System.IO.File.Exists(oldPath))
+                                {
+                                    try { System.IO.File.Delete(oldPath); } catch {}
+                                }
+                            }
+                            existingImage.ImageUrl = imageUrl;
+                            existingImage.AltText = color;
+                            existingImage.CreatedAt = DateTime.Now;
+                        }
+                        else
+                        {
+                            product.ProductImages.Add(new ProductImage
+                            {
+                                ImageUrl = imageUrl,
+                                AltText = color,
+                                IsPrimary = i == 0,
+                                DisplayOrder = i,
+                                CreatedAt = DateTime.Now
+                            });
+                        }
                     }
+                    else if (existingImage != null)
+                    {
+                        // No new file uploaded, but update the color/AltText if it has changed
+                        existingImage.AltText = color;
+                    }
+                }
+
+                // Delete any images with DisplayOrder outside 0, 1, 2, or duplicates
+                var imagesToDelete = product.ProductImages
+                    .Where(img => img.DisplayOrder < 0 || img.DisplayOrder > 2)
+                    .ToList();
+                foreach (var img in imagesToDelete)
+                {
+                    if (img.ImageUrl.StartsWith("/images/products/"))
+                    {
+                        var filePath = Path.Combine(_environment.WebRootPath, img.ImageUrl.TrimStart('/'));
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            try { System.IO.File.Delete(filePath); } catch {}
+                        }
+                    }
+                    _context.ProductImages.Remove(img);
                 }
 
                 _context.Products.Update(product);
@@ -307,23 +438,34 @@ public class DashboardModel : PageModel
                 UpdatedAt = DateTime.Now
             };
 
-            // Add uploaded images (if any)
-            if (savedImages.Any())
+            for (int i = 0; i < 3; i++)
             {
-                for (int i = 0; i < savedImages.Count; i++)
+                var f = Request.Form.Files[$"imageFiles[{i}]"];
+                var colorValue = Request.Form[$"imageColor[{i}]"];
+                string? color = string.IsNullOrWhiteSpace(colorValue) ? null : colorValue.ToString().ToLowerInvariant();
+
+                if (f != null && f.Length > 0)
                 {
-                    var si = savedImages[i];
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(f.FileName);
+                    var filePath = Path.Combine(uploadDir, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await f.CopyToAsync(stream);
+                    }
+                    var imageUrl = "/images/products/" + fileName;
+
                     product.ProductImages.Add(new ProductImage
                     {
-                        ImageUrl = si.Url,
-                        AltText = si.Color,
+                        ImageUrl = imageUrl,
+                        AltText = color,
                         IsPrimary = i == 0,
                         DisplayOrder = i,
                         CreatedAt = DateTime.Now
                     });
                 }
             }
-            else
+
+            if (!product.ProductImages.Any())
             {
                 // Fallback / default image if no image uploaded
                 product.ProductImages.Add(new ProductImage

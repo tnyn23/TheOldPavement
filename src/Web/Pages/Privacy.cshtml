@@ -1,8 +1,20 @@
 ﻿@page
 @model PrivacyModel
 @{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "Chính sách bảo mật";
 }
-<h1>@ViewData["Title"]</h1>
-
-<p>Use this page to detail your site's privacy policy.</p>
+<main class="page-shell">
+    <div class="page-container pb-16 min-h-[70vh]">
+        <div class="bg-white border border-gray-200 rounded-3xl p-10 shadow-sm">
+            <div class="mb-8">
+                <h1 class="text-4xl font-bold tracking-tight uppercase mb-3">@ViewData["Title"]</h1>
+                <p class="text-gray-500">Chính sách bảo mật được áp dụng cho mọi khách truy cập và khách hàng của The Old Pavement.</p>
+            </div>
+            <div class="space-y-6 text-gray-700 text-sm leading-relaxed">
+                <p>Chúng tôi cam kết bảo mật thông tin cá nhân của khách hàng và chỉ sử dụng dữ liệu để cải thiện trải nghiệm mua sắm, xử lý đơn hàng và hỗ trợ khách hàng.</p>
+                <p>Thông tin cá nhân được thu thập bao gồm: tên, email, số điện thoại, địa chỉ giao hàng và dữ liệu đơn hàng. Chúng tôi không chia sẻ dữ liệu này với bên thứ ba nếu không có sự đồng ý của bạn.</p>
+                <p>Quý khách có quyền yêu cầu truy cập, chỉnh sửa hoặc xóa dữ liệu cá nhân. Nếu cần hỗ trợ, vui lòng liên hệ qua email hỗ trợ của chúng tôi.</p>
+            </div>
+        </div>
+    </div>
+</main>

@@ -24,7 +24,7 @@ public class MomoSimulateModel : PageModel
         _configuration = configuration;
     }
 
-    public async Task<IActionResult> OnGetAsync(string orderId, string amount, string orderInfo)
+    public IActionResult OnGet(string orderId, string amount, string orderInfo)
     {
         OrderId = orderId ?? string.Empty;
         Amount = amount ?? "0";

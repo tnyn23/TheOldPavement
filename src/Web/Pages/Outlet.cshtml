@@ -18,8 +18,8 @@
         return new {
             Id = p.Id,
             Name = p.Name + " - OUTLET",
-            Price = outletPriceVal.ToString("N0") + "₫",
-            OriginalPrice = p.Price.ToString("N0") + "₫",
+            Price = outletPriceVal.ToString("N0") + "đ",
+            OriginalPrice = p.Price.ToString("N0") + "đ",
             Discount = $"-{discountPercent}%",
             Image = primaryImg,
             Sizes = sizesList,
@@ -34,152 +34,84 @@
         : outletProducts.Where(p => p.Condition == Model.SelectedCondition).ToArray();
 }
 
-<main class="pt-24 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16">
+<main class="pt-8 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16">
     <!-- Hero Banner -->
-    <div class="relative bg-gradient-to-r from-orange-500 to-red-600 text-white py-16 px-8 mb-12 overflow-hidden border">
+    <div class="relative bg-black text-white py-16 px-8 mb-12 overflow-hidden border border-gray-800">
         <div class="absolute inset-0 opacity-10">
-            <div class="absolute top-0 left-0 w-full h-full" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.1) 10px, rgba(255,255,255,.1) 20px);"></div>
+            <div class="absolute top-0 left-0 w-full h-full" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.05) 10px, rgba(255,255,255,.05) 20px);"></div>
         </div>
         <div class="relative z-10 max-w-3xl mx-auto text-center space-y-4">
-            <div class="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 font-bold text-sm uppercase tracking-widest">
+            <div class="inline-flex items-center gap-2 bg-white text-black px-4 py-2 font-bold text-sm uppercase tracking-widest">
                 <i data-lucide="percent" class="w-5 h-5"></i>
                 OUTLET CLEARANCE
             </div>
-            <h1 class="text-5xl md:text-6xl lg:text-7xl mb-4 tracking-tight font-extrabold">
-                UP TO 52% OFF
+            <h1 class="text-5xl md:text-6xl lg:text-7xl mb-4 tracking-tight font-black uppercase">
+                UP TO 40% OFF
             </h1>
-            <p class="text-xl md:text-2xl font-light opacity-90">
-                Sản phẩm cuối mùa, số lượng có hạn - Không áp dụng đổi trả
+            <p class="text-sm md:text-base tracking-widest text-gray-400 uppercase">
+                San pham cuoi mua, so luong co han - Khong ap dung doi tra
             </p>
-            <div class="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider">
+            <div class="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
                 <i data-lucide="package" class="w-4 h-4"></i>
-                <span>Miễn phí vận chuyển cho đơn từ 300.000₫</span>
+                <span>Mien phi van chuyen cho don tu 300.000đ</span>
             </div>
         </div>
     </div>
 
     <!-- Info Alert -->
-    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-6 mb-8 rounded-none">
+    <div class="bg-gray-50 border-l-4 border-black p-6 mb-8 rounded-none border">
         <div class="flex gap-3">
-            <i data-lucide="alert-circle" class="w-6 h-6 text-yellow-600 flex-shrink-0"></i>
+            <i data-lucide="alert-circle" class="w-6 h-6 text-black flex-shrink-0"></i>
             <div>
-                <h3 class="font-bold text-yellow-900 mb-2 uppercase tracking-wide">ĐIỀU KHOẢN OUTLET</h3>
-                <ul class="text-sm text-yellow-800 space-y-1 font-medium">
-                    <li>• Tất cả sản phẩm outlet đều là hàng mới 100%, chưa qua sử dụng.</li>
-                    <li>• Không áp dụng chính sách đổi trả - Quý khách vui lòng chọn size cẩn thận.</li>
-                    <li>• Số lượng có hạn theo size thực tế còn trong kho.</li>
-                    <li>• Không áp dụng cùng lúc với các chương trình khuyến mãi khác.</li>
+                <h3 class="font-bold text-gray-950 mb-2 uppercase tracking-wide text-sm">DIEU KHOAN OUTLET</h3>
+                <ul class="text-xs text-gray-600 space-y-1 font-semibold uppercase tracking-wider">
+                    <li>• Tat ca san pham outlet deu la hang moi 100%, chua qua su dung.</li>
+                    <li>• Khong ap dung chinh sach doi tra - Quy khach vui long chon size can than.</li>
+                    <li>• So luong co han theo size thuc te con trong kho.</li>
+                    <li>• Khong ap dung cung luc voi cac chuong trinh khuyen mai khac.</li>
                 </ul>
             </div>
         </div>
     </div>
 
     <!-- Filter & Count -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-        <h2 class="text-2xl font-bold tracking-tight uppercase">
-            @filteredProducts.Length SẢN PHẨM OUTLET
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b pb-4">
+        <h2 class="text-2xl font-black tracking-tight uppercase">
+            @filteredProducts.Length SAN PHAM OUTLET
         </h2>
 
         <div class="flex items-center gap-3">
-            <label class="text-sm font-semibold uppercase tracking-wider">Lọc theo:</label>
+            <label class="text-xs font-bold uppercase tracking-widest text-gray-500">Loc theo:</label>
             <select onchange="filterCondition(this.value)"
-                    class="border-2 border-gray-300 px-4 py-2 font-semibold outline-none focus:border-black bg-transparent">
-                <option value="all" selected="@(Model.SelectedCondition == "all")">Tất cả sản phẩm</option>
-                <option value="new" selected="@(Model.SelectedCondition == "new")">Hàng mới</option>
+                    class="border border-gray-300 px-4 py-2 font-semibold text-sm outline-none focus:border-black bg-transparent cursor-pointer">
+                <option value="all" selected="@(Model.SelectedCondition == "all")">Tat ca san pham</option>
+                <option value="new" selected="@(Model.SelectedCondition == "new")">Hang moi</option>
             </select>
         </div>
     </div>
 
     <!-- Products Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12 mb-16">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-12 mb-16">
         @foreach (var product in filteredProducts)
         {
-            <div class="group cursor-pointer">
-                <a href="/Product/@product.Slug" class="block">
-                    <!-- Image with badges -->
-                    <div class="relative bg-gray-50 mb-4 overflow-hidden aspect-square border">
-                        <img src="@product.Image"
-                             alt="@product.Name"
-                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-
-                        <!-- Discount Badge -->
-                        <div class="absolute top-3 left-3 bg-orange-600 text-white px-3 py-1 text-sm font-bold uppercase tracking-wider">
-                            @product.Discount
-                        </div>
-
-                        <!-- Condition Badge -->
-                        <div class="absolute top-3 right-3 bg-green-600 text-white px-3 py-1 text-xs font-bold uppercase tracking-wider">
-                            @product.Condition.ToUpper()
-                        </div>
-
-                        <!-- Reason Badge -->
-                        <div class="absolute bottom-3 left-3 bg-black/80 text-white px-3 py-1 text-xs uppercase tracking-widest font-semibold">
-                            @product.Reason
-                        </div>
+            <div class="group cursor-pointer" onclick="window.location.href='/Product/@product.Slug'">
+                <!-- Image with badges -->
+                <div class="relative bg-gray-50 mb-4 overflow-hidden aspect-square border">
+                    <img src="@product.Image" alt="@product.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div class="absolute top-3 left-3 flex flex-col gap-2">
+                        <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-wide">@product.Discount</span>
+                        <span class="bg-black text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-wide">@product.Reason</span>
                     </div>
-                </a>
+                </div>
 
-                <!-- Product Info -->
-                <div class="space-y-2">
-                    <a href="/Product/@product.Slug" class="block">
-                        <h3 class="text-sm font-bold leading-tight uppercase tracking-wider group-hover:opacity-60 transition-opacity">
-                            @product.Name
-                        </h3>
-                    </a>
-
-                    <!-- Prices -->
-                    <div class="flex items-center gap-3 font-semibold">
-                        <p class="font-extrabold text-orange-600 text-lg">@product.Price</p>
-                        <p class="text-sm text-gray-500 line-through">@product.OriginalPrice</p>
-                    </div>
-
-                    <!-- Available Sizes -->
-                    <div class="pt-2">
-                        <p class="text-xs text-gray-500 mb-1 uppercase tracking-wider font-semibold">Còn size:</p>
-                        <div class="flex gap-2">
-                            @foreach (var size in product.Sizes)
-                            {
-                                <span class="border border-gray-300 px-2 py-1 text-xs font-bold uppercase">
-                                    @size
-                                </span>
-                            }
-                        </div>
-                    </div>
+                <!-- Info -->
+                <h3 class="text-sm font-medium leading-tight uppercase tracking-wide group-hover:opacity-60 transition-opacity">@product.Name</h3>
+                <div class="flex items-center gap-2 mt-2">
+                    <span class="font-semibold text-gray-900">@product.Price</span>
+                    <span class="text-xs line-through text-gray-400 font-medium">@product.OriginalPrice</span>
                 </div>
             </div>
         }
-    </div>
-
-    <!-- Why Outlet Section -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-        <div class="bg-gray-50 p-8 border">
-            <h3 class="font-bold mb-3 text-lg uppercase tracking-wider">TẠI SAO CÓ OUTLET?</h3>
-            <p class="text-sm text-gray-600 leading-relaxed font-medium">
-                Các sản phẩm outlet là những mẫu thiết kế từ bộ sưu tập trước, size lẻ cuối mùa, hoặc hàng overstock. Tất cả đều đảm bảo mới 100% chất lượng tuyệt hảo.
-            </p>
-        </div>
-
-        <div class="bg-gray-50 p-8 border">
-            <h3 class="font-bold mb-3 text-lg uppercase tracking-wider">CHẤT LƯỢNG ĐẢM BẢO</h3>
-            <p class="text-sm text-gray-600 leading-relaxed font-medium">
-                Mỗi sản phẩm đều được kiểm định chất lượng kỹ lưỡng trước khi đưa lên kệ. Chất lượng cotton dày dặn và kỹ thuật in may sắc nét chuẩn mực.
-            </p>
-        </div>
-
-        <div class="bg-gray-50 p-8 border">
-            <h3 class="font-bold mb-3 text-lg uppercase tracking-wider">MUA NGAY KẸO HẾT</h3>
-            <p class="text-sm text-gray-600 leading-relaxed font-medium">
-                Số lượng hàng outlet cực kỳ giới hạn và không tái sản xuất. Khi sản phẩm hết size nghĩa là đã hết hàng vĩnh viễn. Đừng bỏ lỡ cơ hội sở hữu với giá cực hời!
-            </p>
-        </div>
-    </div>
-
-    <!-- Final Sale Notice -->
-    <div class="bg-black text-white p-8 text-center space-y-3">
-        <h3 class="text-2xl font-bold uppercase tracking-widest">FINAL SALE - KHÔNG ĐỔI TRẢ</h3>
-        <p class="text-gray-400 max-w-2xl mx-auto text-sm leading-relaxed">
-            Vui lòng kiểm tra kỹ bảng chọn kích cỡ (Size Chart) để có lựa chọn vừa vặn nhất. Tất cả hàng hóa thuộc danh mục Outlet Clearance đều không được hỗ trợ đổi trả. Hotline tư vấn size: +84 123 456 789.
-        </p>
     </div>
 </main>
 
@@ -188,4 +120,3 @@
         window.location.href = '?condition=' + val;
     }
 </script>
-

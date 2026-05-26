@@ -9,7 +9,7 @@
     var selectedColorName = Model.Colors.FirstOrDefault(c => c.Value == selectedColor)?.Name ?? selectedColor;
 }
 
-<main class="pt-24 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16">
+<main class="pt-8 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16">
     <!-- Breadcrumb -->
     <nav class="flex mb-8 text-sm font-semibold tracking-wide uppercase" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
@@ -293,7 +293,7 @@
 </main>
 
 <!-- Size Guide Dialog Modal -->
-<div id="size-guide-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 hidden transition-opacity duration-300">
+<div id="size-guide-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden transition-all duration-300">
     <div class="bg-white p-8 max-w-lg w-full relative mx-4">
         <button onclick="toggleSizeGuide()" class="absolute top-4 right-4 text-gray-500 hover:text-black">
             <i data-lucide="x" class="w-6 h-6"></i>

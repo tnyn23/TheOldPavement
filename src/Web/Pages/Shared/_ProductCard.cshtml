@@ -2,9 +2,16 @@
 @model Domain.Models.Product
 
 @{
-    var mainImage = Model.ProductImages?.ElementAtOrDefault(0)?.ImageUrl 
-        ?? "https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&fit=crop&w=1080&q=80";
-    var hoverImage = Model.ProductImages?.ElementAtOrDefault(1)?.ImageUrl ?? mainImage;
+    var firstImg = Model.ProductImages?.ElementAtOrDefault(0)?.ImageUrl;
+    var mainImage = (!string.IsNullOrWhiteSpace(firstImg) && (firstImg.StartsWith("/") || firstImg.StartsWith("http")))
+        ? firstImg
+        : "https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&fit=crop&w=1080&q=80";
+        
+    var secondImg = Model.ProductImages?.ElementAtOrDefault(1)?.ImageUrl;
+    var hoverImage = (!string.IsNullOrWhiteSpace(secondImg) && (secondImg.StartsWith("/") || secondImg.StartsWith("http")))
+        ? secondImg
+        : mainImage;
+        
     var isSale = Model.IsOnSale == true || (Model.DiscountPercentage.GetValueOrDefault() > 0);
     var badgeList = new List<(string Text, string Classes)>();
     if (isSale)

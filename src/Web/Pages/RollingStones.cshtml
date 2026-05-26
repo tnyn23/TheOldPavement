@@ -9,27 +9,13 @@
     {
         stonesProducts = Model.Products.ToList();
     }
-
-    var products = stonesProducts.Select(p => {
-        var primaryImg = p.ProductImages?.FirstOrDefault(img => img.IsPrimary == true)?.ImageUrl 
-            ?? p.ProductImages?.FirstOrDefault()?.ImageUrl 
-            ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
-        return new {
-            Id = p.Id,
-            Name = p.Name,
-            Price = p.Price.ToString("N0") + "₫",
-            Image = primaryImg,
-            Tag = p.Name.ToLower().Contains("collab") || p.Slug.ToLower().Contains("collab") ? "Collab" : "Hot",
-            Slug = p.Slug
-        };
-    }).ToArray();
 }
 
-<main class="pt-24 pb-16">
+<main class="pt-0 pb-16">
     <!-- Hero Section -->
-    <div class="relative bg-black text-white py-28 px-4 md:px-8 lg:px-16 mb-16 overflow-hidden border">
+    <div class="relative bg-black text-white py-28 px-4 md:px-8 lg:px-16 mb-16 overflow-hidden border-b border-gray-900">
         <div class="absolute inset-0 opacity-20">
-            <img src="https://images.unsplash.com/photo-1501612780327-45045538702b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyb2NrJTIwY29uY2VydCUyMHN0bgfGVufDB8fHx8MTcwMDAwMDAwMHww&ixlib=rb-4.1.0&q=80&w=1920"
+            <img src="https://images.unsplash.com/photo-1501612780327-45045538702b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920"
                  alt="Rock concert"
                  class="w-full h-full object-cover" />
         </div>
@@ -38,18 +24,18 @@
                 <i data-lucide="star" class="w-5 h-5"></i>
                 OFFICIAL COLLABORATION
             </div>
-            <h1 class="text-5xl md:text-7xl lg:text-8xl mb-6 tracking-tight font-extrabold leading-tight">
-                THE OLD PAVEMENT<br />×<br />THE ROLLING STONES
+            <h1 class="text-5xl md:text-7xl lg:text-8xl mb-6 tracking-tight font-black leading-tight uppercase">
+                THE OLD PAVEMENT<br />&times;<br />THE ROLLING STONES
             </h1>
-            <p class="text-xl md:text-2xl mb-8 opacity-90 max-w-2xl mx-auto font-light">
-                Khi văn hóa phố cổ Hà Nội gặp gỡ huyền thoại Rock 'n' Roll bất diệt
+            <p class="text-sm md:text-base tracking-widest uppercase text-gray-400 max-w-2xl mx-auto font-light">
+                Khi van hoa pho co Ha Noi gap go huyen thoai Rock 'n' Roll bat diet
             </p>
-            <div class="flex flex-col md:flex-row items-center justify-center gap-4 text-xs font-semibold uppercase tracking-wider">
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
                 <div class="flex items-center gap-2">
                     <i data-lucide="calendar" class="w-4 h-4"></i>
                     <span>BỘ SƯU TẬP GIỚI HẠN 2026</span>
                 </div>
-                <span class="hidden md:inline text-gray-500">•</span>
+                <span class="hidden md:inline">|</span>
                 <div class="flex items-center gap-2">
                     <i data-lucide="music" class="w-4 h-4"></i>
                     <span>SỐ LƯỢNG GIỚI HẠN TOÀN CẦU</span>
@@ -61,18 +47,18 @@
     <div class="px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
         <!-- Story Section -->
         <div class="mb-20 max-w-4xl mx-auto space-y-12">
-            <h2 class="text-3xl md:text-4xl mb-6 tracking-tight text-center font-bold uppercase">CÂU CHUYỆN HỢP TÁC</h2>
+            <h2 class="text-3xl md:text-4xl mb-6 tracking-tight text-center font-black uppercase">CÂU CHUYỆN HỢP TÁC</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                <div class="bg-gray-50 p-8 border">
+                <div class="bg-gray-50 p-8 border border-gray-200 rounded-lg">
                     <h3 class="text-xl font-bold mb-4 uppercase tracking-wide">Hội ngộ Huyền thoại</h3>
-                    <p class="text-gray-600 leading-relaxed font-medium text-sm">
+                    <p class="text-gray-600 leading-relaxed text-sm">
                         **The Old Pavement** chính thức bắt tay cùng ban nhạc huyền thoại **The Rolling Stones** trong dự án đặc biệt toàn cầu, kết hợp hài hòa văn hóa vỉa hè, phố cổ Hà Nội cùng ngọn lửa Rock 'n' Roll nhiệt huyết bất diệt.
                     </p>
                 </div>
-                <div class="bg-gray-50 p-8 border">
+                <div class="bg-gray-50 p-8 border border-gray-200 rounded-lg">
                     <h3 class="text-xl font-bold mb-4 uppercase tracking-wide">Thiết kế Giới hạn</h3>
-                    <p class="text-gray-600 leading-relaxed font-medium text-sm">
-                        Biểu tượng Tongue Logo (chiếc lưỡi) trứ danh của The Rolling Stones được tái tạo nghệ thuật, đan xen cùng hình ảnh xích lô truyền thống vẽ nét line-art tinh tế. Sản phẩm đi kèm thẻ chứng nhận số thứ tự giới hạn.
+                    <p class="text-gray-600 leading-relaxed text-sm">
+                        Biểu tượng Tongue Logo (chiếc lưỡi) trứ danh của The Rolling Stones được tái tạo nghệ thuật, đan xen cùng hình ảnh xích lô truyền thống và nét line-art tinh tế. Sản phẩm đi kèm thẻ chứng nhận số thứ tự giới hạn.
                     </p>
                 </div>
             </div>
@@ -81,15 +67,15 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                 <div class="text-center p-6 border-2 border-black space-y-1">
                     <div class="text-4xl font-extrabold">100%</div>
-                    <p class="text-xs font-bold uppercase tracking-wider text-gray-500">OFFICIAL LICENSED</p>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500">OFFICIAL LICENSED</p>
                 </div>
                 <div class="text-center p-6 border-2 border-black space-y-1">
                     <div class="text-4xl font-extrabold">500</div>
-                    <p class="text-xs font-bold uppercase tracking-wider text-gray-500">LIMITED PIECES</p>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500">LIMITED PIECES</p>
                 </div>
                 <div class="text-center p-6 border-2 border-black space-y-1">
                     <div class="text-4xl font-extrabold">2026</div>
-                    <p class="text-xs font-bold uppercase tracking-wider text-gray-500">EXCLUSIVE RELEASE</p>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500">EXCLUSIVE RELEASE</p>
                 </div>
             </div>
         </div>
@@ -97,54 +83,39 @@
         <!-- Products Section -->
         <div class="mb-20">
             <div class="flex items-center justify-between mb-8 border-b pb-4">
-                <h2 class="text-3xl md:text-4xl tracking-tight font-bold uppercase">BỘ SƯU TẬP (THE COLLECTION)</h2>
-                <div class="text-sm font-bold uppercase tracking-wider text-gray-500">
-                    @products.Length SẢN PHẨM
+                <h2 class="text-3xl md:text-4xl tracking-tight font-black uppercase">BỘ SƯU TẬP (THE COLLECTION)</h2>
+                <div class="text-xs font-bold uppercase tracking-widest text-gray-500">
+                    @stonesProducts.Count SẢN PHẨM
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
-                @foreach (var product in products)
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-12">
+                @foreach (var product in stonesProducts)
                 {
-                    <div class="group cursor-pointer">
-                        <a href="/Product/@product.Slug" class="block">
-                            <div class="relative bg-gray-50 mb-4 overflow-hidden aspect-square border">
-                                <img src="@product.Image" alt="@product.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                                <div class="absolute bottom-3 left-3 bg-black text-white px-3 py-1 text-xs font-bold uppercase tracking-widest">
-                                    @product.Tag
-                                </div>
-                            </div>
-                            <h3 class="text-sm font-bold leading-tight uppercase tracking-wider group-hover:opacity-60 transition-opacity">@product.Name</h3>
-                            <p class="font-extrabold mt-2 text-red-600">@product.Price</p>
-                        </a>
-                    </div>
+                    @await Html.PartialAsync("_ProductCard", product)
                 }
             </div>
         </div>
 
         <!-- Authenticity Notice -->
-        <div class="bg-black text-white p-8 md:p-12 border">
+        <div class="bg-black text-white p-8 md:p-12 border border-gray-800">
             <div class="max-w-3xl mx-auto text-center space-y-6">
-                <h3 class="text-2xl md:text-3xl mb-4 tracking-tight font-extrabold uppercase">CAM KẾT CHÍNH HÃNG 100%</h3>
-                <p class="text-gray-400 mb-6 leading-relaxed text-sm font-medium">
-                    Mỗi sản phẩm thuộc BST The Old Pavement × The Rolling Stones khi bán ra đều bao gồm đầy đủ phụ kiện độc quyền đi kèm:
+                <h3 class="text-2xl md:text-3xl mb-4 tracking-tight font-black uppercase">CAM KẾT CHÍNH HÃNG 100%</h3>
+                <p class="text-gray-400 mb-6 leading-relaxed text-sm">
+                    Mỗi sản phẩm thuộc BST The Old Pavement &times; The Rolling Stones khi bán ra đều bao gồm đầy đủ phụ kiện độc quyền đi kèm:
                 </p>
-                <ul class="space-y-3 text-left max-w-xl mx-auto text-sm font-semibold uppercase tracking-wider divide-y divide-gray-800">
+                <ul class="space-y-3 text-left max-w-xl mx-auto text-xs font-semibold uppercase tracking-widest divide-y divide-gray-800">
                     <li class="flex items-center gap-3 pt-3 first:pt-0">
-                        <span class="text-red-600 font-extrabold">✓</span>
+                        <i data-lucide="check" class="w-4 h-4 text-red-600"></i>
                         <span>Giấy chứng nhận Authenticity in số serial riêng</span>
                     </li>
                     <li class="flex items-center gap-3 pt-3">
-                        <span class="text-red-600 font-extrabold">✓</span>
-                        <span>Nhãn mác hologram bảo mật chống hàng giải từ ban nhạc</span>
+                        <i data-lucide="check" class="w-4 h-4 text-red-600"></i>
+                        <span>Nhãn mác hologram bảo mật chống hàng giả từ ban nhạc</span>
                     </li>
                     <li class="flex items-center gap-3 pt-3">
-                        <span class="text-red-600 font-extrabold">✓</span>
+                        <i data-lucide="check" class="w-4 h-4 text-red-600"></i>
                         <span>Hộp đựng Collector's Box thiết kế cứng cáp cao cấp</span>
-                    </li>
-                    <li class="flex items-center gap-3 pt-3">
-                        <span class="text-red-600 font-extrabold">✓</span>
-                        <span>Thẻ cảm ơn đặc biệt có chữ ký in của đội ngũ thiết kế</span>
                     </li>
                 </ul>
             </div>
@@ -152,3 +123,10 @@
     </div>
 </main>
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/product-card.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/product-card.js" asp-append-version="true"></script>
+}

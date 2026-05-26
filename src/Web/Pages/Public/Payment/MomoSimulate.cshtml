@@ -9,13 +9,14 @@
 }
 
 <style>
-    body { background: #f5f5f5; }
+    .momo-shell {
+        background: linear-gradient(135deg, #f5f5f5 0%, #ffe6f0 100%);
+    }
     .momo-container {
-        min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #f5f5f5 0%, #ffe6f0 100%);
+        min-height: calc(100vh - 6rem);
         padding: 2rem 1rem;
     }
     .momo-card {
@@ -126,8 +127,9 @@
     .momo-footer { text-align: center; padding: 1rem 2rem 1.5rem; font-size: 0.7rem; color: #bbb; }
 </style>
 
-<div class="momo-container">
-    <div class="momo-card">
+<main class="page-shell momo-shell">
+    <div class="page-container momo-container">
+        <div class="momo-card">
         <div class="momo-header">
             <div class="momo-logo">mo<br>mo</div>
             <h1>CỔNG THANH TOÁN MOMO</h1>
@@ -169,8 +171,9 @@
             </a>
         </div>
         <div class="momo-footer">© 2024 · Cổng thanh toán MoMo · Demo Mode</div>
+        </div>
     </div>
-</div>
+</main>
 
 <script>
     function showSpinner(btn) {
