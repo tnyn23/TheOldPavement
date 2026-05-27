@@ -329,7 +329,10 @@ public class DashboardModel : PageModel
         return RedirectToPage();
     }
 
-    public async Task<IActionResult> OnPostSaveProductAsync(int? id, string name, string slug, decimal price, string category, string status)
+    public async Task<IActionResult> OnPostSaveProductAsync(
+        int? id, string name, string slug, decimal price, string category, string status,
+        string? description, bool isOnSale, int? discountPercentage, decimal? originalPrice,
+        bool isCollab, string? collabPartner, bool isFeatured, bool isLimitedEdition, int? limitedQuantity)
     {
         var uploadDir = Path.Combine(_environment.WebRootPath, "images", "products");
         if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
@@ -348,6 +351,15 @@ public class DashboardModel : PageModel
                 product.Price = price;
                 product.Category = category;
                 product.Status = status;
+                product.Description = description;
+                product.IsOnSale = isOnSale;
+                product.DiscountPercentage = discountPercentage;
+                product.OriginalPrice = originalPrice;
+                product.IsCollab = isCollab;
+                product.CollabPartner = collabPartner;
+                product.IsFeatured = isFeatured;
+                product.IsLimitedEdition = isLimitedEdition;
+                product.LimitedQuantity = limitedQuantity;
                 product.UpdatedAt = DateTime.Now;
 
                 // Update images for slots 0, 1, 2
@@ -434,6 +446,15 @@ public class DashboardModel : PageModel
                 Price = price,
                 Category = category,
                 Status = status,
+                Description = description,
+                IsOnSale = isOnSale,
+                DiscountPercentage = discountPercentage,
+                OriginalPrice = originalPrice,
+                IsCollab = isCollab,
+                CollabPartner = collabPartner,
+                IsFeatured = isFeatured,
+                IsLimitedEdition = isLimitedEdition,
+                LimitedQuantity = limitedQuantity,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };

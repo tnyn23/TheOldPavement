@@ -551,6 +551,7 @@
                                 <th>Biến thể</th>
                                 <th>Trạng thái</th>
                                 <th>Ngày tạo</th>
+                                <th>Tags</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -583,6 +584,26 @@
                                         <td><span class="badge @statusCls">@statusLbl</span></td>
                                         <td class="text-gray-400 text-xs whitespace-nowrap">@(p.CreatedAt?.ToString("dd/MM/yy") ?? "—")</td>
                                         <td>
+                                            <div class="flex items-center gap-1 flex-wrap">
+                                                @if (p.IsOnSale == true)
+                                                {
+                                                    <span class="badge badge-pending">Sale @(p.DiscountPercentage.HasValue ? $"-{p.DiscountPercentage}%" : "")</span>
+                                                }
+                                                @if (p.IsCollab == true)
+                                                {
+                                                    <span class="badge" style="background:#f3f4f6;color:#374151">Collab</span>
+                                                }
+                                                @if (p.IsFeatured == true)
+                                                {
+                                                    <span class="badge" style="background:#fef9c3;color:#854d0e">Featured</span>
+                                                }
+                                                @if (p.IsLimitedEdition == true)
+                                                {
+                                                    <span class="badge" style="background:#ede9fe;color:#5b21b6">Limited</span>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td>
                                             <div class="flex items-center gap-1">
                                                 @{
                                                     var imgSlots = new (string Url, string Color)[3];
@@ -602,6 +623,15 @@
                                                     data-price="@p.Price"
                                                     data-category="@p.Category"
                                                     data-status="@p.Status"
+                                                    data-description="@(p.Description ?? "")"
+                                                    data-onsale="@(p.IsOnSale == true ? "true" : "false")"
+                                                    data-discount="@(p.DiscountPercentage ?? 0)"
+                                                    data-originalprice="@(p.OriginalPrice ?? 0)"
+                                                    data-collab="@(p.IsCollab == true ? "true" : "false")"
+                                                    data-collabpartner="@(p.CollabPartner ?? "")"
+                                                    data-featured="@(p.IsFeatured == true ? "true" : "false")"
+                                                    data-limited="@(p.IsLimitedEdition == true ? "true" : "false")"
+                                                    data-limitedqty="@(p.LimitedQuantity ?? 0)"
                                                     data-images="@imgJson">
                                                     <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                                 </button>
@@ -785,58 +815,131 @@
      MODAL: ADD / EDIT PRODUCT
 ═══════════════════════════════════════════════════════════ -->
 <div id="product-modal" class="modal-backdrop" onclick="if(event.target===this)closeProductModal()">
-    <div class="modal-box">
+    <div class="modal-box" style="max-width:680px">
         <div class="modal-header">
             <div>
                 <h3 id="product-modal-title" class="text-sm font-bold text-gray-900">Thêm sản phẩm mới</h3>
-                <p class="text-[11px] text-gray-400 mt-0.5">Điền thông tin sản phẩm bên dưới</p>
+                <p class="text-[11px] text-gray-400 mt-0.5">Điền đầy đủ thông tin sản phẩm</p>
             </div>
             <button onclick="closeProductModal()" class="btn-icon">
                 <i data-lucide="x" class="w-4 h-4"></i>
             </button>
         </div>
         <form method="post" asp-page-handler="SaveProduct" enctype="multipart/form-data">
-            <div class="modal-body space-y-4">
+            <div class="modal-body space-y-5">
                 <input type="hidden" id="product-id" name="id" value="" />
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2">
-                        <label class="form-label">Tên sản phẩm</label>
-                        <input type="text" id="product-name" name="name" required class="form-input" placeholder="VD: Classic Black Tee" />
-                    </div>
-                    <div class="col-span-2">
-                        <label class="form-label">Slug (URL)</label>
-                        <input type="text" id="product-slug" name="slug" required class="form-input" placeholder="classic-black-tee" />
-                    </div>
-                    <div>
-                        <label class="form-label">Giá (₫)</label>
-                        <input type="number" id="product-price" name="price" required min="0" class="form-input" placeholder="425000" />
-                    </div>
-                    <div>
-                        <label class="form-label">Danh mục</label>
-                        <select id="product-category" name="category" class="form-input form-select">
-                            <option value="tee">Tee</option>
-                            <option value="hoodie">Hoodie</option>
-                            <option value="pants">Pants</option>
-                            <option value="jacket">Jacket</option>
-                            <option value="accessories">Accessories</option>
-                        </select>
-                    </div>
-                    <div class="col-span-2">
-                        <label class="form-label">Trạng thái</label>
-                        <select id="product-status" name="status" class="form-input form-select">
-                            <option value="available">Đang bán</option>
-                            <option value="hidden">Ẩn</option>
-                        </select>
+
+                <!-- ── Thông tin cơ bản ── -->
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Thông tin cơ bản</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="col-span-2">
+                            <label class="form-label">Tên sản phẩm <span class="text-red-500">*</span></label>
+                            <input type="text" id="product-name" name="name" required class="form-input" placeholder="VD: Classic Black Tee" />
+                        </div>
+                        <div class="col-span-2">
+                            <label class="form-label">Slug (URL) <span class="text-red-500">*</span></label>
+                            <input type="text" id="product-slug" name="slug" required class="form-input font-mono text-xs" placeholder="classic-black-tee" />
+                        </div>
+                        <div class="col-span-2">
+                            <label class="form-label">Mô tả sản phẩm</label>
+                            <textarea id="product-description" name="description" rows="2"
+                                      class="form-input resize-none text-xs" placeholder="Mô tả ngắn về sản phẩm..."></textarea>
+                        </div>
+                        <div>
+                            <label class="form-label">Giá bán (₫) <span class="text-red-500">*</span></label>
+                            <input type="number" id="product-price" name="price" required min="0" class="form-input" placeholder="425000" />
+                        </div>
+                        <div>
+                            <label class="form-label">Danh mục</label>
+                            <select id="product-category" name="category" class="form-input form-select">
+                                <option value="tee">Tee</option>
+                                <option value="hoodie">Hoodie</option>
+                                <option value="pants">Pants</option>
+                                <option value="jacket">Jacket</option>
+                                <option value="accessories">Accessories</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Trạng thái hiển thị</label>
+                            <select id="product-status" name="status" class="form-input form-select">
+                                <option value="available">Đang bán</option>
+                                <option value="hidden">Ẩn</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-3 pt-5">
+                            <input type="checkbox" id="product-featured" name="isFeatured" value="true" class="w-4 h-4 accent-gray-900" />
+                            <label for="product-featured" class="text-xs font-semibold text-gray-700 cursor-pointer">Sản phẩm nổi bật (Featured)</label>
+                        </div>
                     </div>
                 </div>
-                <!-- Image slots -->
-                <div>
-                    <label class="form-label">Hình ảnh (tối đa 3 ảnh)</label>
+
+                <!-- ── Sale / Giảm giá ── -->
+                <div class="border-t border-gray-100 pt-4">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Cài đặt Sale / Giảm giá</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="col-span-2 flex items-center gap-3">
+                            <input type="checkbox" id="product-onsale" name="isOnSale" value="true"
+                                   class="w-4 h-4 accent-gray-900" onchange="toggleSaleFields(this.checked)" />
+                            <label for="product-onsale" class="text-xs font-semibold text-gray-700 cursor-pointer">Đang Sale</label>
+                        </div>
+                        <div id="sale-fields" class="col-span-2 grid grid-cols-2 gap-3" style="display:none">
+                            <div>
+                                <label class="form-label">Giá gốc (₫)</label>
+                                <input type="number" id="product-original-price" name="originalPrice" min="0"
+                                       class="form-input" placeholder="500000" />
+                            </div>
+                            <div>
+                                <label class="form-label">% Giảm giá</label>
+                                <input type="number" id="product-discount" name="discountPercentage" min="0" max="100"
+                                       class="form-input" placeholder="20" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Collab ── -->
+                <div class="border-t border-gray-100 pt-4">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Collaboration</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="col-span-2 flex items-center gap-3">
+                            <input type="checkbox" id="product-collab" name="isCollab" value="true"
+                                   class="w-4 h-4 accent-gray-900" onchange="toggleCollabFields(this.checked)" />
+                            <label for="product-collab" class="text-xs font-semibold text-gray-700 cursor-pointer">Sản phẩm Collab</label>
+                        </div>
+                        <div id="collab-fields" class="col-span-2" style="display:none">
+                            <label class="form-label">Đối tác Collab</label>
+                            <input type="text" id="product-collab-partner" name="collabPartner"
+                                   class="form-input" placeholder="VD: The Rolling Stones" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Limited Edition ── -->
+                <div class="border-t border-gray-100 pt-4">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Limited Edition</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="col-span-2 flex items-center gap-3">
+                            <input type="checkbox" id="product-limited" name="isLimitedEdition" value="true"
+                                   class="w-4 h-4 accent-gray-900" onchange="toggleLimitedFields(this.checked)" />
+                            <label for="product-limited" class="text-xs font-semibold text-gray-700 cursor-pointer">Phiên bản giới hạn</label>
+                        </div>
+                        <div id="limited-fields" class="col-span-2" style="display:none">
+                            <label class="form-label">Số lượng giới hạn</label>
+                            <input type="number" id="product-limited-qty" name="limitedQuantity" min="1"
+                                   class="form-input" placeholder="500" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Hình ảnh ── -->
+                <div class="border-t border-gray-100 pt-4">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Hình ảnh (tối đa 3 ảnh · mỗi ảnh = 1 màu)</p>
                     <div class="grid grid-cols-3 gap-3">
                         @for (int i = 0; i < 3; i++)
                         {
                             <div class="space-y-1.5">
-                                <div class="aspect-square bg-gray-50 border border-dashed border-gray-200 rounded-lg flex items-center justify-center overflow-hidden relative group cursor-pointer"
+                                <div class="aspect-square bg-gray-50 border border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group cursor-pointer"
                                      onclick="document.getElementById('img-@i').click()">
                                     <i data-lucide="image-plus" class="w-6 h-6 text-gray-300 group-hover:text-gray-500 transition-colors"></i>
                                     <input type="file" id="img-@i" name="imageFiles[@i]" accept="image/*" class="hidden"
@@ -847,6 +950,7 @@
                             </div>
                         }
                     </div>
+                    <p class="text-[10px] text-gray-400 mt-2">Nhập tên màu tiếng Anh thường (black, white, gray, navy...) để hệ thống tự hiển thị màu đúng trên trang sản phẩm.</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -982,6 +1086,21 @@ function openProductModal() {
     document.getElementById('product-price').value = '';
     document.getElementById('product-category').value = 'tee';
     document.getElementById('product-status').value = 'available';
+    document.getElementById('product-description').value = '';
+    // Sale
+    document.getElementById('product-onsale').checked = false;
+    document.getElementById('product-original-price').value = '';
+    document.getElementById('product-discount').value = '';
+    toggleSaleFields(false);
+    // Collab
+    document.getElementById('product-collab').checked = false;
+    document.getElementById('product-collab-partner').value = '';
+    toggleCollabFields(false);
+    // Featured / Limited
+    document.getElementById('product-featured').checked = false;
+    document.getElementById('product-limited').checked = false;
+    document.getElementById('product-limited-qty').value = '';
+    toggleLimitedFields(false);
     // Clear previews and color inputs
     for (let i = 0; i < 3; i++) {
         const prev = document.getElementById('preview-' + i);
@@ -991,6 +1110,17 @@ function openProductModal() {
     }
     document.getElementById('product-modal').classList.add('open');
     if (window.lucide) lucide.createIcons();
+}
+
+// ── Toggle conditional fields ──────────────────────────────────────────────
+function toggleSaleFields(show) {
+    document.getElementById('sale-fields').style.display = show ? 'grid' : 'none';
+}
+function toggleCollabFields(show) {
+    document.getElementById('collab-fields').style.display = show ? 'block' : 'none';
+}
+function toggleLimitedFields(show) {
+    document.getElementById('limited-fields').style.display = show ? 'block' : 'none';
 }
 function openEditProductModal(id, name, slug, price, category, status, images) {
     document.getElementById('product-modal-title').textContent = 'Chỉnh sửa sản phẩm';
@@ -1078,23 +1208,42 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', e => {
         const btn = e.target.closest('.edit-product-btn');
         if (!btn) return;
-        const id       = btn.dataset.id;
-        const name     = btn.dataset.name;
-        const slug     = btn.dataset.slug;
-        const price    = btn.dataset.price;
-        const category = btn.dataset.category;
-        const status   = btn.dataset.status;
-        let images = [];
-        try { images = JSON.parse(btn.dataset.images || '[]'); } catch(err) {}
+        const d = btn.dataset;
 
         document.getElementById('product-modal-title').textContent = 'Chỉnh sửa sản phẩm';
-        document.getElementById('product-id').value    = id;
-        document.getElementById('product-name').value  = name;
-        document.getElementById('product-slug').value  = slug;
-        document.getElementById('product-price').value = price;
-        document.getElementById('product-category').value = category;
-        document.getElementById('product-status').value   = status;
+        document.getElementById('product-id').value       = d.id;
+        document.getElementById('product-name').value     = d.name;
+        document.getElementById('product-slug').value     = d.slug;
+        document.getElementById('product-price').value    = d.price;
+        document.getElementById('product-category').value = d.category;
+        document.getElementById('product-status').value   = d.status;
+        document.getElementById('product-description').value = d.description || '';
 
+        // Sale fields
+        const onSale = d.onsale === 'true';
+        document.getElementById('product-onsale').checked = onSale;
+        document.getElementById('product-original-price').value = d.originalprice || '';
+        document.getElementById('product-discount').value = d.discount || '';
+        toggleSaleFields(onSale);
+
+        // Collab fields
+        const isCollab = d.collab === 'true';
+        document.getElementById('product-collab').checked = isCollab;
+        document.getElementById('product-collab-partner').value = d.collabpartner || '';
+        toggleCollabFields(isCollab);
+
+        // Featured
+        document.getElementById('product-featured').checked = d.featured === 'true';
+
+        // Limited edition
+        const isLimited = d.limited === 'true';
+        document.getElementById('product-limited').checked = isLimited;
+        document.getElementById('product-limited-qty').value = d.limitedqty || '';
+        toggleLimitedFields(isLimited);
+
+        // Images
+        let images = [];
+        try { images = JSON.parse(d.images || '[]'); } catch {}
         for (let i = 0; i < 3; i++) {
             const slot = images[i] || { url: '', color: '' };
             const prev = document.getElementById('preview-' + i);
