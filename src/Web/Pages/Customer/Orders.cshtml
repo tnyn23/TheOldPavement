@@ -1,211 +1,175 @@
 @page
 @model Web.Pages.Customer.OrdersModel
 @{
-    ViewData["Title"] = "Đơn hàng của tôi - The Old Pavement";
+    ViewData["Title"] = "Đơn hàng — The Old Pavement";
 }
 
-<main class="pt-8 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16 min-h-[70vh]">
-    <div class="border-b border-gray-200 pb-6 mb-10">
-        <h1 class="text-4xl md:text-5xl font-bold tracking-tight uppercase">ĐƠN HÀNG CỦA TÔI</h1>
-        <p class="text-gray-500 mt-2">Xem lịch sử mua sắm và theo dõi trạng thái đơn hàng của bạn.</p>
+<main class="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 py-12 pb-20 min-h-[70vh]">
+
+    <!-- Header -->
+    <div class="border-b border-gray-100 pb-6 mb-10 flex items-end justify-between">
+        <div>
+            <p class="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-1">The Old Pavement</p>
+            <h1 class="text-3xl md:text-4xl font-black uppercase tracking-tight">Đơn hàng của tôi</h1>
+        </div>
+        <a href="/Shop" class="hidden sm:flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors">
+            <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+            Tiếp tục mua sắm
+        </a>
     </div>
 
     @if (!string.IsNullOrEmpty(Model.SuccessMessage))
     {
-        <div class="bg-emerald-50 border border-emerald-300 text-emerald-800 px-6 py-4 mb-8 text-sm font-medium flex items-center gap-3 rounded-lg">
-            <i data-lucide="check-circle" class="w-5 h-5 stroke-[1.5]"></i>
+        <div class="flex items-center gap-3 bg-emerald-50 border border-emerald-200 px-4 py-3 mb-8 text-sm text-emerald-800 font-medium">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
             @Model.SuccessMessage
         </div>
     }
     @if (!string.IsNullOrEmpty(Model.ErrorMessage))
     {
-        <div class="bg-red-50 border border-red-300 text-red-800 px-6 py-4 mb-8 text-sm font-medium flex items-center gap-3 rounded-lg">
-            <i data-lucide="alert-circle" class="w-5 h-5 stroke-[1.5]"></i>
+        <div class="flex items-center gap-3 bg-red-50 border border-red-200 px-4 py-3 mb-8 text-sm text-red-700 font-medium">
+            <i data-lucide="alert-circle" class="w-4 h-4 text-red-500 flex-shrink-0"></i>
             @Model.ErrorMessage
         </div>
     }
 
     @if (!Model.Orders.Any())
     {
-        <div class="text-center py-20 border border-dashed border-gray-300 bg-gray-50 max-w-2xl mx-auto rounded-lg">
-            <i data-lucide="package" class="w-16 h-16 mx-auto text-gray-300 mb-6 stroke-1"></i>
-            <h2 class="text-2xl font-semibold mb-2">Bạn chưa có đơn hàng nào</h2>
-            <p class="text-gray-500 max-w-md mx-auto mb-8 text-sm">Hãy sắm ngay những chiếc áo thun phong cách để bắt đầu hành trình phong cách của riêng bạn.</p>
-            <a href="/" class="inline-block bg-black text-white px-8 py-3.5 text-sm font-semibold tracking-wider hover:bg-gray-800 transition-colors uppercase">
+        <div class="flex flex-col items-center justify-center py-24 text-center">
+            <div class="w-20 h-20 border-2 border-dashed border-gray-200 flex items-center justify-center mb-6">
+                <i data-lucide="package" class="w-8 h-8 text-gray-300"></i>
+            </div>
+            <h2 class="text-xl font-black uppercase tracking-tight mb-2">Chưa có đơn hàng nào</h2>
+            <p class="text-sm text-gray-500 mb-8 max-w-xs">Hãy khám phá bộ sưu tập và bắt đầu hành trình phong cách của bạn.</p>
+            <a href="/Shop" class="inline-flex items-center gap-2 bg-black text-white px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors">
                 Mua sắm ngay
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
         </div>
     }
     else
     {
-        <div class="space-y-6">
+        <div class="space-y-5">
             @foreach (var order in Model.Orders)
             {
                 var status = order.Status?.ToLower() ?? "pending";
-                <div class="border border-gray-200 bg-white hover:shadow-md transition-shadow duration-200 rounded-lg overflow-hidden">
-                    <!-- Order Header -->
-                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
-                            <div>
-                                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Mã đơn hàng</span>
-                                <span class="font-bold text-gray-900">@order.OrderNumber</span>
-                            </div>
-                            <div>
-                                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Ngày đặt hàng</span>
-                                <span class="font-medium text-gray-800">@(order.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? DateTime.Now.ToString("dd/MM/yyyy"))</span>
-                            </div>
-                            <div>
-                                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Phương thức</span>
-                                <span class="font-medium text-gray-800 uppercase text-sm">@order.PaymentMethod</span>
-                            </div>
-                            <div>
-                                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Thanh toán</span>
-                                @if (order.PaymentStatus?.ToLower() == "paid")
-                                {
-                                    <span class="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 font-bold border border-emerald-300 rounded uppercase">Đã thanh toán</span>
-                                }
-                                else
-                                {
-                                    <span class="text-xs bg-amber-50 text-amber-700 px-2.5 py-1 font-bold border border-amber-300 rounded uppercase">Chờ xử lý</span>
-                                }
-                            </div>
-                        </div>
+                var (statusBg, statusText, statusLabel) = status switch {
+                    "delivered"  => ("bg-emerald-50 text-emerald-700 border-emerald-200", "text-emerald-700", "Đã giao"),
+                    "shipped"    => ("bg-blue-50 text-blue-700 border-blue-200",           "text-blue-700",    "Đang giao"),
+                    "cancelled"  => ("bg-red-50 text-red-700 border-red-200",              "text-red-700",     "Đã hủy"),
+                    "processing" => ("bg-gray-100 text-gray-700 border-gray-200",          "text-gray-700",    "Đang xử lý"),
+                    _            => ("bg-amber-50 text-amber-700 border-amber-200",        "text-amber-700",   "Chờ xử lý")
+                };
 
-                        <div class="flex items-center gap-4">
-                            <!-- Status Badge -->
+                <div class="border border-gray-100 bg-white overflow-hidden">
+                    <!-- Order header -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 bg-gray-50 border-b border-gray-100">
+                        <div class="flex flex-wrap items-center gap-x-6 gap-y-1.5">
                             <div>
-                                @if (status == "delivered")
-                                {
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 uppercase tracking-wide">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                                        Đã giao hàng
-                                    </span>
-                                }
-                                else if (status == "shipped")
-                                {
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 uppercase tracking-wide">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-                                        Đang vận chuyển
-                                    </span>
-                                }
-                                else if (status == "cancelled")
-                                {
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-red-100 text-red-800 uppercase tracking-wide">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span>
-                                        Đã hủy
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 uppercase tracking-wide">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
-                                        Đang xử lý
-                                    </span>
-                                }
+                                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Mã đơn</p>
+                                <p class="text-xs font-black text-gray-900 font-mono">@order.OrderNumber</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Ngày đặt</p>
+                                <p class="text-xs font-semibold text-gray-700">@(order.CreatedAt?.ToString("dd/MM/yyyy") ?? "—")</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Thanh toán</p>
+                                <p class="text-xs font-semibold text-gray-700 uppercase">@order.PaymentMethod</p>
                             </div>
                         </div>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 border text-[10px] font-black uppercase tracking-widest @statusBg">
+                            @statusLabel
+                        </span>
                     </div>
 
-                    <!-- Order Timeline -->
-                    <div class="px-6 py-5 border-b border-gray-100">
-                        @if (status == "cancelled")
-                        {
-                            <div class="flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-2.5 rounded">
-                                <i data-lucide="ban" class="w-4 h-4 text-red-500 flex-shrink-0 stroke-[1.5]"></i>
-                                <span class="text-xs font-bold text-red-700 uppercase tracking-wide">Đơn hàng đã bị hủy — Tồn kho đã được hoàn lại.</span>
-                            </div>
-                        }
-                        else
-                        {
-                            @{
-                                var steps = new[] { "pending", "shipped", "delivered" };
-                                var stepLabels = new[] { "Đặt hàng", "Đang giao", "Hoàn thành" };
-                                var stepIcons = new[] { "package", "truck", "check-circle" };
-                                var stepDescs = new[] { "Đã xác nhận", "Đang vận chuyển", "Giao thành công" };
-                                var currentStepIndex = Array.IndexOf(steps, status);
-                                if (currentStepIndex < 0) currentStepIndex = 0;
-                            }
-                            <div class="relative flex items-start max-w-xl">
-                                @* Connecting line rail *@
-                                <div class="absolute left-4 right-4 top-4 h-[2px] bg-gray-200" style="z-index:0"></div>
-                                <div class="absolute left-4 top-4 h-[2px] bg-black transition-all duration-700"
-                                     style="width: calc(@(currentStepIndex) * ((100% - 2rem) / @(steps.Length - 1))); z-index:1"></div>
+                    <!-- Timeline -->
+                    @if (status != "cancelled")
+                    {
+                        var steps = new[] { "pending", "shipped", "delivered" };
+                        var stepLabels = new[] { "Đặt hàng", "Đang giao", "Hoàn thành" };
+                        var stepIcons = new[] { "package", "truck", "check-circle" };
+                        var currentStep = Array.IndexOf(steps, status);
+                        if (currentStep < 0) currentStep = 0;
 
+                        <div class="px-5 py-5 border-b border-gray-50">
+                            <div class="relative flex items-start max-w-sm">
+                                <div class="absolute left-4 right-4 top-4 h-px bg-gray-200"></div>
+                                <div class="absolute left-4 top-4 h-px bg-black transition-all duration-700"
+                                     style="width: calc(@currentStep * ((100% - 2rem) / @(steps.Length - 1)))"></div>
                                 @for (int i = 0; i < steps.Length; i++)
                                 {
-                                    var isCompleted = i < currentStepIndex;
-                                    var isCurrent   = i == currentStepIndex;
-
-                                    <div class="flex-1 flex flex-col items-center" style="position:relative;z-index:2">
-                                        @* Step circle *@
-                                        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300
-                                                    @(isCompleted ? "bg-black text-white"
-                                                    : isCurrent  ? "bg-black text-white ring-4 ring-gray-200"
-                                                    : "bg-white border-2 border-gray-300 text-gray-400")">
-                                            <i data-lucide="@stepIcons[i]" class="w-3.5 h-3.5 stroke-[2]"></i>
+                                    var done = i < currentStep;
+                                    var curr = i == currentStep;
+                                    <div class="flex-1 flex flex-col items-center relative z-10">
+                                        <div class="w-8 h-8 flex items-center justify-center flex-shrink-0 transition-all
+                                                    @(done || curr ? "bg-black text-white" : "bg-white border-2 border-gray-200 text-gray-400")
+                                                    @(curr ? "ring-4 ring-gray-100" : "")">
+                                            <i data-lucide="@stepIcons[i]" class="w-3.5 h-3.5"></i>
                                         </div>
-                                        @* Labels *@
-                                        <span class="mt-2 text-[10px] font-black uppercase tracking-wider text-center leading-tight
-                                                     @(isCompleted || isCurrent ? "text-gray-900" : "text-gray-400")">
+                                        <span class="mt-2 text-[9px] font-black uppercase tracking-wider text-center @(done || curr ? "text-gray-900" : "text-gray-400")">
                                             @stepLabels[i]
                                         </span>
-                                        <span class="text-[9px] text-center @(isCurrent ? "text-[#D0151C] font-bold" : "text-gray-400") tracking-wide mt-0.5">
-                                            @(isCurrent ? "● HIỆN TẠI" : (isCompleted ? stepDescs[i] : "Chờ xử lý"))
-                                        </span>
+                                        @if (curr)
+                                        {
+                                            <span class="text-[8px] font-bold text-black uppercase tracking-wide mt-0.5">● Hiện tại</span>
+                                        }
                                     </div>
                                 }
                             </div>
-                        }
-                    </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="px-5 py-3 border-b border-gray-50">
+                            <div class="flex items-center gap-2 text-xs text-red-600 font-bold uppercase tracking-wide">
+                                <i data-lucide="ban" class="w-3.5 h-3.5"></i>
+                                Đơn hàng đã bị hủy — Tồn kho đã được hoàn lại.
+                            </div>
+                        </div>
+                    }
 
-                    <!-- Order Items -->
-                    <div class="px-6 py-4 divide-y divide-gray-100">
+                    <!-- Items -->
+                    <div class="divide-y divide-gray-50 px-5">
                         @foreach (var item in order.OrderItems)
                         {
-                            <div class="py-4 flex items-center justify-between gap-6">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-14 h-14 bg-gray-50 border border-gray-100 flex-shrink-0 flex items-center justify-center font-bold">
+                            <div class="flex items-center justify-between gap-4 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0 text-lg">
                                         👕
                                     </div>
                                     <div>
-                                        <h4 class="font-bold text-gray-900 leading-tight">@item.ProductName</h4>
-                                        <p class="text-xs text-gray-500 mt-1">
-                                            Kích thước: <span class="font-semibold text-gray-700">@item.Size</span> |
-                                            Màu sắc: <span class="font-semibold text-gray-700">@item.Color</span> |
-                                            Số lượng: <span class="font-semibold text-gray-700">@item.Quantity</span>
-                                        </p>
+                                        <p class="text-xs font-bold uppercase tracking-wide text-gray-900">@item.ProductName</p>
+                                        <p class="text-[10px] text-gray-400 mt-0.5 uppercase">@item.Size · @item.Color · ×@item.Quantity</p>
                                     </div>
                                 </div>
-                                <div class="text-right">
-                                    <p class="font-bold text-gray-900">@item.Subtotal.ToString("N0")₫</p>
-                                    <p class="text-xs text-gray-400 mt-0.5">@item.UnitPrice.ToString("N0")₫ / cái</p>
+                                <div class="text-right flex-shrink-0">
+                                    <p class="text-sm font-black tabular-nums">@item.Subtotal.ToString("N0")₫</p>
+                                    <p class="text-[10px] text-gray-400 tabular-nums">@item.UnitPrice.ToString("N0")₫/cái</p>
                                 </div>
                             </div>
                         }
                     </div>
 
-                    <!-- Order Footer -->
-                    <div class="bg-gray-50/50 px-6 py-4 border-t border-gray-100 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
+                    <!-- Footer -->
+                    <div class="flex items-center justify-between px-5 py-4 bg-gray-50 border-t border-gray-100">
+                        <div>
                             @if (status == "pending")
                             {
-                                <form method="post" asp-page-handler="CancelOrder" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?');">
+                                <form method="post" asp-page-handler="CancelOrder"
+                                      onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">
                                     <input type="hidden" name="orderId" value="@order.Id" />
                                     <button type="submit"
-                                            class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold border border-red-300 text-red-700 bg-red-50 hover:bg-red-100 rounded transition-colors uppercase tracking-wider">
-                                        <i data-lucide="x-circle" class="w-3.5 h-3.5 stroke-[1.5]"></i>
-                                        Hủy đơn hàng
+                                            class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-red-600 border border-red-200 px-4 py-2 hover:bg-red-50 transition-colors">
+                                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                        Hủy đơn
                                     </button>
                                 </form>
                             }
-                            @if (!string.IsNullOrEmpty(order.Note))
-                            {
-                                <span class="text-sm text-gray-500 font-medium italic">Ghi chú: "@order.Note"</span>
-                            }
                         </div>
-                        <div class="text-right flex items-center gap-2">
-                            <span class="font-semibold text-gray-600">Tổng cộng:</span>
-                            <span class="text-2xl font-extrabold text-gray-950">@order.TotalAmount.ToString("N0")₫</span>
+                        <div class="text-right">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Tổng cộng</p>
+                            <p class="text-xl font-black tabular-nums">@order.TotalAmount.ToString("N0")₫</p>
                         </div>
                     </div>
                 </div>

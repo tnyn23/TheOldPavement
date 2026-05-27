@@ -1,82 +1,86 @@
 @page
 @model Web.Pages.WishlistModel
 @{
-    ViewData["Title"] = "Danh sách yêu thích - The Old Pavement";
+    ViewData["Title"] = "Yêu thích — The Old Pavement";
 }
 
-<main class="pt-8 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16 min-h-[70vh]">
-    <div class="border-b border-gray-200 pb-6 mb-10">
-        <h1 class="text-4xl md:text-5xl font-bold tracking-tight uppercase">DANH SÁCH YÊU THÍCH</h1>
-        <p class="text-gray-500 mt-2">Lưu giữ những sản phẩm bạn yêu thích để dễ dàng mua sắm sau.</p>
+<main class="px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto py-12 min-h-[70vh]">
+
+    <!-- Header -->
+    <div class="border-b border-gray-100 pb-6 mb-10">
+        <p class="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-1">The Old Pavement</p>
+        <h1 class="text-3xl md:text-4xl font-black uppercase tracking-tight">Danh sách yêu thích
+            @if (Model.WishlistItems.Any())
+            {
+                <span class="text-gray-300 font-light ml-2">(@Model.WishlistItems.Count)</span>
+            }
+        </h1>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="mb-8 p-4 bg-emerald-50 border border-emerald-500 text-emerald-800 font-medium flex items-center justify-between animate-fade-in">
-            <div class="flex items-center gap-2">
-                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>
-                <span>@TempData["SuccessMessage"]</span>
-            </div>
-            <button onclick="this.parentElement.remove()" class="hover:opacity-60">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
+        <div class="mb-8 flex items-center gap-3 bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800 font-medium">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+            <span>@TempData["SuccessMessage"]</span>
+            <button onclick="this.parentElement.remove()" class="ml-auto"><i data-lucide="x" class="w-4 h-4"></i></button>
         </div>
     }
 
     @if (!Model.WishlistItems.Any())
     {
-        <div class="text-center py-20 border border-dashed border-gray-300 bg-gray-50 max-w-2xl mx-auto rounded-lg">
-            <i data-lucide="heart" class="w-16 h-16 mx-auto text-gray-300 mb-6 stroke-1"></i>
-            <h2 class="text-2xl font-semibold mb-2">Danh sách yêu thích đang trống</h2>
-            <p class="text-gray-500 max-w-md mx-auto mb-8 text-sm">Hãy khám phá bộ sưu tập của chúng tôi và chọn những sản phẩm ưng ý nhất.</p>
-            <a href="/" class="inline-block bg-black text-white px-8 py-3.5 text-sm font-semibold tracking-wider hover:bg-gray-800 transition-colors uppercase">
-                Khám phá ngay
+        <div class="flex flex-col items-center justify-center py-24 text-center">
+            <div class="w-20 h-20 border-2 border-dashed border-gray-200 flex items-center justify-center mb-6">
+                <i data-lucide="heart" class="w-8 h-8 text-gray-300"></i>
+            </div>
+            <h2 class="text-xl font-black uppercase tracking-tight mb-2">Danh sách trống</h2>
+            <p class="text-sm text-gray-500 mb-8 max-w-xs">Lưu những sản phẩm yêu thích để dễ dàng mua sắm sau.</p>
+            <a href="/Shop" class="inline-flex items-center gap-2 bg-black text-white px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors">
+                Khám phá Shop
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
         </div>
     }
     else
     {
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
             @foreach (var item in Model.WishlistItems)
             {
-                <div class="group border border-gray-200 bg-white relative flex flex-col justify-between overflow-hidden transition-all duration-300 hover:shadow-lg">
-                    <!-- Image Area -->
-                    <div class="relative bg-gray-50 aspect-[4/5] overflow-hidden">
-                        <img src="@item.ImageUrl" alt="@item.ProductName" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        
-                        <!-- Remove button -->
-                        <form method="post" asp-page-handler="Remove" asp-route-productId="@item.ProductId" class="absolute top-4 right-4">
-                            <button type="submit" class="w-8 h-8 rounded-full bg-white text-gray-500 hover:text-red-600 hover:scale-110 flex items-center justify-center transition-all shadow-sm border" title="Xóa khỏi yêu thích">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                <div class="group relative flex flex-col">
+                    <!-- Image -->
+                    <div class="relative bg-gray-50 aspect-[3/4] overflow-hidden mb-3">
+                        <a href="/Product/@item.Slug">
+                            <img src="@item.ImageUrl" alt="@item.ProductName"
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        </a>
+                        <!-- Remove -->
+                        <form method="post" asp-page-handler="Remove" asp-route-productId="@item.ProductId"
+                              class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button type="submit"
+                                    class="w-8 h-8 bg-white border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all"
+                                    title="Xoá khỏi yêu thích">
+                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
                             </button>
                         </form>
                     </div>
 
-                    <!-- Info Area -->
-                    <div class="p-6 flex-1 flex flex-col justify-between">
-                        <div class="mb-4">
-                            <h3 class="font-bold text-lg mb-1 tracking-tight text-gray-900 group-hover:text-red-600 transition-colors">
-                                <a href="/Product/@item.Slug">@item.ProductName</a>
-                            </h3>
-                            <p class="font-semibold text-gray-900">@item.Price.ToString("N0")₫</p>
-                        </div>
+                    <!-- Info -->
+                    <div class="flex-1 flex flex-col">
+                        <a href="/Product/@item.Slug" class="text-xs font-bold uppercase tracking-wide text-gray-900 hover:opacity-60 transition-opacity line-clamp-2 mb-1">@item.ProductName</a>
+                        <p class="text-sm font-black text-gray-900 mb-3 tabular-nums">@item.Price.ToString("N0")₫</p>
 
-                        <!-- Actions -->
-                        <div class="space-y-2">
+                        <div class="mt-auto space-y-2">
                             <form method="post" asp-page-handler="AddToCart">
                                 <input type="hidden" name="productId" value="@item.ProductId" />
                                 <input type="hidden" name="name" value="@item.ProductName" />
                                 <input type="hidden" name="price" value="@item.Price" />
                                 <input type="hidden" name="slug" value="@item.Slug" />
                                 <input type="hidden" name="imageUrl" value="@item.ImageUrl" />
-                                <button type="submit" class="w-full bg-black text-white py-3 text-xs font-bold tracking-wider hover:bg-gray-800 transition-colors uppercase flex items-center justify-center gap-2">
-                                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
-                                    Thêm vào giỏ hàng
+                                <button type="submit"
+                                        class="w-full bg-black text-white py-2.5 text-[10px] font-black tracking-widest uppercase hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
+                                    <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+                                    Thêm vào giỏ
                                 </button>
                             </form>
-                            <a href="/Product/@item.Slug" class="w-full border border-gray-300 text-black py-3 text-xs font-bold tracking-wider hover:border-black transition-colors uppercase block text-center">
-                                Xem chi tiết
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -84,54 +88,54 @@
         </div>
     }
 
-    <!-- Recently Viewed Products -->
+    <!-- Recently Viewed -->
     @if (Model.RecentlyViewedProducts != null && Model.RecentlyViewedProducts.Any())
     {
-        <section class="mt-20 border-t border-gray-200 pt-12">
-            <h2 class="text-2xl md:text-3xl font-bold tracking-tight uppercase mb-8">SẢN PHẨM ĐÃ XEM GẦN ĐÂY</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <section class="mt-20 pt-12 border-t border-gray-100">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-lg font-black uppercase tracking-tight">Đã xem gần đây</h2>
+                <a href="/Shop" class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors">Xem tất cả →</a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8">
                 @foreach (var p in Model.RecentlyViewedProducts)
                 {
-                    var img = p.ProductImages?.FirstOrDefault()?.ImageUrl ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
-                    <div class="group cursor-pointer" onclick="window.location.href='/Product/@p.Slug'">
-                        <div class="relative bg-gray-50 mb-4 overflow-hidden aspect-[4/5] rounded border">
-                            <img src="@img" alt="@p.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                            @if (p.IsCollab == true)
-                            {
-                                <div class="absolute bottom-3 left-3 bg-black text-white px-3 py-1 text-xs font-bold tracking-wide">Collab</div>
-                            }
+                    var img = p.ProductImages?.FirstOrDefault()?.ImageUrl ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?w=600&q=80";
+                    <a href="/Product/@p.Slug" class="group block">
+                        <div class="bg-gray-50 aspect-[3/4] overflow-hidden mb-3">
+                            <img src="@img" alt="@p.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         </div>
-                        <h3 class="text-sm font-bold uppercase tracking-wide group-hover:text-red-600 transition-colors truncate">@p.Name</h3>
-                        <p class="font-semibold text-gray-900 mt-1">@p.Price.ToString("N0")₫</p>
-                    </div>
+                        <p class="text-xs font-bold uppercase tracking-wide text-gray-900 group-hover:opacity-60 transition-opacity truncate">@p.Name</p>
+                        <p class="text-sm font-black text-gray-900 mt-0.5 tabular-nums">@p.Price.ToString("N0")₫</p>
+                    </a>
                 }
             </div>
         </section>
     }
 
-    <!-- Recommended Products -->
+    <!-- Recommended -->
     @if (Model.RecommendedProducts != null && Model.RecommendedProducts.Any())
     {
-        <section class="mt-20 border-t border-gray-200 pt-12">
-            <h2 class="text-2xl md:text-3xl font-bold tracking-tight uppercase mb-8">GỢI Ý DÀNH CHO BẠN</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <section class="mt-16 pt-12 border-t border-gray-100">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-lg font-black uppercase tracking-tight">Gợi ý dành cho bạn</h2>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8">
                 @foreach (var p in Model.RecommendedProducts)
                 {
-                    var img = p.ProductImages?.FirstOrDefault()?.ImageUrl ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
-                    <div class="group cursor-pointer" onclick="window.location.href='/Product/@p.Slug'">
-                        <div class="relative bg-gray-50 mb-4 overflow-hidden aspect-[4/5] rounded border">
-                            <img src="@img" alt="@p.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    var img = p.ProductImages?.FirstOrDefault()?.ImageUrl ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?w=600&q=80";
+                    <a href="/Product/@p.Slug" class="group block">
+                        <div class="bg-gray-50 aspect-[3/4] overflow-hidden mb-3 relative">
+                            <img src="@img" alt="@p.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             @if (p.IsCollab == true)
                             {
-                                <div class="absolute bottom-3 left-3 bg-black text-white px-3 py-1 text-xs font-bold tracking-wide">Collab</div>
+                                <span class="absolute bottom-2 left-2 bg-black text-white text-[9px] font-black px-2 py-0.5 uppercase tracking-widest">Collab</span>
                             }
                         </div>
-                        <h3 class="text-sm font-bold uppercase tracking-wide group-hover:text-red-600 transition-colors truncate">@p.Name</h3>
-                        <p class="font-semibold text-gray-900 mt-1">@p.Price.ToString("N0")₫</p>
-                    </div>
+                        <p class="text-xs font-bold uppercase tracking-wide text-gray-900 group-hover:opacity-60 transition-opacity truncate">@p.Name</p>
+                        <p class="text-sm font-black text-gray-900 mt-0.5 tabular-nums">@p.Price.ToString("N0")₫</p>
+                    </a>
                 }
             </div>
         </section>
     }
 </main>
-

@@ -1,110 +1,90 @@
 @page
 @model Web.Pages.OutletModel
 @{
-    ViewData["Title"] = "Outlet Clearance";
+    ViewData["Title"] = "Outlet Clearance — The Old Pavement";
 
-    // Clone products with 40% discount for outlet display, reusing _ProductCard partial
     var outletProducts = Model.Products.Select(p => {
-        var clone = new Domain.Models.Product
-        {
-            Id = p.Id,
-            Name = p.Name,
-            Slug = p.Slug,
-            Description = p.Description,
-            Price = Math.Round(p.Price * 0.6m),
-            OriginalPrice = p.Price,
-            DiscountPercentage = 40,
-            IsOnSale = true,
-            IsOutlet = true,
-            Category = p.Category,
-            IsCollab = p.IsCollab,
-            CreatedAt = p.CreatedAt,
-            ProductImages = p.ProductImages,
-            ProductVariants = p.ProductVariants
+        var clone = new Domain.Models.Product {
+            Id = p.Id, Name = p.Name, Slug = p.Slug, Description = p.Description,
+            Price = Math.Round(p.Price * 0.6m), OriginalPrice = p.Price,
+            DiscountPercentage = 40, IsOnSale = true, IsOutlet = true, Category = p.Category,
+            IsCollab = p.IsCollab, CreatedAt = p.CreatedAt,
+            ProductImages = p.ProductImages, ProductVariants = p.ProductVariants
         };
         return clone;
     }).ToArray();
 }
 
-<main class="pt-8 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16">
-    <!-- Hero Banner -->
-    <div class="relative bg-black text-white py-16 px-8 mb-12 overflow-hidden border border-gray-800">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute top-0 left-0 w-full h-full" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.05) 10px, rgba(255,255,255,.05) 20px);"></div>
+<main class="pb-20">
+    <!-- Hero -->
+    <div class="relative bg-black text-white overflow-hidden">
+        <div class="absolute inset-0 opacity-15">
+            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1920&q=80"
+                 alt="Outlet" class="w-full h-full object-cover" />
         </div>
-        <div class="relative z-10 max-w-3xl mx-auto text-center space-y-4">
-            <div class="inline-flex items-center gap-2 bg-white text-black px-4 py-2 font-bold text-sm uppercase tracking-widest">
-                <i data-lucide="percent" class="w-5 h-5"></i>
-                OUTLET CLEARANCE
-            </div>
-            <h1 class="text-5xl md:text-6xl lg:text-7xl mb-4 tracking-tight font-black uppercase">
-                UP TO 40% OFF
-            </h1>
-            <p class="text-sm md:text-base tracking-widest text-gray-400 uppercase">
-                San pham cuoi mua, so luong co han
-            </p>
-            <div class="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                <i data-lucide="package" class="w-4 h-4"></i>
-                <span>Khong ap dung doi tra. Mien phi van chuyen cho don tu 300.000d</span>
+        <div class="relative z-10 max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 py-20 md:py-28">
+            <div class="max-w-2xl">
+                <span class="inline-flex items-center gap-2 bg-white text-black px-4 py-1.5 text-[10px] font-black tracking-[0.2em] uppercase mb-6">
+                    <i data-lucide="percent" class="w-3.5 h-3.5"></i>
+                    Outlet Clearance
+                </span>
+                <h1 class="text-5xl md:text-7xl font-black uppercase tracking-tight leading-none mb-4">
+                    Up To<br/>40% Off
+                </h1>
+                <p class="text-sm text-white/60 uppercase tracking-widest font-medium">
+                    Sản phẩm cuối mùa · Số lượng có hạn · Không áp dụng đổi trả
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- Info Alert -->
-    <div class="bg-gray-50 border-l-4 border-black p-6 mb-8">
-        <div class="flex gap-3">
-            <i data-lucide="alert-circle" class="w-6 h-6 text-black flex-shrink-0"></i>
+    <div class="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 pt-10">
+
+        <!-- Policy notice -->
+        <div class="flex items-start gap-3 bg-gray-50 border-l-2 border-black px-5 py-4 mb-8">
+            <i data-lucide="info" class="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5"></i>
             <div>
-                <h3 class="font-bold text-gray-950 mb-2 uppercase tracking-wide text-sm">DIEU KHOAN OUTLET</h3>
-                <ul class="text-xs text-gray-600 space-y-1 font-semibold uppercase tracking-wider">
-                    <li>&bull; Tat ca san pham outlet deu la hang moi 100%.</li>
-                    <li>&bull; Khong ap dung chinh sach doi tra.</li>
-                    <li>&bull; So luong co han theo size thuc te con trong kho.</li>
-                    <li>&bull; Khong ap dung cung luc voi cac chuong trinh khuyen mai khac.</li>
-                </ul>
+                <p class="text-xs font-black uppercase tracking-widest text-gray-900 mb-1">Điều khoản Outlet</p>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    Tất cả sản phẩm outlet là hàng mới 100%. Không áp dụng chính sách đổi trả. Số lượng có hạn theo size thực tế còn trong kho. Không áp dụng cùng lúc với các chương trình khuyến mãi khác.
+                </p>
             </div>
         </div>
-    </div>
 
-    <!-- Filter & Count -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b pb-4">
-        <div class="flex items-center gap-2">
-            <i data-lucide="tag" class="w-5 h-5"></i>
-            <h2 class="text-2xl font-black tracking-tight uppercase">
-                @outletProducts.Length SAN PHAM OUTLET
-            </h2>
+        <!-- Toolbar -->
+        <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+            <p class="text-sm font-semibold text-gray-700">
+                <span class="font-black text-black">@outletProducts.Length</span> sản phẩm outlet
+            </p>
         </div>
-    </div>
 
-    <!-- Products Grid - using shared _ProductCard -->
-    @if (outletProducts.Any())
-    {
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-12">
-            @foreach (var product in outletProducts)
-            {
-                @await Html.PartialAsync("_ProductCard", product)
-            }
-        </div>
-    }
-    else
-    {
-        <div class="py-20 text-center border-2 border-dashed border-gray-200">
-            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
-                <i data-lucide="package-open" class="w-8 h-8"></i>
+        <!-- Grid -->
+        @if (outletProducts.Any())
+        {
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-12">
+                @foreach (var product in outletProducts)
+                {
+                    @await Html.PartialAsync("_ProductCard", product)
+                }
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Hien tai khong co san pham outlet nao!</h3>
-            <p class="text-gray-500 text-sm mb-6 max-w-md mx-auto">Vui long quay lai sau de xem cac san pham outlet moi nhat.</p>
-            <a href="/Shop" class="inline-block bg-black text-white px-8 py-3 text-xs font-bold tracking-widest hover:bg-gray-800 transition-colors uppercase">
-                XEM CUA HANG
-            </a>
-        </div>
-    }
+        }
+        else
+        {
+            <div class="py-24 text-center border-2 border-dashed border-gray-200">
+                <i data-lucide="package-open" class="w-10 h-10 mx-auto text-gray-300 mb-4"></i>
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-900 mb-2">Hiện tại không có sản phẩm outlet</h3>
+                <p class="text-xs text-gray-400 mb-6">Vui lòng quay lại sau để xem các sản phẩm outlet mới nhất.</p>
+                <a href="/Shop" class="inline-block bg-black text-white px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors">
+                    Xem cửa hàng
+                </a>
+            </div>
+        }
+    </div>
 </main>
 
 @section Styles {
     <link rel="stylesheet" href="~/css/product-card.css" asp-append-version="true" />
 }
-
 @section Scripts {
     <script src="~/js/product-card.js" asp-append-version="true"></script>
 }

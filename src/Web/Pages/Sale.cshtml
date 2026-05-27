@@ -1,120 +1,91 @@
 @page
 @model Web.Pages.SaleModel
 @{
-    ViewData["Title"] = "Flash Sale";
-    
-    // Dynamically calculate sale prices (20% off for Flash Sale!) in-memory for _ProductCard compatibility
+    ViewData["Title"] = "Flash Sale — The Old Pavement";
+
     var saleProducts = Model.Products.Select(p => {
-        var clone = new Domain.Models.Product
-        {
-            Id = p.Id,
-            Name = p.Name,
-            Slug = p.Slug,
-            Description = p.Description,
-            Price = Math.Round(p.Price * 0.8m),
-            OriginalPrice = p.Price,
-            DiscountPercentage = 20,
-            IsOnSale = true,
-            Category = p.Category,
-            IsCollab = p.IsCollab,
-            CreatedAt = p.CreatedAt,
-            ProductImages = p.ProductImages,
-            ProductVariants = p.ProductVariants
+        var clone = new Domain.Models.Product {
+            Id = p.Id, Name = p.Name, Slug = p.Slug, Description = p.Description,
+            Price = Math.Round(p.Price * 0.8m), OriginalPrice = p.Price,
+            DiscountPercentage = 20, IsOnSale = true, Category = p.Category,
+            IsCollab = p.IsCollab, CreatedAt = p.CreatedAt,
+            ProductImages = p.ProductImages, ProductVariants = p.ProductVariants
         };
         return clone;
     }).ToArray();
 
-    var sortedProducts = saleProducts;
-
-    if (Model.SortBy == "discount")
-    {
-        sortedProducts = saleProducts.OrderByDescending(p => p.DiscountPercentage).ToArray();
-    }
-    else if (Model.SortBy == "price-low")
-    {
-        sortedProducts = saleProducts.OrderBy(p => p.Price).ToArray();
-    }
-    else if (Model.SortBy == "price-high")
-    {
-        sortedProducts = saleProducts.OrderByDescending(p => p.Price).ToArray();
-    }
+    var sortedProducts = Model.SortBy switch {
+        "price-low"  => saleProducts.OrderBy(p => p.Price).ToArray(),
+        "price-high" => saleProducts.OrderByDescending(p => p.Price).ToArray(),
+        _            => saleProducts.OrderByDescending(p => p.DiscountPercentage).ToArray()
+    };
 }
 
-<main class="pt-8 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16">
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="mb-8 p-4 bg-emerald-50 border border-emerald-500 text-emerald-800 font-medium flex items-center justify-between rounded animate-fade-in shadow-sm">
-            <div class="flex items-center gap-2">
-                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>
-                <span>@TempData["SuccessMessage"]</span>
-            </div>
-            <button onclick="this.parentElement.remove()" class="hover:opacity-60">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
+<main class="pb-20">
+    <!-- Hero -->
+    <div class="relative bg-black text-white overflow-hidden">
+        <div class="absolute inset-0 opacity-20">
+            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1920&q=80"
+                 alt="Sale" class="w-full h-full object-cover" />
         </div>
-    }
-
-    <!-- Hero Banner -->
-    <div class="relative bg-black text-white py-16 px-8 mb-12 overflow-hidden border border-gray-800">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute top-0 left-0 w-full h-full" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.05) 10px, rgba(255,255,255,.05) 20px);"></div>
-        </div>
-        <div class="relative z-10 max-w-3xl mx-auto text-center space-y-4">
-            <div class="inline-flex items-center gap-2 bg-white text-black px-4 py-2 font-bold text-sm uppercase tracking-widest">
-                <i data-lucide="trending-down" class="w-5 h-5"></i>
-                FLASH SALE
+        <div class="relative z-10 max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 py-20 md:py-28">
+            <div class="max-w-2xl">
+                <span class="inline-flex items-center gap-2 bg-white text-black px-4 py-1.5 text-[10px] font-black tracking-[0.2em] uppercase mb-6">
+                    <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                    Flash Sale
+                </span>
+                <h1 class="text-5xl md:text-7xl font-black uppercase tracking-tight leading-none mb-4">
+                    Sale<br/>Up To 30%
+                </h1>
+                <p class="text-sm text-white/60 uppercase tracking-widest font-medium">
+                    Sản phẩm chọn lọc · Số lượng có hạn · Kết thúc 31/05/2026
+                </p>
             </div>
-            <h1 class="text-5xl md:text-6xl lg:text-7xl mb-4 tracking-tight font-black uppercase">
-                SALE UP TO 30%
-            </h1>
-            <p class="text-sm md:text-base tracking-widest text-gray-400 uppercase">
-                San pham chon loc chat luong cao giam gia kich san
-            </p>
-            <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">
-                * So luong co han. Chuong trinh khuyen mai ket thuc khi het hang hoac ngay 31/05/2026.
-            </p>
         </div>
     </div>
 
-    <!-- Filter & Sort -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b pb-4">
-        <div class="flex items-center gap-2">
-            <i data-lucide="tag" class="w-5 h-5"></i>
-            <h2 class="text-2xl font-black tracking-tight uppercase">
-                @sortedProducts.Length SAN PHAM ĐANG SALE
-            </h2>
-        </div>
+    <div class="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 pt-10">
 
-        <div class="flex items-center gap-3">
-            <label class="text-xs font-bold uppercase tracking-widest text-gray-500">Sap xep:</label>
-            <select onchange="changeSort(this.value)"
-                    class="border border-gray-300 px-4 py-2 font-semibold text-sm outline-none focus:border-black bg-transparent cursor-pointer">
-                <option value="discount" selected="@(Model.SortBy == "discount")">Giam nhieu nhat</option>
-                <option value="price-low" selected="@(Model.SortBy == "price-low")">Gia: Thap den cao</option>
-                <option value="price-high" selected="@(Model.SortBy == "price-high")">Gia: Cao den thap</option>
-            </select>
-        </div>
-    </div>
-
-    <!-- Products Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-12">
-        @foreach (var product in sortedProducts)
+        @if (TempData["SuccessMessage"] != null)
         {
-            @await Html.PartialAsync("_ProductCard", product)
+            <div class="mb-8 flex items-center gap-3 bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800 font-medium">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+                <span>@TempData["SuccessMessage"]</span>
+                <button onclick="this.parentElement.remove()" class="ml-auto text-emerald-500 hover:text-emerald-700">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
         }
+
+        <!-- Toolbar -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-gray-100">
+            <p class="text-sm font-semibold text-gray-700">
+                <span class="font-black text-black">@sortedProducts.Length</span> sản phẩm đang sale
+            </p>
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Sắp xếp</span>
+                <select onchange="window.location.href='?sortBy='+this.value"
+                        class="border border-gray-200 bg-white px-3 py-2 text-xs font-semibold outline-none focus:border-black cursor-pointer">
+                    <option value="discount" selected="@(Model.SortBy == "discount" || string.IsNullOrEmpty(Model.SortBy) ? "selected" : null)">Giảm nhiều nhất</option>
+                    <option value="price-low" selected="@(Model.SortBy == "price-low" ? "selected" : null)">Giá: Thấp → Cao</option>
+                    <option value="price-high" selected="@(Model.SortBy == "price-high" ? "selected" : null)">Giá: Cao → Thấp</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-12">
+            @foreach (var product in sortedProducts)
+            {
+                @await Html.PartialAsync("_ProductCard", product)
+            }
+        </div>
     </div>
 </main>
-
-<script>
-    function changeSort(val) {
-        window.location.href = '?sortBy=' + val;
-    }
-</script>
 
 @section Styles {
     <link rel="stylesheet" href="~/css/product-card.css" asp-append-version="true" />
 }
-
 @section Scripts {
     <script src="~/js/product-card.js" asp-append-version="true"></script>
 }

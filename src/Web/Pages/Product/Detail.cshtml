@@ -36,11 +36,11 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
         <!-- Product Images -->
         <div class="space-y-4">
-            <div class="relative bg-gray-50 aspect-square group">
+            <div id="main-image-wrapper" onclick="openLightbox()" class="relative bg-gray-50 aspect-square group overflow-hidden cursor-zoom-in">
                 <img id="main-product-image"
                      src="@(productImages.Length > 0 ? productImages[0] : "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080")"
                      alt="@Model.Product?.Name"
-                     class="w-full h-full object-cover transition-opacity duration-300" />
+                     class="w-full h-full object-cover transition-transform duration-100 origin-center" />
                 
                 <!-- Overlay logo cyclo if white shirt selected -->
                 <div id="cyclo-overlay" class="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -58,11 +58,11 @@
                 </div>
 
                 <!-- Navigation Arrows -->
-                <button onclick="prevImage()"
+                <button onclick="event.stopPropagation(); prevImage()"
                         class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white border border-gray-200">
                     <i data-lucide="chevron-left" class="w-6 h-6"></i>
                 </button>
-                <button onclick="nextImage()"
+                <button onclick="event.stopPropagation(); nextImage()"
                         class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white border border-gray-200">
                     <i data-lucide="chevron-right" class="w-6 h-6"></i>
                 </button>
@@ -203,9 +203,61 @@
     </div>
 
     <!-- Product Reviews -->
-    <section class="mt-24 border-t border-gray-200 pt-16">
-        <h2 class="text-2xl md:text-3xl mb-8 tracking-tight font-bold">ĐÁNH GIÁ KHÁCH HÀNG</h2>
+    <section id="reviews-section" class="mt-24 border-t border-gray-200 pt-16">
+        <h2 class="text-2xl md:text-3xl mb-8 tracking-tight font-bold uppercase">Đánh giá khách hàng</h2>
         
+        <!-- Premium Rating Summary & Breakdown -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 mb-16 border-b border-gray-100 pb-12">
+            <!-- Avg Rating Block -->
+            <div class="md:col-span-4 flex flex-col items-center justify-center text-center p-8 bg-gray-50 border border-gray-200">
+                <span class="text-7xl font-extrabold tracking-tight text-black mb-2">@Model.AverageRating</span>
+                <div class="flex text-black mb-3">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <i data-lucide="star" class="w-5 h-5 @(i <= Math.Round(Model.AverageRating) ? "fill-black text-black" : "text-gray-300")"></i>
+                    }
+                </div>
+                <span class="text-xs text-gray-500 uppercase tracking-widest font-bold">Dựa trên @Model.TotalReviews đánh giá</span>
+            </div>
+
+            <!-- Breakdown Bars -->
+            <div class="md:col-span-8 flex flex-col justify-center space-y-3.5">
+                @for (int star = 5; star >= 1; star--)
+                {
+                    var count = Model.RatingCounts.ContainsKey(star) ? Model.RatingCounts[star] : 0;
+                    var pct = Model.RatingPercentages.ContainsKey(star) ? Model.RatingPercentages[star] : 0.0;
+                    var isSelected = Model.SelectedRatingFilter == star;
+                    
+                    <a href="?slug=@Model.Product?.Slug&ratingFilter=@(isSelected ? "" : star.ToString())#reviews-section" 
+                       class="flex items-center gap-4 group text-sm select-none hover:opacity-85 transition-opacity">
+                        <span class="w-12 text-left font-bold tracking-wider flex items-center gap-1.5 text-xs">
+                            @star <i data-lucide="star" class="w-3.5 h-3.5 fill-black text-black"></i>
+                        </span>
+                        
+                        <div class="flex-1 h-3 bg-gray-100 border border-gray-200 relative">
+                            <div class="h-full bg-black transition-all duration-500" style="width: @(pct)%"></div>
+                        </div>
+                        
+                        <span class="w-20 text-right text-xs font-mono text-gray-500 group-hover:text-black transition-colors @(isSelected ? "font-bold text-black underline" : "")">
+                            @pct% (@count)
+                        </span>
+                    </a>
+                }
+            </div>
+        </div>
+
+        @if (Model.SelectedRatingFilter.HasValue)
+        {
+            <div class="flex items-center justify-between bg-black text-white px-4 py-3 mb-8">
+                <span class="text-xs font-bold uppercase tracking-wider">
+                    Đang hiển thị đánh giá @Model.SelectedRatingFilter.Value Sao (@Model.Reviews.Count đánh giá)
+                </span>
+                <a href="?slug=@Model.Product?.Slug#reviews-section" class="text-xs font-bold uppercase tracking-wider underline hover:opacity-80">
+                    Xóa bộ lọc
+                </a>
+            </div>
+        }
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
             <!-- Reviews List -->
             <div class="lg:col-span-2 space-y-8">
@@ -214,15 +266,23 @@
                     foreach (var review in Model.Reviews)
                     {
                         <div class="border-b border-gray-100 pb-6">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="flex text-yellow-400">
+                            <div class="flex items-center gap-3 mb-2.5 flex-wrap">
+                                <div class="flex text-black">
                                     @for (int i = 0; i < 5; i++)
                                     {
-                                        <i data-lucide="star" class="w-4 h-4 @(i < review.Rating ? "fill-yellow-400" : "text-gray-300")"></i>
+                                        <i data-lucide="star" class="w-4 h-4 @(i < review.Rating ? "fill-black text-black" : "text-gray-300")"></i>
                                     }
                                 </div>
                                 <span class="text-sm font-bold text-gray-900">@(review.Title ?? "Khách hàng")</span>
-                                <span class="text-xs text-gray-400 ml-2">@review.CreatedAt?.ToString("dd/MM/yyyy")</span>
+                                
+                                @if (review.IsVerifiedPurchase == true)
+                                {
+                                    <span class="inline-flex items-center gap-1 bg-black text-white px-2 py-0.5 text-[9px] font-black uppercase tracking-widest">
+                                        <i data-lucide="check" class="w-3 h-3"></i> VERIFIED BUYER
+                                    </span>
+                                }
+                                
+                                <span class="text-xs text-gray-400 font-mono ml-auto">@review.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
                             </div>
                             <p class="text-gray-600 text-sm leading-relaxed">
                                 @review.Comment
@@ -232,7 +292,19 @@
                 }
                 else
                 {
-                    <p class="text-gray-500 italic text-sm">Chưa có đánh giá nào cho sản phẩm này. Hãy trở thành người đầu tiên đánh giá!</p>
+                    <div class="text-center py-12 border border-dashed border-gray-300 bg-gray-50">
+                        <i data-lucide="message-square" class="w-8 h-8 text-gray-400 mx-auto mb-3"></i>
+                        <p class="text-gray-500 italic text-sm">
+                            @if (Model.SelectedRatingFilter.HasValue)
+                            {
+                                <text>Không tìm thấy đánh giá @Model.SelectedRatingFilter.Value sao nào cho sản phẩm này.</text>
+                            }
+                            else
+                            {
+                                <text>Chưa có đánh giá nào cho sản phẩm này. Hãy trở thành người đầu tiên đánh giá!</text>
+                            }
+                        </p>
+                    </div>
                 }
             </div>
 
@@ -298,11 +370,30 @@
         <button onclick="toggleSizeGuide()" class="absolute top-4 right-4 text-gray-500 hover:text-black">
             <i data-lucide="x" class="w-6 h-6"></i>
         </button>
-        <h3 class="text-2xl font-bold mb-6 tracking-tight">BẢNG HƯỚNG DẪN CHỌN SIZE</h3>
+        <h3 class="text-2xl font-bold mb-6 tracking-tight uppercase">Bảng hướng dẫn chọn size</h3>
+
+        <!-- Interactive Size Calculator -->
+        <div class="mb-6 p-5 bg-gray-50 border border-gray-200">
+            <span class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Tìm size của bạn (AI recommender)</span>
+            <div class="grid grid-cols-2 gap-6 mb-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1.5">Chiều cao: <span id="height-val" class="font-mono font-normal">170</span> cm</label>
+                    <input type="range" id="size-height" min="140" max="210" value="170" oninput="calculateSizeRecommendation()" class="w-full accent-black" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1.5">Cân nặng: <span id="weight-val" class="font-mono font-normal">65</span> kg</label>
+                    <input type="range" id="size-weight" min="40" max="120" value="65" oninput="calculateSizeRecommendation()" class="w-full accent-black" />
+                </div>
+            </div>
+            <div id="size-recommendation-result" class="hidden text-xs bg-black text-white px-3 py-2.5 font-bold uppercase tracking-wider text-center">
+                Size gợi ý cho bạn: L (Oversized Fit)
+            </div>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="w-full text-center border-collapse">
                 <thead>
-                    <tr class="border-b-2 border-black font-semibold">
+                    <tr class="border-b-2 border-black font-semibold text-xs uppercase">
                         <th class="py-2">SIZE</th>
                         <th class="py-2">RỘNG ÁO (cm)</th>
                         <th class="py-2">DÀI ÁO (cm)</th>
@@ -310,31 +401,31 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
-                    <tr>
+                    <tr id="size-row-S">
                         <td class="py-3 font-semibold">S</td>
                         <td class="py-3">54</td>
                         <td class="py-3">68</td>
                         <td class="py-3">1.50 - 1.65</td>
                     </tr>
-                    <tr>
+                    <tr id="size-row-M">
                         <td class="py-3 font-semibold">M</td>
                         <td class="py-3">56</td>
                         <td class="py-3">70</td>
                         <td class="py-3">1.60 - 1.72</td>
                     </tr>
-                    <tr>
+                    <tr id="size-row-L">
                         <td class="py-3 font-semibold">L</td>
                         <td class="py-3">58</td>
                         <td class="py-3">72</td>
                         <td class="py-3">1.70 - 1.80</td>
                     </tr>
-                    <tr>
+                    <tr id="size-row-XL">
                         <td class="py-3 font-semibold">XL</td>
                         <td class="py-3">60</td>
                         <td class="py-3">74</td>
                         <td class="py-3">1.78 - 1.85</td>
                     </tr>
-                    <tr>
+                    <tr id="size-row-XXL">
                         <td class="py-3 font-semibold">XXL</td>
                         <td class="py-3">62</td>
                         <td class="py-3">76</td>
@@ -346,6 +437,37 @@
         <p class="text-xs text-gray-500 mt-6 leading-relaxed">
             * Form dáng áo thun của The Old Pavement là dáng **oversized rộng rãi**, thoải mái. Nếu bạn muốn mặc ôm gọn hơn, hãy cân nhắc giảm 1 size.
         </p>
+    </div>
+</div>
+
+<!-- Fullscreen Lightbox Modal -->
+<div id="lightbox-modal" class="fixed inset-0 bg-black/95 z-50 flex flex-col justify-between hidden transition-opacity duration-300 opacity-0">
+    <!-- Top Bar -->
+    <div class="flex justify-between items-center px-6 py-4 text-white z-10">
+        <span id="lightbox-counter" class="text-xs font-mono font-bold tracking-widest uppercase">1 / 3</span>
+        <button onclick="closeLightbox()" class="text-white hover:opacity-75 transition-opacity">
+            <i data-lucide="x" class="w-8 h-8"></i>
+        </button>
+    </div>
+
+    <!-- Main Lightbox Image Viewport -->
+    <div class="flex-1 flex items-center justify-center relative p-4 select-none">
+        <!-- Prev Button -->
+        <button onclick="prevLightboxImage()" class="absolute left-6 text-white hover:opacity-75 transition-opacity bg-black/40 p-3 hover:bg-black/60 rounded-full z-20">
+            <i data-lucide="chevron-left" class="w-8 h-8"></i>
+        </button>
+
+        <img id="lightbox-image" src="" alt="Zoomed view" class="max-w-full max-h-[80vh] object-contain transition-all duration-300 transform scale-100" />
+
+        <!-- Next Button -->
+        <button onclick="nextLightboxImage()" class="absolute right-6 text-white hover:opacity-75 transition-opacity bg-black/40 p-3 hover:bg-black/60 rounded-full z-20">
+            <i data-lucide="chevron-right" class="w-8 h-8"></i>
+        </button>
+    </div>
+
+    <!-- Bottom Bar (Thumbnail slides) -->
+    <div id="lightbox-thumbnails" class="p-6 bg-neutral-950/80 border-t border-neutral-900 overflow-x-auto whitespace-nowrap scrollbar-none flex justify-center gap-3">
+        <!-- thumbnails will be rendered here dynamically -->
     </div>
 </div>
 
@@ -475,6 +597,165 @@
     function toggleSizeGuide() {
         const modal = document.getElementById('size-guide-modal');
         modal.classList.toggle('hidden');
+    }
+
+    // Lightbox functions
+    let lightboxActiveIndex = 0;
+    
+    function openLightbox() {
+        if (!images || images.length === 0) return;
+        
+        lightboxActiveIndex = selectedImageIndex;
+        document.getElementById('lightbox-image').src = images[lightboxActiveIndex];
+        
+        const thumbsContainer = document.getElementById('lightbox-thumbnails');
+        if (thumbsContainer) {
+            thumbsContainer.innerHTML = '';
+            images.forEach((imgSrc, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-16 h-16 bg-neutral-900 overflow-hidden border-2 transition-colors flex-shrink-0 ' + (i === lightboxActiveIndex ? 'border-white' : 'border-transparent');
+                btn.onclick = () => selectLightboxImage(i);
+                
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.className = 'w-full h-full object-cover';
+                btn.appendChild(img);
+                thumbsContainer.appendChild(btn);
+            });
+        }
+        
+        updateLightboxCounter();
+        
+        const modal = document.getElementById('lightbox-modal');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            modal.classList.add('opacity-100');
+        }, 10);
+    }
+    
+    function closeLightbox() {
+        const modal = document.getElementById('lightbox-modal');
+        modal.classList.remove('opacity-100');
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+    
+    function selectLightboxImage(index) {
+        lightboxActiveIndex = index;
+        const mainImg = document.getElementById('lightbox-image');
+        if (mainImg) {
+            mainImg.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                mainImg.src = images[lightboxActiveIndex];
+                mainImg.classList.remove('opacity-0', 'scale-95');
+            }, 150);
+        }
+        
+        const thumbs = document.querySelectorAll('#lightbox-thumbnails button');
+        thumbs.forEach((t, i) => {
+            if (i === index) {
+                t.classList.add('border-white');
+                t.classList.remove('border-transparent');
+            } else {
+                t.classList.remove('border-white');
+                t.classList.add('border-transparent');
+            }
+        });
+        
+        updateLightboxCounter();
+        selectImage(index);
+    }
+    
+    function nextLightboxImage() {
+        if (!images || images.length === 0) return;
+        const nextIdx = (lightboxActiveIndex + 1) % images.length;
+        selectLightboxImage(nextIdx);
+    }
+    
+    function prevLightboxImage() {
+        if (!images || images.length === 0) return;
+        const prevIdx = (lightboxActiveIndex - 1 + images.length) % images.length;
+        selectLightboxImage(prevIdx);
+    }
+    
+    function updateLightboxCounter() {
+        const counter = document.getElementById('lightbox-counter');
+        if (counter) {
+            counter.innerText = `${lightboxActiveIndex + 1} / ${images.length}`;
+        }
+    }
+
+    // Hover zoom magnifier logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const zoomContainer = document.getElementById('main-image-wrapper');
+        const mainImg = document.getElementById('main-product-image');
+
+        if (zoomContainer && mainImg) {
+            zoomContainer.addEventListener('mousemove', (e) => {
+                if (e.target.closest('button')) {
+                    mainImg.style.transform = 'scale(1)';
+                    return;
+                }
+                const rect = zoomContainer.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const xPercent = (x / rect.width) * 100;
+                const yPercent = (y / rect.height) * 100;
+
+                mainImg.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+                mainImg.style.transform = 'scale(1.8)';
+            });
+
+            zoomContainer.addEventListener('mouseleave', () => {
+                mainImg.style.transform = 'scale(1)';
+                mainImg.style.transformOrigin = 'center center';
+            });
+        }
+    });
+
+    // AI Size guide calculation
+    function calculateSizeRecommendation() {
+        const height = parseInt(document.getElementById('size-height').value);
+        const weight = parseInt(document.getElementById('size-weight').value);
+        
+        document.getElementById('height-val').innerText = height;
+        document.getElementById('weight-val').innerText = weight;
+        
+        let recommendedSize = 'S';
+        
+        if (height > 182 || weight > 85) {
+            recommendedSize = 'XXL';
+        } else if (height > 175 || weight > 75) {
+            recommendedSize = 'XL';
+        } else if (height > 168 || weight > 65) {
+            recommendedSize = 'L';
+        } else if (height > 160 || weight > 55) {
+            recommendedSize = 'M';
+        } else {
+            recommendedSize = 'S';
+        }
+        
+        const resultBlock = document.getElementById('size-recommendation-result');
+        resultBlock.innerText = `Size gợi ý cho bạn: ${recommendedSize} (Oversized Fit)`;
+        resultBlock.classList.remove('hidden');
+        
+        const rows = ['S', 'M', 'L', 'XL', 'XXL'];
+        rows.forEach(r => {
+            const rowEl = document.getElementById(`size-row-${r}`);
+            if (rowEl) {
+                if (r === recommendedSize) {
+                    rowEl.className = 'bg-black text-white font-bold transition-all';
+                } else {
+                    rowEl.className = 'transition-all';
+                }
+            }
+        });
+
+        selectSize(recommendedSize);
     }
 </script>
 

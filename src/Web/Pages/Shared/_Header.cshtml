@@ -3,107 +3,99 @@
     var currentPath = Context.Request.Path.Value?.ToLowerInvariant() ?? string.Empty;
 }
 
-<header class="fixed top-0 left-0 right-0 bg-white z-50 border-b border-gray-100 shadow-[0_1px_8px_rgba(0,0,0,0.06)]">
-    <div class="px-4 md:px-8 lg:px-12 py-0">
+<!-- Announcement Bar -->
+<div class="fixed top-0 left-0 right-0 z-[60] bg-black text-white text-center py-2 px-4 text-[10px] font-bold tracking-[0.2em] uppercase">
+    Miễn phí vận chuyển cho đơn từ 500.000₫ &nbsp;·&nbsp; <a href="/Sale" class="underline underline-offset-2 hover:opacity-70 transition-opacity">Flash Sale đang diễn ra →</a>
+</div>
+
+<header class="fixed top-8 left-0 right-0 bg-white z-50 border-b border-gray-100">
+    <div class="px-4 md:px-8 lg:px-12">
         <div class="flex items-center h-14 gap-0">
 
-            <!-- Logo Block (OP square) -->
-            <a href="/" class="flex-shrink-0 flex items-center justify-center w-12 h-14 bg-[#D0151C] mr-4 select-none" title="The Old Pavement">
-                <span class="text-white font-black text-[11px] leading-tight tracking-wider text-center uppercase" style="letter-spacing:0.05em;">
-                    OP
-                </span>
+            <!-- Logo -->
+            <a href="/" class="flex-shrink-0 flex items-center justify-center w-11 h-11 bg-black mr-5 select-none hover:bg-gray-900 transition-colors" title="The Old Pavement">
+                <span class="text-white font-black text-[10px] tracking-[0.12em] uppercase">OP</span>
             </a>
 
-            <!-- Desktop Navigation (left/center) -->
+            <!-- Desktop Nav -->
             <nav class="hidden lg:flex items-center gap-0 flex-shrink-0 mr-4">
-                <a href="/Shop"
-                   class="px-4 h-14 flex items-center text-[13px] font-bold tracking-widest uppercase transition-colors hover:text-[#D0151C] relative group @(currentPath.StartsWith("/shop") ? "text-[#D0151C]" : "text-gray-900")">
-                    SHOP
-                    <span class="absolute bottom-0 left-0 right-0 h-[2px] bg-[#D0151C] scale-x-0 group-hover:scale-x-100 transition-transform origin-left @(currentPath.StartsWith("/shop") ? "scale-x-100" : "")"></span>
-                </a>
-                <a href="/sale"
-                   class="px-4 h-14 flex items-center text-[13px] font-bold tracking-widest uppercase transition-colors hover:text-[#D0151C] relative group @(currentPath.StartsWith("/sale") ? "text-[#D0151C]" : "text-gray-900")">
-                    SALE
-                    <span class="absolute bottom-0 left-0 right-0 h-[2px] bg-[#D0151C] scale-x-0 group-hover:scale-x-100 transition-transform origin-left @(currentPath.StartsWith("/sale") ? "scale-x-100" : "")"></span>
-                </a>
-                <a href="/rolling-stones"
-                   class="px-4 h-14 flex items-center text-[13px] font-bold tracking-widest uppercase transition-colors hover:text-[#D0151C] relative group @(currentPath.StartsWith("/rolling-stones") ? "text-[#D0151C]" : "text-gray-900")">
-                    ROLLING STONES
-                    <span class="absolute bottom-0 left-0 right-0 h-[2px] bg-[#D0151C] scale-x-0 group-hover:scale-x-100 transition-transform origin-left @(currentPath.StartsWith("/rolling-stones") ? "scale-x-100" : "")"></span>
-                </a>
-                <a href="/collabs"
-                   class="px-4 h-14 flex items-center text-[13px] font-bold tracking-widest uppercase transition-colors hover:text-[#D0151C] relative group @(currentPath.StartsWith("/collabs") ? "text-[#D0151C]" : "text-gray-900")">
-                    COLLAB'S
-                    <span class="absolute bottom-0 left-0 right-0 h-[2px] bg-[#D0151C] scale-x-0 group-hover:scale-x-100 transition-transform origin-left @(currentPath.StartsWith("/collabs") ? "scale-x-100" : "")"></span>
-                </a>
-                <a href="/outlet"
-                   class="px-4 h-14 flex items-center text-[13px] font-bold tracking-widest uppercase transition-colors hover:text-[#D0151C] relative group @(currentPath.StartsWith("/outlet") ? "text-[#D0151C]" : "text-gray-900")">
-                    OUTLET
-                    <span class="absolute bottom-0 left-0 right-0 h-[2px] bg-[#D0151C] scale-x-0 group-hover:scale-x-100 transition-transform origin-left @(currentPath.StartsWith("/outlet") ? "scale-x-100" : "")"></span>
-                </a>
-                <a href="/about"
-                   class="px-4 h-14 flex items-center text-[13px] font-bold tracking-widest uppercase transition-colors hover:text-[#D0151C] relative group @(currentPath.StartsWith("/about") ? "text-[#D0151C]" : "text-gray-900")">
-                    ABOUT
-                    <span class="absolute bottom-0 left-0 right-0 h-[2px] bg-[#D0151C] scale-x-0 group-hover:scale-x-100 transition-transform origin-left @(currentPath.StartsWith("/about") ? "scale-x-100" : "")"></span>
-                </a>
+                @{
+                    var navLinks = new[] {
+                        ("/Shop", "SHOP"),
+                        ("/sale", "SALE"),
+                        ("/rolling-stones", "ROLLING STONES"),
+                        ("/collabs", "COLLAB'S"),
+                        ("/outlet", "OUTLET"),
+                        ("/about", "ABOUT"),
+                    };
+                }
+                @foreach (var (href, label) in navLinks)
+                {
+                    var isActive = currentPath.StartsWith(href.ToLower());
+                    <a href="@href"
+                       class="px-3.5 h-14 flex items-center text-[11px] font-bold tracking-[0.12em] uppercase transition-colors relative group @(isActive ? "text-black" : "text-gray-500 hover:text-black")">
+                        @label
+                        <span class="absolute bottom-0 left-0 right-0 h-[2px] bg-black transition-transform origin-left @(isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100")"></span>
+                    </a>
+                }
             </nav>
 
-            <!-- Search Bar (pill-shape, grows to fill center space) -->
+            <!-- Search -->
             <div class="flex-1 flex items-center min-w-0">
-                <form action="/Shop" method="get" class="w-full max-w-xl mx-auto">
+                <form action="/Shop" method="get" class="w-full max-w-sm mx-auto">
                     <div class="relative flex items-center">
-                        <i data-lucide="search" class="absolute left-4 w-4 h-4 text-gray-400 pointer-events-none flex-shrink-0"></i>
-                        <input type="text" name="SearchQuery" placeholder="Bạn đang tìm sản phẩm gì?"
-                               class="w-full bg-gray-100 rounded-full pl-11 pr-5 py-2.5 text-sm text-gray-700 placeholder-gray-400 outline-none border border-transparent focus:border-gray-300 focus:bg-white transition-all" />
+                        <i data-lucide="search" class="absolute left-3.5 w-3.5 h-3.5 text-gray-400 pointer-events-none flex-shrink-0"></i>
+                        <input type="text" name="SearchQuery" placeholder="Tìm kiếm sản phẩm..."
+                               class="w-full bg-gray-50 border border-gray-200 pl-9 pr-4 py-2 text-xs text-gray-700 placeholder-gray-400 outline-none focus:border-gray-400 focus:bg-white transition-all" />
                     </div>
                 </form>
             </div>
 
             <!-- Right Icons -->
-            <div class="flex items-center gap-1 ml-4 flex-shrink-0">
+            <div class="flex items-center gap-0.5 ml-3 flex-shrink-0">
 
                 <!-- Wishlist -->
-                <a href="/Wishlist" class="relative flex items-center justify-center w-10 h-10 hover:bg-gray-100 rounded-full transition-colors" title="Yêu thích">
-                    <i data-lucide="heart" class="w-5 h-5 text-gray-700"></i>
+                <a href="/Wishlist" class="relative flex items-center justify-center w-9 h-9 hover:bg-gray-100 transition-colors" title="Yêu thích">
+                    <i data-lucide="heart" class="w-4.5 h-4.5 text-gray-700" style="width:18px;height:18px"></i>
                     @{
                         var totalWishlist = Web.Helpers.WishlistManager.GetTotalItems(Context.Session);
                         if (totalWishlist > 0)
                         {
-                            <span class="absolute top-0.5 right-0.5 bg-[#D0151C] text-white text-[8px] rounded-full w-4 h-4 flex items-center justify-center font-bold leading-none">@totalWishlist</span>
+                            <span class="absolute top-1 right-1 bg-black text-white text-[8px] rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold leading-none">@totalWishlist</span>
                         }
                     }
                 </a>
 
-                <!-- Account / User -->
+                <!-- Account -->
                 @if (User.Identity?.IsAuthenticated == true)
                 {
                     var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "User";
                     <div class="relative" id="user-menu-btn">
-                        <button class="flex items-center justify-center w-10 h-10 hover:bg-gray-100 rounded-full transition-colors" title="@userName">
-                            <i data-lucide="user" class="w-5 h-5 text-gray-700"></i>
+                        <button class="flex items-center justify-center w-9 h-9 hover:bg-gray-100 transition-colors" title="@userName">
+                            <i data-lucide="user" style="width:18px;height:18px" class="text-gray-700"></i>
                         </button>
-                        <div class="absolute right-0 top-full mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-xl hidden overflow-hidden z-50 py-1" id="user-menu-dropdown">
-                            <div class="px-4 py-2 border-b border-gray-100">
+                        <div class="absolute right-0 top-full mt-1 w-52 bg-white border border-gray-200 shadow-lg hidden overflow-hidden z-50 py-1" id="user-menu-dropdown">
+                            <div class="px-4 py-2.5 border-b border-gray-100">
                                 <p class="text-xs font-bold text-gray-900 truncate">@userName</p>
-                                <p class="text-[10px] text-gray-400">Tài khoản của tôi</p>
+                                <p class="text-[10px] text-gray-400 mt-0.5">Tài khoản của tôi</p>
                             </div>
                             @if (User.IsInRole("admin"))
                             {
-                                <a href="/Admin/Dashboard" class="flex items-center gap-2 px-4 py-2.5 text-xs font-extrabold text-[#D0151C] hover:bg-red-50 uppercase tracking-wider border-b border-gray-100">
+                                <a href="/Admin/Dashboard" class="flex items-center gap-2 px-4 py-2.5 text-[11px] font-bold text-black hover:bg-gray-50 uppercase tracking-wider border-b border-gray-100">
                                     <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
                                     Admin Panel
                                 </a>
                             }
-                            <a href="/Customer/Orders" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+                            <a href="/Customer/Orders" class="flex items-center gap-2 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50">
                                 <i data-lucide="package" class="w-3.5 h-3.5 text-gray-400"></i>
                                 Đơn hàng của tôi
                             </a>
-                            <a href="/Wishlist" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+                            <a href="/Wishlist" class="flex items-center gap-2 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50">
                                 <i data-lucide="heart" class="w-3.5 h-3.5 text-gray-400"></i>
                                 Danh sách yêu thích
                             </a>
                             <div class="border-t border-gray-100 mt-1">
-                                <a href="/Public/Account/Logout" class="flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50">
+                                <a href="/Public/Account/Logout" class="flex items-center gap-2 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50">
                                     <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
                                     Đăng xuất
                                 </a>
@@ -113,87 +105,66 @@
                 }
                 else
                 {
-                    <a href="/Public/Account/Login" class="flex items-center justify-center w-10 h-10 hover:bg-gray-100 rounded-full transition-colors" title="Đăng nhập">
-                        <i data-lucide="user" class="w-5 h-5 text-gray-700"></i>
+                    <a href="/Public/Account/Login" class="flex items-center justify-center w-9 h-9 hover:bg-gray-100 transition-colors" title="Đăng nhập">
+                        <i data-lucide="user" style="width:18px;height:18px" class="text-gray-700"></i>
                     </a>
                 }
 
-                <!-- Cart (opens drawer) -->
-                @{
-                    var totalCartItems = Web.Helpers.CartManager.GetTotalItems(Context.Session);
-                }
+                <!-- Cart -->
+                @{ var totalCartItems = Web.Helpers.CartManager.GetTotalItems(Context.Session); }
                 <button onclick="openCartDrawer()"
-                        class="relative flex items-center justify-center w-10 h-10 hover:bg-gray-100 rounded-full transition-colors"
-                        title="Giỏ hàng"
-                        aria-label="Mở giỏ hàng">
-                    <i data-lucide="shopping-bag" class="w-5 h-5 text-gray-700"></i>
+                        class="relative flex items-center justify-center w-9 h-9 hover:bg-gray-100 transition-colors"
+                        title="Giỏ hàng" aria-label="Mở giỏ hàng">
+                    <i data-lucide="shopping-bag" style="width:18px;height:18px" class="text-gray-700"></i>
                     <span id="header-cart-badge"
-                          class="absolute top-0.5 right-0.5 bg-gray-900 text-white text-[8px] rounded-full w-4 h-4 flex items-center justify-center font-bold leading-none @(totalCartItems == 0 ? "hidden" : "")">@totalCartItems</span>
+                          class="absolute top-1 right-1 bg-black text-white text-[8px] rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold leading-none @(totalCartItems == 0 ? "hidden" : "")">@totalCartItems</span>
                 </button>
 
-
-                <!-- Mobile Menu Toggle -->
-                <button class="lg:hidden flex items-center justify-center w-10 h-10 hover:bg-gray-100 rounded-full transition-colors" id="mobile-menu-btn" aria-controls="mobile-menu" aria-expanded="false" aria-label="Mở menu">
-                    <i data-lucide="menu" class="w-5 h-5 text-gray-700"></i>
+                <!-- Mobile Toggle -->
+                <button class="lg:hidden flex items-center justify-center w-9 h-9 hover:bg-gray-100 transition-colors" id="mobile-menu-btn" aria-label="Menu">
+                    <i data-lucide="menu" style="width:18px;height:18px" class="text-gray-700"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Mobile Navigation -->
-        <nav id="mobile-menu" class="hidden lg:hidden border-t border-gray-100 pt-3 pb-4 space-y-0.5">
-            <a href="/Shop" class="flex items-center gap-3 px-3 py-2.5 text-[13px] font-bold tracking-widest uppercase hover:bg-gray-50 rounded-lg text-gray-900 transition-colors">SHOP</a>
-            <a href="/sale" class="flex items-center gap-3 px-3 py-2.5 text-[13px] font-bold tracking-widest uppercase hover:bg-gray-50 rounded-lg text-gray-900 transition-colors">SALE</a>
-            <a href="/rolling-stones" class="flex items-center gap-3 px-3 py-2.5 text-[13px] font-bold tracking-widest uppercase hover:bg-gray-50 rounded-lg text-gray-900 transition-colors">ROLLING STONES</a>
-            <a href="/collabs" class="flex items-center gap-3 px-3 py-2.5 text-[13px] font-bold tracking-widest uppercase hover:bg-gray-50 rounded-lg text-gray-900 transition-colors">COLLAB'S</a>
-            <a href="/outlet" class="flex items-center gap-3 px-3 py-2.5 text-[13px] font-bold tracking-widest uppercase hover:bg-gray-50 rounded-lg text-gray-900 transition-colors">OUTLET</a>
-            <a href="/about" class="flex items-center gap-3 px-3 py-2.5 text-[13px] font-bold tracking-widest uppercase hover:bg-gray-50 rounded-lg text-gray-900 transition-colors">ABOUT</a>
-            <!-- Mobile Search -->
-            <form action="/Shop" method="get" class="px-3 pt-2">
-                <div class="relative flex items-center">
-                    <i data-lucide="search" class="absolute left-3 w-4 h-4 text-gray-400 pointer-events-none"></i>
-                    <input type="text" name="SearchQuery" placeholder="Tìm kiếm sản phẩm..."
-                           class="w-full bg-gray-100 rounded-full pl-10 pr-4 py-2 text-sm text-gray-700 placeholder-gray-400 outline-none" />
-                </div>
-            </form>
+        <!-- Mobile Nav -->
+        <nav id="mobile-menu" class="hidden lg:hidden border-t border-gray-100 py-3 space-y-0.5">
+            <a href="/Shop" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase hover:bg-gray-50 text-gray-900 transition-colors">SHOP</a>
+            <a href="/sale" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase hover:bg-gray-50 text-gray-900 transition-colors">SALE</a>
+            <a href="/rolling-stones" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase hover:bg-gray-50 text-gray-900 transition-colors">ROLLING STONES</a>
+            <a href="/collabs" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase hover:bg-gray-50 text-gray-900 transition-colors">COLLAB'S</a>
+            <a href="/outlet" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase hover:bg-gray-50 text-gray-900 transition-colors">OUTLET</a>
+            <a href="/about" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase hover:bg-gray-50 text-gray-900 transition-colors">ABOUT</a>
+            <div class="px-3 pt-2 pb-1">
+                <form action="/Shop" method="get">
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none"></i>
+                        <input type="text" name="SearchQuery" placeholder="Tìm kiếm..."
+                               class="w-full bg-gray-50 border border-gray-200 pl-9 pr-4 py-2 text-xs outline-none" />
+                    </div>
+                </form>
+            </div>
         </nav>
     </div>
 </header>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Toggle mobile menu
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        if (mobileMenuBtn && mobileMenu) {
-            mobileMenuBtn.addEventListener('click', function() {
-                const isOpen = !mobileMenu.classList.contains('hidden');
-                mobileMenu.classList.toggle('hidden');
-                mobileMenuBtn.setAttribute('aria-expanded', (!isOpen).toString());
-                // Toggle between menu and X icon
-                const icon = mobileMenuBtn.querySelector('[data-lucide]');
-                if (icon) {
-                    icon.setAttribute('data-lucide', isOpen ? 'menu' : 'x');
-                    if (window.lucide) lucide.createIcons();
-                }
+    document.addEventListener('DOMContentLoaded', function () {
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        if (btn && menu) {
+            btn.addEventListener('click', function () {
+                const open = !menu.classList.contains('hidden');
+                menu.classList.toggle('hidden');
+                const icon = btn.querySelector('[data-lucide]');
+                if (icon) { icon.setAttribute('data-lucide', open ? 'menu' : 'x'); if (window.lucide) lucide.createIcons(); }
             });
         }
-
-        // Toggle user dropdown on click
-        const userMenuBtn = document.getElementById('user-menu-btn');
-        const userMenuDropdown = document.getElementById('user-menu-dropdown');
-
-        if (userMenuBtn && userMenuDropdown) {
-            userMenuBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                userMenuDropdown.classList.toggle('hidden');
-            });
-
-            document.addEventListener('click', function(e) {
-                if (!userMenuDropdown.contains(e.target) && !userMenuBtn.contains(e.target)) {
-                    userMenuDropdown.classList.add('hidden');
-                }
-            });
+        const userBtn = document.getElementById('user-menu-btn');
+        const userDrop = document.getElementById('user-menu-dropdown');
+        if (userBtn && userDrop) {
+            userBtn.addEventListener('click', e => { e.stopPropagation(); userDrop.classList.toggle('hidden'); });
+            document.addEventListener('click', e => { if (!userDrop.contains(e.target) && !userBtn.contains(e.target)) userDrop.classList.add('hidden'); });
         }
     });
 </script>

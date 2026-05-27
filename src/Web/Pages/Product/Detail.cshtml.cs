@@ -21,12 +21,50 @@ public class DetailModel : PageModel
     
     public List<Domain.Models.Product> RelatedProducts { get; set; } = new();
     public List<ProductReview> Reviews { get; set; } = new();
+    
+    public double AverageRating { get; set; }
+    public int TotalReviews { get; set; }
+    public Dictionary<int, int> RatingCounts { get; set; } = new() { {5, 0}, {4, 0}, {3, 0}, {2, 0}, {1, 0} };
+    public Dictionary<int, double> RatingPercentages { get; set; } = new() { {5, 0}, {4, 0}, {3, 0}, {2, 0}, {1, 0} };
+    public int? SelectedRatingFilter { get; set; }
 
-    public List<ColorOption> Colors { get; set; } = new()
+    public List<ColorOption> Colors { get; set; } = new();
+
+    // Maps common color names (lowercase) → CSS hex values
+    private static readonly Dictionary<string, string> ColorHexMap = new(StringComparer.OrdinalIgnoreCase)
     {
-        new() { Name = "White", Value = "white", Hex = "#FFFFFF" },
-        new() { Name = "Black", Value = "black", Hex = "#000000" },
-        new() { Name = "Slate Gray", Value = "gray", Hex = "#708090" }
+        ["white"]       = "#FFFFFF",
+        ["black"]       = "#111111",
+        ["gray"]        = "#708090",
+        ["grey"]        = "#708090",
+        ["slate"]       = "#708090",
+        ["slate gray"]  = "#708090",
+        ["slate grey"]  = "#708090",
+        ["navy"]        = "#1B2A4A",
+        ["blue"]        = "#3B82F6",
+        ["red"]         = "#DC2626",
+        ["green"]       = "#16A34A",
+        ["olive"]       = "#6B7C3A",
+        ["beige"]       = "#D4C5A9",
+        ["cream"]       = "#FFFDD0",
+        ["brown"]       = "#92400E",
+        ["khaki"]       = "#C3B091",
+        ["yellow"]      = "#EAB308",
+        ["orange"]      = "#F97316",
+        ["pink"]        = "#EC4899",
+        ["purple"]      = "#7C3AED",
+        ["charcoal"]    = "#374151",
+        ["off white"]   = "#F5F5F0",
+        ["off-white"]   = "#F5F5F0",
+        ["light gray"]  = "#D1D5DB",
+        ["light grey"]  = "#D1D5DB",
+        ["dark gray"]   = "#374151",
+        ["dark grey"]   = "#374151",
+        ["sand"]        = "#C2B280",
+        ["stone"]       = "#A8A29E",
+        ["ecru"]        = "#C2B280",
+        ["natural"]     = "#E8DCC8",
+        ["vintage"]     = "#C4A882",
     };
 
     [BindProperty]
@@ -109,12 +147,14 @@ public class DetailModel : PageModel
         }
     }
 
-    public async Task<IActionResult> OnGetAsync(string slug)
+    public async Task<IActionResult> OnGetAsync(string slug, int? ratingFilter = null)
     {
         if (string.IsNullOrEmpty(slug))
         {
             return RedirectToPage("/Index");
         }
+
+        SelectedRatingFilter = ratingFilter;
 
         // Try getting from DB (include images/variants)
         Product = await _productRepository.GetBySlugAsync(slug);
@@ -143,7 +183,7 @@ public class DetailModel : PageModel
                     ProductImagesByColor[g.Key] = g.Select(x => x.ImageUrl).ToList();
                 }
 
-                // Set initial color to white if available, otherwise first group
+                // Set initial color to first group (prefer white if exists)
                 var initial = ProductImagesByColor.ContainsKey("white") ? "white" : ProductImagesByColor.Keys.FirstOrDefault() ?? "default";
                 SelectedColor = initial;
                 ProductImagesList = ProductImagesByColor.ContainsKey(initial) ? ProductImagesByColor[initial] : new List<string>();
@@ -164,6 +204,51 @@ public class DetailModel : PageModel
                     ProductImagesList.Add("https://images.unsplash.com/photo-1695131023163-1e04e1345a91?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080");
                 }
             }
+
+            // ── Build Colors list dynamically from image color keys ──────────────
+            // Priority: variant ColorHex → ColorHexMap → fallback gray
+            var variantHexLookup = Product.ProductVariants?
+                .Where(v => !string.IsNullOrEmpty(v.Color) && !string.IsNullOrEmpty(v.ColorHex))
+                .GroupBy(v => v.Color!.ToLowerInvariant())
+                .ToDictionary(g => g.Key, g => g.First().ColorHex!) 
+                ?? new Dictionary<string, string>();
+
+            var colorKeys = ProductImagesByColor.Keys.Where(k => k != "default").ToList();
+            if (colorKeys.Any())
+            {
+                Colors = colorKeys.Select(key =>
+                {
+                    string hex = variantHexLookup.TryGetValue(key, out var vh) && !string.IsNullOrEmpty(vh)
+                        ? vh
+                        : ColorHexMap.TryGetValue(key, out var mh) ? mh : "#9CA3AF";
+                    return new ColorOption
+                    {
+                        Name = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(key),
+                        Value = key,
+                        Hex = hex
+                    };
+                }).ToList();
+            }
+            else if (Product.ProductVariants != null && Product.ProductVariants.Any(v => !string.IsNullOrEmpty(v.Color)))
+            {
+                Colors = Product.ProductVariants
+                    .Where(v => !string.IsNullOrEmpty(v.Color))
+                    .GroupBy(v => v.Color!.ToLowerInvariant())
+                    .Select(g =>
+                    {
+                        var first = g.First();
+                        string hex = !string.IsNullOrEmpty(first.ColorHex)
+                            ? first.ColorHex
+                            : ColorHexMap.TryGetValue(g.Key, out var mh) ? mh : "#9CA3AF";
+                        return new ColorOption
+                        {
+                            Name = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(g.Key),
+                            Value = g.Key,
+                            Hex = hex
+                        };
+                    }).ToList();
+            }
+            // else Colors stays as empty list — fallback handled in Razor
         }
 
         // Fetch Related Products (4 items from the same category)
@@ -178,10 +263,35 @@ public class DetailModel : PageModel
         // Fetch Product Reviews
         if (Product != null)
         {
-            Reviews = await _context.ProductReviews
+            var allReviews = await _context.ProductReviews
                 .Where(r => r.ProductId == Product.Id)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
+
+            TotalReviews = allReviews.Count;
+            if (TotalReviews > 0)
+            {
+                AverageRating = Math.Round(allReviews.Average(r => r.Rating), 1);
+                for (int star = 1; star <= 5; star++)
+                {
+                    int count = allReviews.Count(r => r.Rating == star);
+                    RatingCounts[star] = count;
+                    RatingPercentages[star] = Math.Round((double)count / TotalReviews * 100, 1);
+                }
+            }
+            else
+            {
+                AverageRating = 0;
+            }
+
+            if (ratingFilter.HasValue && ratingFilter.Value >= 1 && ratingFilter.Value <= 5)
+            {
+                Reviews = allReviews.Where(r => r.Rating == ratingFilter.Value).ToList();
+            }
+            else
+            {
+                Reviews = allReviews;
+            }
         }
 
         return Page();
@@ -263,6 +373,15 @@ public class DetailModel : PageModel
                 userId = parsedId;
             }
 
+            bool isVerifiedPurchase = false;
+            if (userId > 0)
+            {
+                isVerifiedPurchase = await _context.Orders
+                    .AnyAsync(o => o.UserId == userId && 
+                                   o.OrderItems.Any(oi => oi.ProductId == Product.Id) &&
+                                   o.Status != "cancelled");
+            }
+
             var review = new ProductReview
             {
                 ProductId = Product.Id,
@@ -270,6 +389,7 @@ public class DetailModel : PageModel
                 Rating = Rating,
                 Title = string.IsNullOrWhiteSpace(ReviewerName) ? "Khách hàng" : ReviewerName, // Reuse Title field for display name
                 Comment = ReviewContent,
+                IsVerifiedPurchase = isVerifiedPurchase,
                 CreatedAt = DateTime.Now
             };
 

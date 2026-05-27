@@ -1,0 +1,55 @@
+@page "/Collections"
+@model Web.Pages.CollectionsModel
+@{
+    ViewData["Title"] = "Bộ Sưu Tập - The Old Pavement";
+}
+
+<main class="pt-8 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto pb-16">
+    <!-- Header -->
+    <div class="border-b border-gray-200 pb-6 mb-12">
+        <p class="text-xs tracking-widest text-gray-400 font-bold uppercase mb-2">LOOKBOOK / SEASONS</p>
+        <h1 class="text-4xl md:text-5xl font-black tracking-tight text-gray-950 uppercase">BỘ SƯU TẬP</h1>
+    </div>
+
+    <!-- Collections List -->
+    <div class="space-y-16">
+        @if (Model.CollectionsList.Any())
+        {
+            foreach (var col in Model.CollectionsList)
+            {
+                <div class="group relative bg-gray-50 border border-gray-200 overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[450px]">
+                    <!-- Left: Hero Image -->
+                    <div class="lg:col-span-7 h-[300px] lg:h-auto overflow-hidden relative">
+                        <img src="@col.HeroImageUrl" alt="@col.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                        <div class="absolute inset-0 bg-black/10"></div>
+                        <div class="absolute top-6 left-6 bg-black text-white px-3 py-1 text-xs font-bold uppercase tracking-widest">
+                            @col.Season @col.Year
+                        </div>
+                    </div>
+
+                    <!-- Right: Info -->
+                    <div class="lg:col-span-5 p-8 md:p-12 flex flex-col justify-between bg-white">
+                        <div class="space-y-6">
+                            <span class="text-[10px] text-gray-400 font-extrabold uppercase tracking-widest">COLLECTION SELECTION</span>
+                            <h2 class="text-3xl font-black text-gray-950 uppercase tracking-tight leading-none">@col.Name</h2>
+                            <p class="text-sm text-gray-600 leading-relaxed">@col.Description</p>
+                        </div>
+
+                        <div class="pt-8">
+                            <a href="/Collection/@col.Slug" class="inline-block bg-black text-white px-8 py-4 text-xs font-bold tracking-widest hover:bg-gray-800 transition-colors uppercase">
+                                Khám phá bộ sưu tập →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-24 border border-dashed border-gray-300 bg-gray-50">
+                <i data-lucide="layers" class="w-12 h-12 text-gray-300 mx-auto mb-4"></i>
+                <p class="text-gray-500 italic text-sm">Hiện tại chưa có bộ sưu tập nào hoạt động.</p>
+            </div>
+        }
+    </div>
+</main>
