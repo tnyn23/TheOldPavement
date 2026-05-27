@@ -1,0 +1,92 @@
+@* 
+    Reusable Pagination Partial
+    Usage: @await Html.PartialAsync("_Pagination", new Web.Models.PaginationModel { ... })
+    
+    Parameters via ViewData or Model:
+    - CurrentPage (int)
+    - TotalPages (int)  
+    - BaseUrl (string) — URL without page param, e.g. "/Shop?category=tee"
+    - PageParam (string) — query param name, default "page"
+*@
+@model Web.Models.PaginationModel
+
+@if (Model != null && Model.TotalPages > 1)
+{
+    var param = Model.PageParam ?? "page";
+    var sep = Model.BaseUrl?.Contains("?") == true ? "&" : "?";
+
+    <nav class="flex items-center justify-between pt-6 border-t border-gray-100" aria-label="Pagination">
+        <p class="text-xs text-gray-400 font-medium">
+            Trang <span class="font-bold text-gray-900">@Model.CurrentPage</span> / @Model.TotalPages
+        </p>
+        <div class="flex items-center gap-1">
+            <!-- Prev -->
+            @if (Model.CurrentPage > 1)
+            {
+                <a href="@(Model.BaseUrl)@(sep)@(param)=@(Model.CurrentPage - 1)"
+                   class="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 hover:border-black hover:text-black transition-colors text-xs font-bold"
+                   aria-label="Trang trước">
+                    <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                </a>
+            }
+            else
+            {
+                <span class="w-8 h-8 flex items-center justify-center border border-gray-100 text-gray-300 text-xs cursor-not-allowed">
+                    <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                </span>
+            }
+
+            <!-- Page numbers -->
+            @{
+                int start = Math.Max(1, Model.CurrentPage - 2);
+                int end   = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+            }
+            @if (start > 1)
+            {
+                <a href="@(Model.BaseUrl)@(sep)@(param)=1"
+                   class="w-8 h-8 flex items-center justify-center border border-gray-200 text-xs font-semibold text-gray-600 hover:border-black hover:text-black transition-colors">1</a>
+                @if (start > 2)
+                {
+                    <span class="w-8 h-8 flex items-center justify-center text-xs text-gray-400">…</span>
+                }
+            }
+            @for (int pg = start; pg <= end; pg++)
+            {
+                if (pg == Model.CurrentPage)
+                {
+                    <span class="w-8 h-8 flex items-center justify-center bg-black text-white text-xs font-bold">@pg</span>
+                }
+                else
+                {
+                    <a href="@(Model.BaseUrl)@(sep)@(param)=@pg"
+                       class="w-8 h-8 flex items-center justify-center border border-gray-200 text-xs font-semibold text-gray-600 hover:border-black hover:text-black transition-colors">@pg</a>
+                }
+            }
+            @if (end < Model.TotalPages)
+            {
+                @if (end < Model.TotalPages - 1)
+                {
+                    <span class="w-8 h-8 flex items-center justify-center text-xs text-gray-400">…</span>
+                }
+                <a href="@(Model.BaseUrl)@(sep)@(param)=@Model.TotalPages"
+                   class="w-8 h-8 flex items-center justify-center border border-gray-200 text-xs font-semibold text-gray-600 hover:border-black hover:text-black transition-colors">@Model.TotalPages</a>
+            }
+
+            <!-- Next -->
+            @if (Model.CurrentPage < Model.TotalPages)
+            {
+                <a href="@(Model.BaseUrl)@(sep)@(param)=@(Model.CurrentPage + 1)"
+                   class="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 hover:border-black hover:text-black transition-colors text-xs font-bold"
+                   aria-label="Trang sau">
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                </a>
+            }
+            else
+            {
+                <span class="w-8 h-8 flex items-center justify-center border border-gray-100 text-gray-300 text-xs cursor-not-allowed">
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                </span>
+            }
+        </div>
+    </nav>
+}

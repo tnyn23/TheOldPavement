@@ -227,8 +227,12 @@
     <!-- Results count -->
     <div class="flex items-center justify-between py-5">
         <p class="text-xs text-gray-500 font-medium">
-            Hiển thị <span class="font-black text-black">@Model.Products.Count</span> sản phẩm
+            Hiển thị <span class="font-black text-black">@Model.Products.Count</span> / <span class="font-black text-black">@Model.TotalCount</span> sản phẩm
         </p>
+        @if (Model.TotalPages > 1)
+        {
+            <p class="text-xs text-gray-400">Trang @Model.Page / @Model.TotalPages</p>
+        }
     </div>
 
     <!-- Product Grid -->
@@ -240,6 +244,23 @@
                 @await Html.PartialAsync("_ProductCard", p)
             }
         </div>
+
+        @{
+            // Build base URL preserving all current filters except page
+            var qs = new System.Text.StringBuilder("/Shop?");
+            if (!string.IsNullOrEmpty(Model.SearchQuery)) qs.Append($"SearchQuery={Uri.EscapeDataString(Model.SearchQuery)}&");
+            if (!string.IsNullOrEmpty(Model.Category) && Model.Category != "all") qs.Append($"Category={Uri.EscapeDataString(Model.Category)}&");
+            if (Model.MinPrice.HasValue) qs.Append($"MinPrice={Model.MinPrice}&");
+            if (Model.MaxPrice.HasValue) qs.Append($"MaxPrice={Model.MaxPrice}&");
+            if (!string.IsNullOrEmpty(Model.SortBy) && Model.SortBy != "newest") qs.Append($"SortBy={Model.SortBy}&");
+            var baseUrl = qs.ToString().TrimEnd('&', '?');
+        }
+        @await Html.PartialAsync("_Pagination", new Web.Models.PaginationModel {
+            CurrentPage = Model.Page,
+            TotalPages  = Model.TotalPages,
+            BaseUrl     = baseUrl,
+            PageParam   = "Page"
+        })
     }
     else
     {

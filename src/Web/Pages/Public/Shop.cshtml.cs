@@ -15,6 +15,12 @@ public class ShopModel : PageModel
     }
 
     public List<Domain.Models.Product> Products { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int TotalPages { get; set; }
+    public const int PageSize = 12;
+
+    [BindProperty(SupportsGet = true)]
+    public int Page { get; set; } = 1;
 
     [BindProperty(SupportsGet = true)]
     public string? SearchQuery { get; set; }
@@ -33,9 +39,11 @@ public class ShopModel : PageModel
 
     public async Task OnGetAsync()
     {
+        if (Page < 1) Page = 1;
+
         var query = _context.Products
             .Include(p => p.ProductImages)
-            .Where(p => p.Status != "hidden"); // Or any other inactive status
+            .Where(p => p.Status != "hidden");
 
         // 1. Search Filter
         if (!string.IsNullOrWhiteSpace(SearchQuery))
@@ -52,26 +60,30 @@ public class ShopModel : PageModel
 
         // 3. Price Filter
         if (MinPrice.HasValue)
-        {
             query = query.Where(p => p.Price >= MinPrice.Value);
-        }
         if (MaxPrice.HasValue)
-        {
             query = query.Where(p => p.Price <= MaxPrice.Value);
-        }
 
         // 4. Sorting
         query = SortBy switch
         {
-            "price_asc" => query.OrderBy(p => p.Price),
-            "price_desc" => query.OrderByDescending(p => p.Price),
-            "name_asc" => query.OrderBy(p => p.Name),
-            "name_desc" => query.OrderByDescending(p => p.Name),
+            "price_asc"   => query.OrderBy(p => p.Price),
+            "price_desc"  => query.OrderByDescending(p => p.Price),
+            "name_asc"    => query.OrderBy(p => p.Name),
+            "name_desc"   => query.OrderByDescending(p => p.Name),
             "bestselling" => query.OrderByDescending(p => p.OrderItems.Count),
-            _ => query.OrderByDescending(p => p.CreatedAt) // default "newest"
+            _             => query.OrderByDescending(p => p.CreatedAt)
         };
 
-        Products = await query.ToListAsync();
+        // 5. Pagination
+        TotalCount = await query.CountAsync();
+        TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
+        if (Page > TotalPages && TotalPages > 0) Page = TotalPages;
+
+        Products = await query
+            .Skip((Page - 1) * PageSize)
+            .Take(PageSize)
+            .ToListAsync();
     }
 }
 
