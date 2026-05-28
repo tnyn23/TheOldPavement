@@ -330,12 +330,43 @@ public class DashboardModel : PageModel
     }
 
     public async Task<IActionResult> OnPostSaveProductAsync(
-        int? id, string name, string slug, decimal price, string category, string status,
+        int? id, string? name, string? slug, decimal price, string? category, string? status,
         string? description, bool isOnSale, int? discountPercentage, decimal? originalPrice,
         bool isCollab, string? collabPartner, bool isFeatured, bool isLimitedEdition, int? limitedQuantity)
     {
+        // Guard: name and slug are required
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(slug))
+        {
+            TempData["ErrorMessage"] = "Tên sản phẩm và Slug không được để trống!";
+            return RedirectToPage();
+        }
+
+        name     = name.Trim();
+        slug     = slug.Trim().ToLowerInvariant();
+        category = (category ?? "tee").Trim();
+        status   = (status ?? "available").Trim();
+
+        // Validate category against DB enum
+        var validCategories = new[] { "tee", "hoodie", "accessories" };
+        if (!validCategories.Contains(category))
+        {
+            TempData["ErrorMessage"] = $"Danh mục '{category}' không hợp lệ. Chỉ chấp nhận: tee, hoodie, accessories.";
+            return RedirectToPage();
+        }
+
+        // Validate status against DB enum
+        var validStatuses = new[] { "available", "sold_out", "coming_soon", "discontinued" };
+        if (!validStatuses.Contains(status))
+        {
+            TempData["ErrorMessage"] = $"Trạng thái '{status}' không hợp lệ.";
+            return RedirectToPage();
+        }
+
         var uploadDir = Path.Combine(_environment.WebRootPath, "images", "products");
         if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
+
+        try
+        {
 
         if (id.HasValue && id.Value > 0)
         {
@@ -517,6 +548,18 @@ public class DashboardModel : PageModel
         }
 
         return RedirectToPage();
+        }
+        catch (Exception ex)
+        {
+            var innerMsg = ex.InnerException?.Message ?? ex.Message;
+            if (innerMsg.Contains("Duplicate entry") || innerMsg.Contains("unique"))
+                TempData["ErrorMessage"] = $"Slug '{slug}' đã tồn tại. Vui lòng dùng slug khác!";
+            else if (innerMsg.Contains("Data truncated") || innerMsg.Contains("enum"))
+                TempData["ErrorMessage"] = $"Giá trị không hợp lệ: {innerMsg}";
+            else
+                TempData["ErrorMessage"] = $"Lỗi khi lưu sản phẩm: {innerMsg}";
+            return RedirectToPage();
+        }
     }
 
     public async Task<IActionResult> OnPostDeleteProductAsync(int id)

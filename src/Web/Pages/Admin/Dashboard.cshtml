@@ -610,7 +610,9 @@
                         <select id="products-status" onchange="filterTable('products')" class="form-input form-select text-xs py-2">
                             <option value="">Tất cả</option>
                             <option value="available">Đang bán</option>
-                            <option value="hidden">Ẩn</option>
+                            <option value="sold_out">Hết hàng</option>
+                            <option value="coming_soon">Sắp ra mắt</option>
+                            <option value="discontinued">Ngừng bán</option>
                         </select>
                     </div>
                     <div class="min-w-[130px]">
@@ -651,7 +653,13 @@
                                            ?? p.ProductImages?.FirstOrDefault()?.ImageUrl
                                            ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?w=80&q=60";
                                     var statusCls = p.Status?.ToLower() == "available" ? "badge-active" : "badge-inactive";
-                                    var statusLbl = p.Status?.ToLower() == "available" ? "Đang bán" : "Ẩn";
+                                    var statusLbl = p.Status?.ToLower() switch {
+                                        "available" => "Đang bán",
+                                        "sold_out" => "Hết hàng",
+                                        "coming_soon" => "Sắp ra mắt",
+                                        "discontinued" => "Ngừng bán",
+                                        _ => p.Status ?? "—"
+                                    };
                                     var variantCount = p.ProductVariants?.Count ?? 0;
                                     var tagFlags = string.Join(" ", new[] {
                                         p.IsOnSale == true ? "sale" : "",
@@ -1017,8 +1025,6 @@
                             <select id="product-category" name="category" class="form-input form-select">
                                 <option value="tee">Tee</option>
                                 <option value="hoodie">Hoodie</option>
-                                <option value="pants">Pants</option>
-                                <option value="jacket">Jacket</option>
                                 <option value="accessories">Accessories</option>
                             </select>
                         </div>
@@ -1026,7 +1032,9 @@
                             <label class="form-label">Trạng thái hiển thị</label>
                             <select id="product-status" name="status" class="form-input form-select">
                                 <option value="available">Đang bán</option>
-                                <option value="hidden">Ẩn</option>
+                                <option value="sold_out">Hết hàng</option>
+                                <option value="coming_soon">Sắp ra mắt</option>
+                                <option value="discontinued">Ngừng bán</option>
                             </select>
                         </div>
                         <div class="flex items-center gap-3 pt-5">

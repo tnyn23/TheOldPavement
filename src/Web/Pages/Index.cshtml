@@ -1,4 +1,359 @@
 @page
+@model Web.Pages.IndexModel
 @{
-    Response.Redirect("/Shop", true);
+    ViewData["Title"] = "The Old Pavement — Streetwear Phố Cổ Hà Nội";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/product-card.css" asp-append-version="true" />
+    <style>
+        /* ── Hero Slideshow ── */
+        .hp-slide { position:absolute; inset:0; opacity:0; transition:opacity 1.2s ease; }
+        .hp-slide.active { opacity:1; }
+        .hp-slide img { width:100%; height:100%; object-fit:cover; }
+
+        /* ── Marquee ── */
+        .marquee-track { display:flex; gap:0; animation:marquee 22s linear infinite; white-space:nowrap; }
+        .marquee-track:hover { animation-play-state:paused; }
+        @@keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+        /* ── Category card hover ── */
+        .cat-card img { transition:transform 600ms ease; }
+        .cat-card:hover img { transform:scale(1.05); }
+    </style>
+}
+
+<!-- ══════════════════════════════════════════════════════
+     HERO — Full-screen slideshow
+══════════════════════════════════════════════════════ -->
+<section class="relative overflow-hidden bg-black" style="height:min(680px,90vh)">
+    @{
+        var heroSlides = new[] {
+            new { Img="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1920&q=80",
+                  Tag="SS 2026 Collection", Head="36 Phố Phường", Sub="Streetwear đậm chất phố cổ Hà Nội",
+                  Href="/Shop", Cta="Shop Now" },
+            new { Img="https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&fit=crop&w=1920&q=80",
+                  Tag="Official Collab 2026", Head="Rolling Stones × OP", Sub="Bộ sưu tập hợp tác giới hạn toàn cầu",
+                  Href="/rolling-stones", Cta="Xem Collab" },
+            new { Img="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1920&q=80",
+                  Tag="Outlet Clearance", Head="Up To 40% Off", Sub="Sản phẩm cuối mùa — số lượng có hạn",
+                  Href="/outlet", Cta="Xem Outlet" },
+        };
+    }
+
+    @for (int si = 0; si < heroSlides.Length; si++)
+    {
+        var s = heroSlides[si];
+        <div class="hp-slide @(si == 0 ? "active" : "")" data-slide="@si">
+            <img src="@s.Img" alt="@s.Head" loading="@(si == 0 ? "eager" : "lazy")" />
+            <div class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent"></div>
+        </div>
+    }
+
+    <!-- Content -->
+    <div class="absolute inset-0 z-10 flex items-center">
+        <div class="max-w-[1400px] mx-auto w-full px-4 md:px-8 lg:px-16">
+            @for (int si = 0; si < heroSlides.Length; si++)
+            {
+                var s = heroSlides[si];
+                <div class="hp-content @(si == 0 ? "" : "hidden")" data-content="@si">
+                    <p class="text-[10px] font-black tracking-[0.35em] uppercase text-white/60 mb-4">@s.Tag</p>
+                    <h1 class="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tight text-white leading-none mb-5">
+                        @s.Head
+                    </h1>
+                    <p class="text-sm md:text-base text-white/65 mb-8 max-w-md font-medium leading-relaxed">@s.Sub</p>
+                    <div class="flex items-center gap-4">
+                        <a href="@s.Href"
+                           class="inline-flex items-center gap-2.5 bg-white text-black px-8 py-3.5 text-xs font-black tracking-widest uppercase hover:bg-gray-100 transition-colors">
+                            @s.Cta
+                            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                        </a>
+                        <a href="/Shop" class="text-xs font-bold tracking-widest uppercase text-white/70 hover:text-white transition-colors">
+                            Xem tất cả →
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Dots -->
+    <div class="absolute bottom-6 right-6 z-20 flex items-center gap-2">
+        @for (int si = 0; si < heroSlides.Length; si++)
+        {
+            <button class="hp-dot h-0.5 bg-white/40 transition-all duration-300 @(si == 0 ? "w-10 bg-white" : "w-6")"
+                    data-dot="@si" onclick="hpGoSlide(@si)" aria-label="Slide @(si+1)"></button>
+        }
+    </div>
+
+    <!-- Arrows -->
+    <button onclick="hpPrev()" class="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 bg-black/30 hover:bg-black/60 flex items-center justify-center transition-colors" aria-label="Prev">
+        <i data-lucide="chevron-left" class="w-5 h-5 text-white"></i>
+    </button>
+    <button onclick="hpNext()" class="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 bg-black/30 hover:bg-black/60 flex items-center justify-center transition-colors" aria-label="Next">
+        <i data-lucide="chevron-right" class="w-5 h-5 text-white"></i>
+    </button>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     MARQUEE — Brand ticker
+══════════════════════════════════════════════════════ -->
+<div class="bg-black text-white py-3 overflow-hidden select-none">
+    <div class="marquee-track">
+        @for (int m = 0; m < 2; m++)
+        {
+            @foreach (var item in new[] { "THE OLD PAVEMENT", "STREETWEAR HÀ NỘI", "36 PHỐ PHƯỜNG", "LOCAL BRAND", "PREMIUM QUALITY", "EST. 2022", "COLLAB 2026" })
+            {
+                <span class="text-[10px] font-black tracking-[0.3em] uppercase px-8">@item</span>
+                <span class="text-[10px] text-white/30 px-2">·</span>
+            }
+        }
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     CATEGORY GRID
+══════════════════════════════════════════════════════ -->
+<section class="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 py-16">
+    <div class="flex items-end justify-between mb-8">
+        <div>
+            <p class="text-[10px] font-black tracking-[0.2em] uppercase text-gray-400 mb-1">Danh mục</p>
+            <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tight">Shop By Category</h2>
+        </div>
+        <a href="/Shop" class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors">Xem tất cả →</a>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        @{
+            var cats = new[] {
+                new { Label="Áo Thun", Value="Tee",         Img="https://images.unsplash.com/photo-1662103627854-ae7551d1eddb?w=600&q=80" },
+                new { Label="Hoodie",  Value="Hoodie",      Img="https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=600&q=80" },
+                new { Label="Quần",    Value="Pants",       Img="https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&q=80" },
+                new { Label="Phụ kiện",Value="Accessories", Img="https://images.unsplash.com/photo-1523779917675-b6ed3a42a561?w=600&q=80" },
+            };
+        }
+        @foreach (var cat in cats)
+        {
+            <a href="/Shop?Category=@cat.Value" class="cat-card group relative overflow-hidden bg-gray-100 aspect-[3/4] block">
+                <img src="@cat.Img" alt="@cat.Label" class="w-full h-full object-cover" loading="lazy" />
+                <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors"></div>
+                <div class="absolute bottom-0 left-0 right-0 p-4">
+                    <p class="text-white font-black text-sm uppercase tracking-widest">@cat.Label</p>
+                </div>
+            </a>
+        }
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     NEW ARRIVALS
+══════════════════════════════════════════════════════ -->
+<section class="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 pb-16">
+    <div class="flex items-end justify-between mb-8">
+        <div>
+            <p class="text-[10px] font-black tracking-[0.2em] uppercase text-gray-400 mb-1">Mới nhất</p>
+            <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tight">New Arrivals</h2>
+        </div>
+        <a href="/Shop?SortBy=newest" class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors">Xem tất cả →</a>
+    </div>
+    @if (Model.NewArrivals.Any())
+    {
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-12">
+            @foreach (var p in Model.NewArrivals)
+            {
+                @await Html.PartialAsync("_ProductCard", p)
+            }
+        </div>
+    }
+    else
+    {
+        <div class="py-16 text-center border-2 border-dashed border-gray-200">
+            <p class="text-sm text-gray-400">Chưa có sản phẩm mới.</p>
+        </div>
+    }
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     BRAND STORY BANNER
+══════════════════════════════════════════════════════ -->
+<section class="bg-black text-white">
+    <div class="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 py-20 md:py-28">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <p class="text-[10px] font-black tracking-[0.3em] uppercase text-white/50 mb-4">Our Story</p>
+                <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight leading-tight mb-6">
+                    Sinh ra từ<br/>phố cổ Hà Nội
+                </h2>
+                <p class="text-sm text-white/60 leading-relaxed mb-8 max-w-md">
+                    The Old Pavement là local brand streetwear mang tinh thần 36 phố phường. Mỗi thiết kế là một câu chuyện về Hà Nội — nơi truyền thống và hiện đại giao thoa, nơi văn hoá đường phố được tôn vinh.
+                </p>
+                <div class="flex items-center gap-8 mb-8">
+                    <div>
+                        <p class="text-3xl font-black">2022</p>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-white/40 mt-1">Thành lập</p>
+                    </div>
+                    <div class="w-px h-10 bg-white/20"></div>
+                    <div>
+                        <p class="text-3xl font-black">500+</p>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-white/40 mt-1">Khách hàng</p>
+                    </div>
+                    <div class="w-px h-10 bg-white/20"></div>
+                    <div>
+                        <p class="text-3xl font-black">100%</p>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-white/40 mt-1">Local Made</p>
+                    </div>
+                </div>
+                <a href="/about"
+                   class="inline-flex items-center gap-2.5 border border-white/30 text-white px-7 py-3 text-xs font-black tracking-widest uppercase hover:bg-white hover:text-black transition-colors">
+                    Về chúng tôi
+                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                </a>
+            </div>
+            <div class="relative aspect-[4/5] overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
+                     alt="Hanoi Street" class="w-full h-full object-cover opacity-80" loading="lazy" />
+                <div class="absolute bottom-6 left-6 bg-black/80 px-4 py-3 border border-white/20">
+                    <p class="text-[9px] font-black tracking-[0.2em] uppercase text-white/60">Phố Cổ Hà Nội</p>
+                    <p class="text-sm font-black text-white mt-0.5">36 Phố Phường</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SALE PRODUCTS (if any)
+══════════════════════════════════════════════════════ -->
+@if (Model.SaleProducts.Any())
+{
+    <section class="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 py-16">
+        <div class="flex items-end justify-between mb-8">
+            <div>
+                <p class="text-[10px] font-black tracking-[0.2em] uppercase text-red-500 mb-1">Đang giảm giá</p>
+                <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tight">Flash Sale</h2>
+            </div>
+            <a href="/sale" class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors">Xem tất cả →</a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-12">
+            @foreach (var p in Model.SaleProducts)
+            {
+                @await Html.PartialAsync("_ProductCard", p)
+            }
+        </div>
+    </section>
+}
+
+<!-- ══════════════════════════════════════════════════════
+     COLLAB BANNER
+══════════════════════════════════════════════════════ -->
+<section class="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 pb-16">
+    <a href="/rolling-stones" class="group relative overflow-hidden bg-black block aspect-[21/9] md:aspect-[21/7]">
+        <img src="https://images.unsplash.com/photo-1501612780327-45045538702b?auto=format&fit=crop&w=1920&q=80"
+             alt="Rolling Stones Collab"
+             class="w-full h-full object-cover opacity-50 group-hover:opacity-40 group-hover:scale-105 transition-all duration-700" loading="lazy" />
+        <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+        <div class="absolute inset-0 flex items-center px-8 md:px-16">
+            <div>
+                <span class="inline-block bg-white text-black text-[9px] font-black tracking-[0.2em] uppercase px-3 py-1.5 mb-4">Official Collab 2026</span>
+                <h2 class="text-3xl md:text-5xl font-black uppercase tracking-tight text-white leading-tight mb-3">
+                    The Old Pavement<br/>× The Rolling Stones
+                </h2>
+                <p class="text-sm text-white/60 mb-6 max-w-sm">Bộ sưu tập hợp tác chính thức giới hạn toàn cầu.</p>
+                <span class="inline-flex items-center gap-2 text-white text-xs font-black tracking-widest uppercase group-hover:gap-4 transition-all">
+                    Xem Collection
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </span>
+            </div>
+        </div>
+    </a>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     FEATURED PRODUCTS
+══════════════════════════════════════════════════════ -->
+@if (Model.FeaturedProducts.Any())
+{
+    <section class="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 pb-20">
+        <div class="flex items-end justify-between mb-8">
+            <div>
+                <p class="text-[10px] font-black tracking-[0.2em] uppercase text-gray-400 mb-1">Nổi bật</p>
+                <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tight">Featured</h2>
+            </div>
+            <a href="/Shop" class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors">Xem tất cả →</a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-12">
+            @foreach (var p in Model.FeaturedProducts)
+            {
+                @await Html.PartialAsync("_ProductCard", p)
+            }
+        </div>
+    </section>
+}
+
+<!-- ══════════════════════════════════════════════════════
+     TRUST BADGES
+══════════════════════════════════════════════════════ -->
+<section class="border-t border-gray-100">
+    <div class="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 py-12">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            @{
+                var badges = new[] {
+                    new { Icon="truck",        Title="Miễn phí ship",    Sub="Đơn từ 500.000₫" },
+                    new { Icon="shield-check", Title="Hàng chính hãng",  Sub="100% authentic" },
+                    new { Icon="refresh-cw",   Title="Đổi trả 7 ngày",   Sub="Không câu hỏi" },
+                    new { Icon="headphones",   Title="Hỗ trợ 24/7",      Sub="Luôn sẵn sàng" },
+                };
+            }
+            @foreach (var b in badges)
+            {
+                <div class="flex flex-col items-center gap-3">
+                    <div class="w-12 h-12 border border-gray-200 flex items-center justify-center">
+                        <i data-lucide="@b.Icon" class="w-5 h-5 text-gray-700"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-widest text-gray-900">@b.Title</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5 font-medium">@b.Sub</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/product-card.js" asp-append-version="true"></script>
+    <script>
+    // ── Hero Slideshow ──────────────────────────────────────────────────
+    let hpCurrent = 0;
+    const hpTotal = @heroSlides.Length;
+    let hpTimer = null;
+
+    function hpGoSlide(n) {
+        document.querySelectorAll('.hp-slide').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.hp-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.hp-dot').forEach(el => {
+            el.classList.remove('bg-white', 'w-10');
+            el.classList.add('bg-white/40', 'w-6');
+        });
+        hpCurrent = (n + hpTotal) % hpTotal;
+        document.querySelector(`.hp-slide[data-slide="${hpCurrent}"]`).classList.add('active');
+        document.querySelector(`.hp-content[data-content="${hpCurrent}"]`).classList.remove('hidden');
+        const dot = document.querySelector(`.hp-dot[data-dot="${hpCurrent}"]`);
+        dot.classList.remove('bg-white/40', 'w-6');
+        dot.classList.add('bg-white', 'w-10');
+        if (window.lucide) lucide.createIcons();
+    }
+    function hpNext() { hpGoSlide(hpCurrent + 1); hpReset(); }
+    function hpPrev() { hpGoSlide(hpCurrent - 1); hpReset(); }
+    function hpReset() { clearInterval(hpTimer); hpTimer = setInterval(() => hpGoSlide(hpCurrent + 1), 5500); }
+
+    // Touch swipe
+    let hpTouchX = 0;
+    document.querySelector('section')?.addEventListener('touchstart', e => { hpTouchX = e.touches[0].clientX; }, { passive: true });
+    document.querySelector('section')?.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - hpTouchX;
+        if (Math.abs(dx) > 50) dx < 0 ? hpNext() : hpPrev();
+    }, { passive: true });
+
+    hpReset();
+    </script>
 }

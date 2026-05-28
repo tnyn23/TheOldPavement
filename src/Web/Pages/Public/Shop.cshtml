@@ -6,328 +6,272 @@
         || (Model.Category != null && Model.Category != "all")
         || Model.MinPrice.HasValue || Model.MaxPrice.HasValue
         || (Model.SortBy != null && Model.SortBy != "newest");
+
+    // Build base URL for pagination (preserve all filters)
+    var qs = new System.Text.StringBuilder("/Shop?");
+    if (!string.IsNullOrEmpty(Model.SearchQuery)) qs.Append($"SearchQuery={Uri.EscapeDataString(Model.SearchQuery)}&");
+    if (!string.IsNullOrEmpty(Model.Category) && Model.Category != "all") qs.Append($"Category={Uri.EscapeDataString(Model.Category)}&");
+    if (Model.MinPrice.HasValue) qs.Append($"MinPrice={Model.MinPrice}&");
+    if (Model.MaxPrice.HasValue) qs.Append($"MaxPrice={Model.MaxPrice}&");
+    if (!string.IsNullOrEmpty(Model.SortBy) && Model.SortBy != "newest") qs.Append($"SortBy={Model.SortBy}&");
+    var shopBaseUrl = qs.ToString().TrimEnd('&', '?');
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/product-card.css" asp-append-version="true" />
     <style>
-        /* ── Hero Slideshow ── */
-        .hero-slide { position:absolute; inset:0; opacity:0; transition:opacity 1.2s ease; }
-        .hero-slide.active { opacity:1; }
-        .hero-slide img { width:100%; height:100%; object-fit:cover; }
-
-        /* ── Filter bar ── */
-        .filter-input {
-            width:100%; background:#fff; border:1px solid #e5e7eb;
-            padding:8px 12px; font-size:12px; font-weight:500; color:#111827;
-            outline:none; transition:border-color 150ms ease;
-            font-family:inherit;
-        }
-        .filter-input:focus { border-color:#111827; }
-        .filter-label {
-            display:block; font-size:9px; font-weight:800;
-            letter-spacing:0.18em; text-transform:uppercase; color:#9ca3af; margin-bottom:5px;
-        }
-        .filter-select { appearance:none; cursor:pointer; }
-        .chip {
-            display:inline-flex; align-items:center; gap:4px;
-            background:#111827; color:#fff; font-size:9px; font-weight:700;
-            letter-spacing:0.1em; text-transform:uppercase;
-            padding:3px 10px; transition:background 150ms ease;
-        }
-        .chip:hover { background:#000; }
+        .size-btn { display:inline-flex; align-items:center; justify-content:center; width:40px; height:36px; border:1px solid #e5e7eb; font-size:11px; font-weight:700; cursor:pointer; transition:all 150ms ease; background:#fff; color:#374151; }
+        .size-btn:hover, .size-btn.active { border-color:#111827; background:#111827; color:#fff; }
+        .color-swatch { width:20px; height:20px; border-radius:50%; border:2px solid transparent; cursor:pointer; transition:all 150ms ease; }
+        .color-swatch:hover, .color-swatch.active { border-color:#111827; transform:scale(1.15); }
+        .filter-section { border-bottom:1px solid #f3f4f6; padding-bottom:20px; margin-bottom:20px; }
+        .filter-section:last-child { border-bottom:none; }
+        .filter-label { font-size:11px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:#111827; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
+        /* Price range */
+        input[type=range] { -webkit-appearance:none; width:100%; height:3px; background:#e5e7eb; outline:none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:#111827; cursor:pointer; }
     </style>
 }
 
-<!-- ══════════════════════════════════════════════════════
-     HERO BANNER — Dynamic Slideshow
-══════════════════════════════════════════════════════ -->
-<section class="relative overflow-hidden bg-black" style="height:min(560px,70vh)">
+<div class="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 py-8 pb-24">
 
-    <!-- Slides -->
-    @{
-        var slides = new[] {
-            new {
-                Img  = "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1920&q=80",
-                Tag  = "New Collection",
-                Head = "36 Phố Phường",
-                Sub  = "Streetwear đậm chất phố cổ Hà Nội",
-                Href = "/Product/36-pho-phuong",
-                Cta  = "Khám phá ngay"
-            },
-            new {
-                Img  = "https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&fit=crop&w=1920&q=80",
-                Tag  = "Premium Streetwear",
-                Head = "The Old Pavement",
-                Sub  = "Local brand mang tinh thần Hà Nội hiện đại",
-                Href = "/Shop",
-                Cta  = "Xem bộ sưu tập"
-            },
-            new {
-                Img  = "https://images.unsplash.com/photo-1501612780327-45045538702b?auto=format&fit=crop&w=1920&q=80",
-                Tag  = "Official Collab 2026",
-                Head = "Rolling Stones × OP",
-                Sub  = "Bộ sưu tập hợp tác giới hạn toàn cầu",
-                Href = "/rolling-stones",
-                Cta  = "Xem collab"
-            },
-        };
-    }
-
-    @for (int si = 0; si < slides.Length; si++)
-    {
-        var s = slides[si];
-        <div class="hero-slide @(si == 0 ? "active" : "")" data-slide="@si">
-            <img src="@s.Img" alt="@s.Head" loading="@(si == 0 ? "eager" : "lazy")" />
-            <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+    <!-- Page header -->
+    <div class="border-b border-gray-100 pb-5 mb-8 flex items-end justify-between">
+        <div>
+            <p class="text-[10px] font-black tracking-[0.2em] uppercase text-gray-400 mb-1">The Old Pavement</p>
+            <h1 class="text-3xl md:text-4xl font-black uppercase tracking-tight">
+                @if (!string.IsNullOrEmpty(Model.Category) && Model.Category != "all")
+                {
+                    @Model.Category
+                }
+                else
+                {
+                    <text>Tất cả sản phẩm</text>
+                }
+            </h1>
         </div>
-    }
-
-    <!-- Content overlay -->
-    <div class="absolute inset-0 z-10 flex items-end pb-14 md:pb-20">
-        <div class="max-w-[1400px] mx-auto w-full px-4 md:px-8 lg:px-16">
-            @for (int si = 0; si < slides.Length; si++)
-            {
-                var s = slides[si];
-                <div class="slide-content @(si == 0 ? "" : "hidden")" data-content="@si">
-                    <p class="text-[10px] font-black tracking-[0.3em] uppercase text-white/60 mb-3">@s.Tag</p>
-                    <h1 class="text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight text-white leading-none mb-4">
-                        @s.Head
-                    </h1>
-                    <p class="text-sm text-white/70 mb-7 max-w-md font-medium">@s.Sub</p>
-                    <a href="@s.Href"
-                       class="inline-flex items-center gap-2.5 bg-white text-black px-7 py-3 text-xs font-black tracking-widest uppercase hover:bg-gray-100 transition-colors">
-                        @s.Cta
-                        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-                    </a>
-                </div>
-            }
-        </div>
+        <p class="text-xs text-gray-400 font-medium hidden sm:block">
+            <span class="font-black text-black">@Model.TotalCount</span> sản phẩm
+        </p>
     </div>
 
-    <!-- Slide indicators -->
-    <div class="absolute bottom-5 right-6 z-20 flex items-center gap-2">
-        @for (int si = 0; si < slides.Length; si++)
-        {
-            <button class="slide-dot w-6 h-0.5 bg-white/40 transition-all duration-300 @(si == 0 ? "bg-white w-10" : "")"
-                    data-dot="@si" onclick="goToSlide(@si)" aria-label="Slide @(si+1)"></button>
-        }
-    </div>
+    <div class="flex gap-8">
 
-    <!-- Prev / Next -->
-    <button onclick="prevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/30 hover:bg-black/60 flex items-center justify-center transition-colors" aria-label="Previous">
-        <i data-lucide="chevron-left" class="w-5 h-5 text-white"></i>
-    </button>
-    <button onclick="nextSlide()" class="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/30 hover:bg-black/60 flex items-center justify-center transition-colors" aria-label="Next">
-        <i data-lucide="chevron-right" class="w-5 h-5 text-white"></i>
-    </button>
-</section>
-
-<!-- ══════════════════════════════════════════════════════
-     MAIN CONTENT
-══════════════════════════════════════════════════════ -->
-<main class="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 pb-24">
-
-    <!-- ── Filter Toolbar ── -->
-    <div class="sticky top-[88px] z-20 bg-white border-b border-gray-100 -mx-4 md:-mx-8 lg:-mx-16 px-4 md:px-8 lg:px-16">
-        <form method="get" id="filter-form">
-            <div class="flex flex-wrap items-end gap-0 divide-x divide-gray-100 py-3">
-
+        <!-- ── SIDEBAR FILTER ── -->
+        <aside class="hidden lg:block w-56 flex-shrink-0">
+            <form method="get" id="filter-form">
                 <!-- Search -->
-                <div class="flex-1 min-w-[180px] pr-4">
-                    <label class="filter-label">Tìm kiếm</label>
+                <div class="filter-section">
+                    <p class="filter-label">Tìm kiếm</p>
                     <div class="relative">
                         <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none"></i>
                         <input asp-for="SearchQuery" type="text" placeholder="Tên sản phẩm..."
-                               class="filter-input pl-9" />
+                               class="w-full border border-gray-200 bg-white pl-9 pr-3 py-2 text-xs font-medium outline-none focus:border-black transition-colors" />
                     </div>
                 </div>
 
                 <!-- Category -->
-                <div class="min-w-[140px] px-4">
-                    <label class="filter-label">Danh mục</label>
-                    <select asp-for="Category" onchange="this.form.submit()"
-                            class="filter-input filter-select">
-                        <option value="all">Tất cả</option>
-                        <option value="Tee">Áo Thun</option>
-                        <option value="Pants">Quần</option>
-                        <option value="Accessories">Phụ kiện</option>
-                        <option value="Outerwear">Áo Khoác</option>
-                    </select>
+                <div class="filter-section">
+                    <p class="filter-label">Danh mục sản phẩm</p>
+                    <div class="space-y-1.5">
+                        @{
+                            var cats = new[] {
+                                ("all", "Tất cả"),
+                                ("Tee", "Áo Thun"),
+                                ("Hoodie", "Hoodie"),
+                                ("Pants", "Quần"),
+                                ("Jacket", "Áo Khoác"),
+                                ("Accessories", "Phụ kiện"),
+                            };
+                        }
+                        @foreach (var (val, label) in cats)
+                        {
+                            var isActive = (Model.Category ?? "all") == val;
+                            <a href="/Shop?Category=@val@(!string.IsNullOrEmpty(Model.SearchQuery) ? "&SearchQuery="+Uri.EscapeDataString(Model.SearchQuery) : "")@(Model.SortBy != "newest" ? "&SortBy="+Model.SortBy : "")"
+                               class="flex items-center justify-between py-1.5 text-xs font-medium transition-colors @(isActive ? "text-black font-bold" : "text-gray-500 hover:text-black")">
+                                <span>@label</span>
+                                @if (isActive) { <span class="w-1.5 h-1.5 bg-black rounded-full"></span> }
+                            </a>
+                        }
+                    </div>
                 </div>
 
-                <!-- Price -->
-                <div class="min-w-[200px] px-4">
-                    <label class="filter-label">Khoảng giá (₫)</label>
-                    <div class="flex items-center gap-2">
-                        <input asp-for="MinPrice" type="number" placeholder="0"
-                               class="filter-input text-center" style="width:80px" />
-                        <span class="text-gray-300 text-xs flex-shrink-0 font-bold">—</span>
-                        <input asp-for="MaxPrice" type="number" placeholder="∞"
-                               class="filter-input text-center" style="width:80px" />
+                <!-- Price Range -->
+                <div class="filter-section">
+                    <p class="filter-label">Khoảng giá</p>
+                    <div class="space-y-3">
+                        <input type="range" id="price-max-slider" min="0" max="2000000" step="50000"
+                               value="@(Model.MaxPrice ?? 2000000)"
+                               oninput="document.getElementById('price-max-display').textContent = Number(this.value).toLocaleString('vi-VN') + '₫'; document.getElementById('MaxPrice').value = this.value;" />
+                        <div class="flex justify-between text-[10px] text-gray-500 font-semibold">
+                            <span>0₫</span>
+                            <span id="price-max-display">@((Model.MaxPrice ?? 2000000).ToString("N0"))₫</span>
+                        </div>
+                        <input type="hidden" asp-for="MaxPrice" id="MaxPrice" />
+                        <input type="hidden" asp-for="MinPrice" />
+                    </div>
+                </div>
+
+                <!-- Size -->
+                <div class="filter-section">
+                    <p class="filter-label">Kích thước</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        @foreach (var sz in new[] { "S", "M", "L", "XL", "XXL" })
+                        {
+                            <button type="button" class="size-btn" onclick="toggleSizeFilter(this, '@sz')">@sz</button>
+                        }
                     </div>
                 </div>
 
                 <!-- Sort -->
-                <div class="min-w-[160px] px-4">
-                    <label class="filter-label">Sắp xếp</label>
+                <div class="filter-section">
+                    <p class="filter-label">Sắp xếp</p>
                     <select asp-for="SortBy" onchange="this.form.submit()"
-                            class="filter-input filter-select">
+                            class="w-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold outline-none focus:border-black cursor-pointer appearance-none">
                         <option value="newest">Mới nhất</option>
                         <option value="bestselling">Bán chạy</option>
                         <option value="price_asc">Giá: Thấp → Cao</option>
                         <option value="price_desc">Giá: Cao → Thấp</option>
                         <option value="name_asc">Tên: A-Z</option>
-                        <option value="name_desc">Tên: Z-A</option>
                     </select>
                 </div>
 
-                <!-- Actions -->
-                <div class="flex items-end gap-2 pl-4">
-                    <button type="submit"
-                            class="bg-black text-white px-5 py-2 text-[10px] font-black tracking-widest uppercase hover:bg-gray-800 transition-colors">
-                        Lọc
-                    </button>
-                    @if (hasActiveFilters)
-                    {
-                        <a href="/Shop"
-                           class="flex items-center gap-1.5 border border-gray-200 text-gray-500 px-4 py-2 text-[10px] font-bold tracking-widest uppercase hover:border-black hover:text-black transition-colors">
-                            <i data-lucide="x" class="w-3 h-3"></i>
-                            Xoá
-                        </a>
-                    }
-                </div>
+                <button type="submit"
+                        class="w-full bg-black text-white py-2.5 text-[10px] font-black tracking-widest uppercase hover:bg-gray-800 transition-colors mb-2">
+                    Áp dụng
+                </button>
+                @if (hasActiveFilters)
+                {
+                    <a href="/Shop" class="block w-full text-center py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors border border-gray-200 hover:border-black">
+                        Xoá bộ lọc
+                    </a>
+                }
+            </form>
+        </aside>
+
+        <!-- ── MAIN CONTENT ── -->
+        <div class="flex-1 min-w-0">
+
+            <!-- Mobile filter + sort bar -->
+            <div class="lg:hidden flex items-center gap-2 mb-5">
+                <button onclick="document.getElementById('mobile-filter').classList.toggle('hidden')"
+                        class="flex items-center gap-2 border border-gray-200 px-4 py-2 text-xs font-bold uppercase tracking-widest hover:border-black transition-colors">
+                    <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
+                    Bộ lọc
+                </button>
+                <form method="get" class="flex-1">
+                    <input type="hidden" asp-for="SearchQuery" />
+                    <input type="hidden" asp-for="Category" />
+                    <input type="hidden" asp-for="MinPrice" />
+                    <input type="hidden" asp-for="MaxPrice" />
+                    <select asp-for="SortBy" onchange="this.form.submit()"
+                            class="w-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold outline-none focus:border-black cursor-pointer appearance-none">
+                        <option value="newest">Mới nhất</option>
+                        <option value="bestselling">Bán chạy</option>
+                        <option value="price_asc">Giá: Thấp → Cao</option>
+                        <option value="price_desc">Giá: Cao → Thấp</option>
+                    </select>
+                </form>
+                <p class="text-xs text-gray-400 flex-shrink-0"><span class="font-black text-black">@Model.TotalCount</span> sp</p>
+            </div>
+
+            <!-- Mobile filter panel -->
+            <div id="mobile-filter" class="hidden lg:hidden mb-5 p-4 bg-gray-50 border border-gray-100">
+                <form method="get">
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Danh mục</p>
+                            <select asp-for="Category" class="w-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold outline-none focus:border-black cursor-pointer appearance-none">
+                                <option value="all">Tất cả</option>
+                                <option value="Tee">Áo Thun</option>
+                                <option value="Hoodie">Hoodie</option>
+                                <option value="Pants">Quần</option>
+                                <option value="Jacket">Áo Khoác</option>
+                                <option value="Accessories">Phụ kiện</option>
+                            </select>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Giá tối đa</p>
+                            <input asp-for="MaxPrice" type="number" placeholder="2000000"
+                                   class="w-full border border-gray-200 bg-white px-3 py-2 text-xs font-medium outline-none focus:border-black" />
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="submit" class="flex-1 bg-black text-white py-2 text-[10px] font-black tracking-widest uppercase">Lọc</button>
+                        <a href="/Shop" class="flex-1 text-center border border-gray-200 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:border-black hover:text-black transition-colors">Xoá</a>
+                    </div>
+                </form>
             </div>
 
             <!-- Active filter chips -->
             @if (hasActiveFilters)
             {
-                <div class="flex flex-wrap items-center gap-2 pb-2.5 border-t border-gray-50 pt-2">
+                <div class="flex flex-wrap items-center gap-2 mb-5">
                     <span class="text-[9px] font-black uppercase tracking-widest text-gray-400">Đang lọc:</span>
                     @if (!string.IsNullOrEmpty(Model.SearchQuery))
                     {
-                        <a href="@(Request.Path)?Category=@(Model.Category ?? "all")&SortBy=@(Model.SortBy ?? "newest")@(Model.MinPrice.HasValue ? "&MinPrice="+Model.MinPrice : "")@(Model.MaxPrice.HasValue ? "&MaxPrice="+Model.MaxPrice : "")"
-                           class="chip">"@Model.SearchQuery" <i data-lucide="x" class="w-2.5 h-2.5"></i></a>
+                        <a href="/Shop?Category=@(Model.Category ?? "all")&SortBy=@(Model.SortBy ?? "newest")"
+                           class="inline-flex items-center gap-1 bg-gray-900 text-white text-[9px] font-bold px-2.5 py-1 uppercase tracking-wide hover:bg-black transition-colors">
+                            "@Model.SearchQuery" <i data-lucide="x" class="w-2.5 h-2.5"></i>
+                        </a>
                     }
                     @if (Model.Category != null && Model.Category != "all")
                     {
-                        <a href="@(Request.Path)?SearchQuery=@(Model.SearchQuery)&SortBy=@(Model.SortBy ?? "newest")@(Model.MinPrice.HasValue ? "&MinPrice="+Model.MinPrice : "")@(Model.MaxPrice.HasValue ? "&MaxPrice="+Model.MaxPrice : "")"
-                           class="chip">@Model.Category <i data-lucide="x" class="w-2.5 h-2.5"></i></a>
+                        <a href="/Shop?SearchQuery=@(Model.SearchQuery)&SortBy=@(Model.SortBy ?? "newest")"
+                           class="inline-flex items-center gap-1 bg-gray-900 text-white text-[9px] font-bold px-2.5 py-1 uppercase tracking-wide hover:bg-black transition-colors">
+                            @Model.Category <i data-lucide="x" class="w-2.5 h-2.5"></i>
+                        </a>
                     }
-                    @if (Model.MinPrice.HasValue || Model.MaxPrice.HasValue)
+                    @if (Model.MaxPrice.HasValue)
                     {
-                        <a href="@(Request.Path)?SearchQuery=@(Model.SearchQuery)&Category=@(Model.Category ?? "all")&SortBy=@(Model.SortBy ?? "newest")"
-                           class="chip">@(Model.MinPrice?.ToString("N0") ?? "0")₫ – @(Model.MaxPrice?.ToString("N0") ?? "∞")₫ <i data-lucide="x" class="w-2.5 h-2.5"></i></a>
+                        <a href="/Shop?SearchQuery=@(Model.SearchQuery)&Category=@(Model.Category ?? "all")&SortBy=@(Model.SortBy ?? "newest")"
+                           class="inline-flex items-center gap-1 bg-gray-900 text-white text-[9px] font-bold px-2.5 py-1 uppercase tracking-wide hover:bg-black transition-colors">
+                            ≤ @Model.MaxPrice.Value.ToString("N0")₫ <i data-lucide="x" class="w-2.5 h-2.5"></i>
+                        </a>
                     }
                 </div>
             }
-        </form>
-    </div>
 
-    <!-- Results count -->
-    <div class="flex items-center justify-between py-5">
-        <p class="text-xs text-gray-500 font-medium">
-            Hiển thị <span class="font-black text-black">@Model.Products.Count</span> / <span class="font-black text-black">@Model.TotalCount</span> sản phẩm
-        </p>
-        @if (Model.TotalPages > 1)
-        {
-            <p class="text-xs text-gray-400">Trang @Model.Page / @Model.TotalPages</p>
-        }
-    </div>
-
-    <!-- Product Grid -->
-    @if (Model.Products.Any())
-    {
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-12">
-            @foreach (var p in Model.Products)
+            <!-- Product Grid -->
+            @if (Model.Products.Any())
             {
-                @await Html.PartialAsync("_ProductCard", p)
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-12">
+                    @foreach (var p in Model.Products)
+                    {
+                        @await Html.PartialAsync("_ProductCard", p)
+                    }
+                </div>
+
+                @await Html.PartialAsync("_Pagination", new Web.Models.PaginationModel {
+                    CurrentPage = Model.Page,
+                    TotalPages  = Model.TotalPages,
+                    BaseUrl     = shopBaseUrl,
+                    PageParam   = "Page"
+                })
+            }
+            else
+            {
+                <div class="py-24 text-center border-2 border-dashed border-gray-200">
+                    <div class="w-16 h-16 border border-gray-200 flex items-center justify-center mx-auto mb-5">
+                        <i data-lucide="package-open" class="w-7 h-7 text-gray-300"></i>
+                    </div>
+                    <h3 class="text-sm font-black uppercase tracking-widest text-gray-900 mb-2">Không tìm thấy sản phẩm</h3>
+                    <p class="text-xs text-gray-400 mb-6 max-w-xs mx-auto">Thử lại với tiêu chí khác.</p>
+                    <a href="/Shop" class="inline-block bg-black text-white px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors">
+                        Xoá bộ lọc
+                    </a>
+                </div>
             }
         </div>
-
-        @{
-            // Build base URL preserving all current filters except page
-            var qs = new System.Text.StringBuilder("/Shop?");
-            if (!string.IsNullOrEmpty(Model.SearchQuery)) qs.Append($"SearchQuery={Uri.EscapeDataString(Model.SearchQuery)}&");
-            if (!string.IsNullOrEmpty(Model.Category) && Model.Category != "all") qs.Append($"Category={Uri.EscapeDataString(Model.Category)}&");
-            if (Model.MinPrice.HasValue) qs.Append($"MinPrice={Model.MinPrice}&");
-            if (Model.MaxPrice.HasValue) qs.Append($"MaxPrice={Model.MaxPrice}&");
-            if (!string.IsNullOrEmpty(Model.SortBy) && Model.SortBy != "newest") qs.Append($"SortBy={Model.SortBy}&");
-            var baseUrl = qs.ToString().TrimEnd('&', '?');
-        }
-        @await Html.PartialAsync("_Pagination", new Web.Models.PaginationModel {
-            CurrentPage = Model.Page,
-            TotalPages  = Model.TotalPages,
-            BaseUrl     = baseUrl,
-            PageParam   = "Page"
-        })
-    }
-    else
-    {
-        <div class="py-24 text-center border-2 border-dashed border-gray-200">
-            <div class="w-16 h-16 border border-gray-200 flex items-center justify-center mx-auto mb-5">
-                <i data-lucide="package-open" class="w-7 h-7 text-gray-300"></i>
-            </div>
-            <h3 class="text-sm font-black uppercase tracking-widest text-gray-900 mb-2">Không tìm thấy sản phẩm</h3>
-            <p class="text-xs text-gray-400 mb-6 max-w-xs mx-auto">Bộ lọc không khớp với sản phẩm nào. Thử lại với tiêu chí khác.</p>
-            <a href="/Shop" class="inline-block bg-black text-white px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors">
-                Xoá bộ lọc
-            </a>
-        </div>
-    }
-</main>
+    </div>
+</div>
 
 @section Scripts {
     <script src="~/js/product-card.js" asp-append-version="true"></script>
     <script>
-    // ── Hero Slideshow ──────────────────────────────────────────────────
-    let currentSlide = 0;
-    const totalSlides = @slides.Length;
-    let autoTimer = null;
-
-    function goToSlide(n) {
-        // Hide current
-        document.querySelectorAll('.hero-slide').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.slide-content').forEach(el => el.classList.add('hidden'));
-        document.querySelectorAll('.slide-dot').forEach((el, i) => {
-            el.classList.remove('bg-white', 'w-10');
-            el.classList.add('bg-white/40', 'w-6');
-        });
-
-        currentSlide = (n + totalSlides) % totalSlides;
-
-        document.querySelector(`.hero-slide[data-slide="${currentSlide}"]`).classList.add('active');
-        document.querySelector(`.slide-content[data-content="${currentSlide}"]`).classList.remove('hidden');
-        const dot = document.querySelector(`.slide-dot[data-dot="${currentSlide}"]`);
-        dot.classList.remove('bg-white/40', 'w-6');
-        dot.classList.add('bg-white', 'w-10');
-
-        if (window.lucide) lucide.createIcons();
+    function toggleSizeFilter(btn, size) {
+        btn.classList.toggle('active');
+        // Could extend to filter client-side or add to form
     }
-
-    function nextSlide() { goToSlide(currentSlide + 1); resetTimer(); }
-    function prevSlide() { goToSlide(currentSlide - 1); resetTimer(); }
-
-    function resetTimer() {
-        clearInterval(autoTimer);
-        autoTimer = setInterval(() => goToSlide(currentSlide + 1), 5000);
-    }
-
-    // Keyboard navigation
-    document.addEventListener('keydown', e => {
-        if (e.key === 'ArrowLeft') prevSlide();
-        if (e.key === 'ArrowRight') nextSlide();
-    });
-
-    // Touch swipe
-    let touchStartX = 0;
-    document.querySelector('section')?.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
-    document.querySelector('section')?.addEventListener('touchend', e => {
-        const dx = e.changedTouches[0].clientX - touchStartX;
-        if (Math.abs(dx) > 50) dx < 0 ? nextSlide() : prevSlide();
-    }, { passive: true });
-
-    // Start auto-play
-    resetTimer();
     </script>
 }
