@@ -83,8 +83,18 @@ using (var scope = app.Services.CreateScope())
     // Add transaction_id column if not exists
     try
     {
-        context.Database.ExecuteSqlRaw(
-            "ALTER TABLE orders ADD COLUMN transaction_id VARCHAR(100) NULL;");
+        // Check if column already exists before adding
+        var colExists = context.Database
+            .SqlQueryRaw<int>(
+                "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'orders' AND COLUMN_NAME = 'transaction_id'")
+            .AsEnumerable()
+            .FirstOrDefault();
+
+        if (colExists == 0)
+        {
+            context.Database.ExecuteSqlRaw(
+                "ALTER TABLE orders ADD COLUMN transaction_id VARCHAR(100) NULL;");
+        }
     }
     catch (Exception ex)
     {

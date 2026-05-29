@@ -375,17 +375,14 @@
                                             </p>
                                         </div>
                                         <span class="badge @badgeCls flex-shrink-0">@lbl</span>
-                                        <form method="post" asp-page-handler="UpdateOrderStatus" class="flex-shrink-0">
-                                            <input type="hidden" name="orderId" value="@ro.Id" />
-                                            <select name="status" onchange="this.form.submit()"
-                                                class="form-input form-select text-[11px] py-1 px-2 pr-7 w-auto cursor-pointer">
-                                                <option value="pending"    selected="@(st=="pending"    ? "selected" : null)">Chờ</option>
-                                                <option value="processing" selected="@(st=="processing" ? "selected" : null)">Xử lý</option>
-                                                <option value="shipped"    selected="@(st=="shipped"    ? "selected" : null)">Đang giao</option>
-                                                <option value="delivered"  selected="@(st=="delivered"  ? "selected" : null)">Đã giao</option>
-                                                <option value="cancelled"  selected="@(st=="cancelled"  ? "selected" : null)">Đã hủy</option>
-                                            </select>
-                                        </form>
+                                        <select onchange="quickUpdateStatus(@ro.Id, this.value)"
+                                            class="form-input form-select text-[11px] py-1 px-2 pr-7 w-auto cursor-pointer flex-shrink-0">
+                                            <option value="pending"    selected="@(st=="pending"    ? "selected" : null)">Chờ</option>
+                                            <option value="processing" selected="@(st=="processing" ? "selected" : null)">Xử lý</option>
+                                            <option value="shipped"    selected="@(st=="shipped"    ? "selected" : null)">Đang giao</option>
+                                            <option value="delivered"  selected="@(st=="delivered"  ? "selected" : null)">Đã giao</option>
+                                            <option value="cancelled"  selected="@(st=="cancelled"  ? "selected" : null)">Đã hủy</option>
+                                        </select>
                                     </div>
                                 }
                             }
@@ -560,17 +557,14 @@
                                                         Xác nhận TT
                                                     </button>
                                                 }
-                                                <form method="post" asp-page-handler="UpdateOrderStatus">
-                                                    <input type="hidden" name="orderId" value="@o.Id" />
-                                                    <select name="status" onchange="this.form.submit()"
-                                                        class="form-input form-select text-[11px] py-1 px-2 pr-7 w-auto cursor-pointer">
-                                                        <option value="pending"    selected="@(st=="pending"    ? "selected" : null)">Chờ</option>
-                                                        <option value="processing" selected="@(st=="processing" ? "selected" : null)">Xử lý</option>
-                                                        <option value="shipped"    selected="@(st=="shipped"    ? "selected" : null)">Đang giao</option>
-                                                        <option value="delivered"  selected="@(st=="delivered"  ? "selected" : null)">Đã giao</option>
-                                                        <option value="cancelled"  selected="@(st=="cancelled"  ? "selected" : null)">Đã hủy</option>
-                                                    </select>
-                                                </form>
+                                                <select onchange="quickUpdateStatus(@o.Id, this.value)"
+                                                    class="form-input form-select text-[11px] py-1 px-2 pr-7 w-auto cursor-pointer">
+                                                    <option value="pending"    selected="@(st=="pending"    ? "selected" : null)">Chờ</option>
+                                                    <option value="processing" selected="@(st=="processing" ? "selected" : null)">Xử lý</option>
+                                                    <option value="shipped"    selected="@(st=="shipped"    ? "selected" : null)">Đang giao</option>
+                                                    <option value="delivered"  selected="@(st=="delivered"  ? "selected" : null)">Đã giao</option>
+                                                    <option value="cancelled"  selected="@(st=="cancelled"  ? "selected" : null)">Đã hủy</option>
+                                                </select>
                                             </div>
                                         </td>
                                     </tr>
@@ -760,12 +754,10 @@
                                                     data-sizes="@sizesJson">
                                                     <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                                 </button>
-                                                <form method="post" asp-page-handler="DeleteProduct" onsubmit="return confirm('Xóa sản phẩm này?')">
-                                                    <input type="hidden" name="id" value="@p.Id" />
-                                                    <button type="submit" class="btn-icon" style="color:#dc2626;border-color:#fecaca" title="Xóa">
-                                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                                    </button>
-                                                </form>
+                                                <button type="button" onclick="quickDeleteProduct(@p.Id)"
+                                                    class="btn-icon" style="color:#dc2626;border-color:#fecaca" title="Xóa">
+                                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -867,12 +859,12 @@
                                         </td>
                                         <td><span class="badge @stockBadge">@stockLbl</span></td>
                                         <td>
-                                            <form method="post" asp-page-handler="UpdateStock" class="flex items-center gap-1.5">
-                                                <input type="hidden" name="variantId" value="@v.Id" />
-                                                <input type="number" name="stockQuantity" value="@v.StockQuantity" min="0"
+                                            <div class="flex items-center gap-1.5">
+                                                <input type="number" id="stock-input-@v.Id" value="@v.StockQuantity" min="0"
                                                     class="form-input w-20 text-xs py-1 tabular-nums" />
-                                                <button type="submit" class="btn btn-secondary btn-sm">Lưu</button>
-                                            </form>
+                                                <button type="button" onclick="quickUpdateStock(@v.Id)"
+                                                    class="btn btn-secondary btn-sm">Lưu</button>
+                                            </div>
                                         </td>
                                     </tr>
                                 }
@@ -977,12 +969,10 @@
                                                     class="btn-icon" title="Sửa">
                                                     <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                                 </button>
-                                                <form method="post" asp-page-handler="DeletePromoCode">
-                                                    <input type="hidden" name="id" value="@pc.Id" />
-                                                    <button type="submit" class="btn-icon" style="color:#dc2626;border-color:#fecaca" title="Vô hiệu hóa">
-                                                        <i data-lucide="ban" class="w-3.5 h-3.5"></i>
-                                                    </button>
-                                                </form>
+                                                <button type="button" onclick="quickDeletePromo(@pc.Id)"
+                                                    class="btn-icon" style="color:#dc2626;border-color:#fecaca" title="Vô hiệu hóa">
+                                                    <i data-lucide="ban" class="w-3.5 h-3.5"></i>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -1726,6 +1716,53 @@ async function adminConfirmPayment(orderNumber, btn) {
 document.addEventListener('DOMContentLoaded', () => {
     Object.keys(tableConfig).forEach(tab => filterTable(tab));
 });
+
+// ── Quick AJAX helpers (replace inline <form> in tables) ──────────────────
+function getToken() {
+    return document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+}
+
+async function quickUpdateStatus(orderId, status) {
+    const fd = new FormData();
+    fd.append('orderId', orderId);
+    fd.append('status', status);
+    fd.append('__RequestVerificationToken', getToken());
+    const res = await fetch('?handler=UpdateOrderStatus', { method: 'POST', body: fd });
+    if (res.ok) location.reload();
+    else alert('Lỗi cập nhật trạng thái');
+}
+
+async function quickDeleteProduct(id) {
+    if (!confirm('Xóa sản phẩm này?')) return;
+    const fd = new FormData();
+    fd.append('id', id);
+    fd.append('__RequestVerificationToken', getToken());
+    const res = await fetch('?handler=DeleteProduct', { method: 'POST', body: fd });
+    if (res.ok) location.reload();
+    else alert('Lỗi xóa sản phẩm');
+}
+
+async function quickUpdateStock(variantId) {
+    const input = document.getElementById('stock-input-' + variantId);
+    if (!input) return;
+    const fd = new FormData();
+    fd.append('variantId', variantId);
+    fd.append('stockQuantity', input.value);
+    fd.append('__RequestVerificationToken', getToken());
+    const res = await fetch('?handler=UpdateStock', { method: 'POST', body: fd });
+    if (res.ok) location.reload();
+    else alert('Lỗi cập nhật tồn kho');
+}
+
+async function quickDeletePromo(id) {
+    if (!confirm('Vô hiệu hóa mã này?')) return;
+    const fd = new FormData();
+    fd.append('id', id);
+    fd.append('__RequestVerificationToken', getToken());
+    const res = await fetch('?handler=DeletePromoCode', { method: 'POST', body: fd });
+    if (res.ok) location.reload();
+    else alert('Lỗi xóa mã khuyến mãi');
+}
 </script>
 </body>
 </html>
