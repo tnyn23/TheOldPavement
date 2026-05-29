@@ -39,6 +39,15 @@ public class ShopModel : PageModel
 
     public async Task OnGetAsync()
     {
+        if (Request.Query.TryGetValue("Page", out var pVal) && int.TryParse(pVal, out var parsedPage))
+        {
+            PageNumber = parsedPage;
+        }
+        else
+        {
+            PageNumber = 1;
+        }
+
         if (PageNumber < 1) PageNumber = 1;
 
         var query = _context.Products

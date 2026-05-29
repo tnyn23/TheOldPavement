@@ -297,6 +297,8 @@ public class DetailModel : PageModel
         return Page();
     }
 
+    public async Task<IActionResult> OnPostAddToCartAsync(string slug)
+    {
         Product = await _context.Products
             .Include(p => p.ProductVariants)
             .Include(p => p.ProductImages)
