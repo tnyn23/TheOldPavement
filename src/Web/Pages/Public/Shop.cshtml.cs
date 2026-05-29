@@ -19,8 +19,8 @@ public class ShopModel : PageModel
     public int TotalPages { get; set; }
     public const int PageSize = 12;
 
-    [BindProperty(SupportsGet = true)]
-    public int Page { get; set; } = 1;
+    [BindProperty(Name = "Page", SupportsGet = true)]
+    public int PageNumber { get; set; } = 1;
 
     [BindProperty(SupportsGet = true)]
     public string? SearchQuery { get; set; }
@@ -39,7 +39,7 @@ public class ShopModel : PageModel
 
     public async Task OnGetAsync()
     {
-        if (Page < 1) Page = 1;
+        if (PageNumber < 1) PageNumber = 1;
 
         var query = _context.Products
             .Include(p => p.ProductImages)
@@ -78,10 +78,10 @@ public class ShopModel : PageModel
         // 5. Pagination
         TotalCount = await query.CountAsync();
         TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
-        if (Page > TotalPages && TotalPages > 0) Page = TotalPages;
+        if (PageNumber > TotalPages && TotalPages > 0) PageNumber = TotalPages;
 
         Products = await query
-            .Skip((Page - 1) * PageSize)
+            .Skip((PageNumber - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
     }

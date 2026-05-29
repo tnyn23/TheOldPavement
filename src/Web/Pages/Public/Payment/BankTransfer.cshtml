@@ -1,0 +1,434 @@
+@page
+@model Web.Pages.Public.Payment.BankTransferModel
+@{
+    var isMomo = Model.PaymentMethod == "momo";
+    ViewData["Title"] = isMomo
+        ? "Thanh toán MoMo — The Old Pavement"
+        : "Chuyển khoản ngân hàng — The Old Pavement";
+}
+
+<main class="max-w-2xl mx-auto px-4 py-16 pb-24">
+
+    <!-- Header -->
+    <div class="text-center mb-10">
+        <p class="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-1">The Old Pavement</p>
+        @if (isMomo)
+        {
+            <div class="flex items-center justify-center gap-3 mb-2">
+                <div class="w-10 h-10 bg-[#ae2070] flex items-center justify-center rounded-lg">
+                    <span class="text-white font-black text-sm">M</span>
+                </div>
+                <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight">Thanh toán MoMo</h1>
+            </div>
+            <p class="text-sm text-gray-500">Quét mã QR hoặc chuyển khoản MoMo theo thông tin bên dưới</p>
+        }
+        else
+        {
+            <h1 class="text-2xl md:text-3xl font-black uppercase tracking-tight mb-2">Chuyển khoản ngân hàng</h1>
+            <p class="text-sm text-gray-500">Vui lòng chuyển khoản theo thông tin bên dưới để hoàn tất đơn hàng</p>
+        }
+    </div>
+
+    <!-- Order info banner -->
+    <div id="status-banner" class="bg-amber-50 border border-amber-200 px-5 py-4 mb-8 flex items-start gap-3">
+        <i data-lucide="clock" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"></i>
+        <div>
+            <p class="text-xs font-bold text-amber-800 uppercase tracking-wide mb-0.5">Đơn hàng đang chờ thanh toán</p>
+            <p class="text-xs text-amber-700">Trang này sẽ tự động cập nhật khi chúng tôi xác nhận giao dịch của bạn.</p>
+        </div>
+    </div>
+
+    <!-- Success overlay (hidden by default, shown when paid) -->
+    <div id="paid-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-white border border-gray-200 p-10 max-w-sm w-full mx-4 text-center space-y-5 shadow-2xl">
+            <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto">
+                <i data-lucide="check-circle" class="w-8 h-8 text-emerald-500"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-black uppercase tracking-tight text-gray-900 mb-1">Thanh toán thành công!</h2>
+                <p class="text-xs text-gray-500">Đơn hàng <strong id="paid-order-number" class="text-black font-mono"></strong> đã được xác nhận.</p>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                <div id="redirect-bar" class="h-full bg-emerald-500 rounded-full transition-none" style="width:0%"></div>
+            </div>
+            <p class="text-[10px] text-gray-400">Đang chuyển hướng trong <span id="countdown">3</span> giây...</p>
+        </div>
+    </div>
+
+    <!-- ── Payment cards: MoMo first if momo, Bank first if bank ── -->
+    @if (isMomo)
+    {
+        <!-- MoMo card — PRIMARY (full featured with QR) -->
+        <div class="border-2 border-[#ae2070] bg-white mb-4">
+            <div class="px-6 py-4 border-b border-[#f5d0e3] flex items-center gap-3 bg-[#fdf2f7]">
+                <div class="w-8 h-8 bg-[#ae2070] flex items-center justify-center flex-shrink-0">
+                    <span class="text-white font-black text-[10px] tracking-widest">M</span>
+                </div>
+                <div>
+                    <h2 class="text-xs font-black uppercase tracking-[0.15em] text-[#ae2070]">Thanh toán qua MoMo</h2>
+                    <p class="text-[10px] text-gray-500 mt-0.5">Quét QR hoặc chuyển khoản ví MoMo</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row">
+                <!-- QR Code -->
+                <div class="flex flex-col items-center justify-center px-6 py-6 border-b md:border-b-0 md:border-r border-gray-100 md:w-64 flex-shrink-0 bg-gray-50">
+                    <img src="/images/momo-qr.png"
+                         alt="QR MoMo — Nguyễn Thế Hoàng Tùng"
+                         class="w-48 h-48 object-contain"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                    <div style="display:none" class="w-48 h-48 bg-white border-2 border-dashed border-[#ae2070] flex-col items-center justify-center text-center p-4 gap-2">
+                        <span class="text-3xl">📱</span>
+                        <p class="text-xs text-gray-500 font-semibold">Mở app MoMo<br/>tìm số <strong class="text-[#ae2070]">0965481905</strong></p>
+                    </div>
+                    <p class="text-[10px] text-[#ae2070] mt-2 font-bold uppercase tracking-wide">Quét để chuyển tiền</p>
+                </div>
+
+                <!-- Account info -->
+                <div class="flex-1 divide-y divide-gray-50">
+                    <div class="flex items-center justify-between px-6 py-4">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Số điện thoại</span>
+                        <div class="flex items-center gap-2">
+                            <span id="momo-number" class="text-sm font-black text-gray-900 font-mono tracking-wider">0965481905</span>
+                            <button onclick="copyText('momo-number', this)" class="text-gray-400 hover:text-[#ae2070] transition-colors" title="Sao chép">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between px-6 py-4">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Tên tài khoản</span>
+                        <span class="text-sm font-black text-gray-900">Nguyễn Thế Hoàng Tùng</span>
+                    </div>
+                    <div class="flex items-center justify-between px-6 py-4">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Số tiền</span>
+                        <div class="flex items-center gap-2">
+                            <span id="momo-amount-display" class="text-lg font-black text-[#ae2070] tabular-nums">@Model.Amount.ToString("N0")₫</span>
+                            <span id="momo-amount-raw" class="hidden">@((long)Model.Amount)</span>
+                            <button onclick="copyText('momo-amount-raw', this)" class="text-gray-400 hover:text-[#ae2070] transition-colors" title="Sao chép số tiền">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between px-6 py-4">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Nội dung CK</span>
+                        <div class="flex items-center gap-2">
+                            <span id="momo-content" class="text-sm font-black text-gray-900 font-mono">@Model.TransferContent</span>
+                            <button onclick="copyText('momo-content', this)" class="text-gray-400 hover:text-[#ae2070] transition-colors" title="Sao chép">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MBBank card — SECONDARY (collapsed style) -->
+        <div class="border border-gray-200 bg-white mb-6">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                <div class="w-8 h-8 bg-[#003189] flex items-center justify-center flex-shrink-0">
+                    <span class="text-white font-black text-[10px] tracking-widest">MB</span>
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-xs font-black uppercase tracking-[0.15em]">Hoặc chuyển khoản MBBank</h2>
+                    <p class="text-[10px] text-gray-400 mt-0.5">Ngân hàng TMCP Quân đội</p>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row">
+                <div class="flex flex-col items-center justify-center px-6 py-5 border-b md:border-b-0 md:border-r border-gray-100 md:w-48 flex-shrink-0">
+                    <img src="https://img.vietqr.io/image/MB-@(Model.AccountNumber)-compact2.png?amount=@((long)Model.Amount)&addInfo=@(Uri.EscapeDataString(Model.TransferContent))&accountName=@(Uri.EscapeDataString(Model.AccountHolder))"
+                         alt="QR MBBank"
+                         class="w-32 h-32 object-contain"
+                         onerror="this.src='/images/mb-qr.png'; this.onerror=function(){ this.style.display='none'; }" />
+                    <p class="text-[10px] text-gray-400 mt-1.5 font-semibold uppercase tracking-wide">Quét VietQR</p>
+                </div>
+                <div class="flex-1 divide-y divide-gray-50">
+                    <div class="flex items-center justify-between px-6 py-3">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Số tài khoản</span>
+                        <div class="flex items-center gap-2">
+                            <span id="account-number" class="text-sm font-black text-gray-900 font-mono tracking-wider">@Model.AccountNumber</span>
+                            <button onclick="copyText('account-number', this)" class="text-gray-400 hover:text-black transition-colors" title="Sao chép">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between px-6 py-3">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Chủ tài khoản</span>
+                        <span class="text-sm font-black text-gray-900 uppercase">@Model.AccountHolder</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- MBBank card — PRIMARY -->
+        <div class="border-2 border-[#003189] bg-white mb-4">
+            <div class="px-6 py-4 border-b border-blue-100 flex items-center gap-3 bg-blue-50">
+                <div class="w-8 h-8 bg-[#003189] flex items-center justify-center flex-shrink-0">
+                    <span class="text-white font-black text-[10px] tracking-widest">MB</span>
+                </div>
+                <div>
+                    <h2 class="text-xs font-black uppercase tracking-[0.15em] text-[#003189]">Chuyển khoản MBBank</h2>
+                    <p class="text-[10px] text-gray-500 mt-0.5">Ngân hàng TMCP Quân đội</p>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row">
+                <div class="flex flex-col items-center justify-center px-6 py-6 border-b md:border-b-0 md:border-r border-gray-100 md:w-64 flex-shrink-0 bg-gray-50">
+                    <img src="https://img.vietqr.io/image/MB-@(Model.AccountNumber)-compact2.png?amount=@((long)Model.Amount)&addInfo=@(Uri.EscapeDataString(Model.TransferContent))&accountName=@(Uri.EscapeDataString(Model.AccountHolder))"
+                         alt="QR MBBank — Nguyễn Thế Hoàng Tùng"
+                         class="w-48 h-48 object-contain"
+                         onerror="this.src='/images/mb-qr.png'; this.onerror=function(){ this.style.display='none'; this.nextElementSibling.style.display='flex'; }" />
+                    <div style="display:none" class="w-48 h-48 bg-white border-2 border-dashed border-[#003189] flex-col items-center justify-center text-center p-4 gap-2">
+                        <span class="text-3xl">🏦</span>
+                        <p class="text-xs text-gray-500 font-semibold">Chuyển khoản đến số tài khoản <strong class="text-[#003189]">@Model.AccountNumber</strong></p>
+                    </div>
+                    <p class="text-[10px] text-[#003189] mt-2 font-bold uppercase tracking-wide">Quét VietQR để chuyển tiền</p>
+                </div>
+                <div class="flex-1 divide-y divide-gray-50">
+                    <div class="flex items-center justify-between px-6 py-4">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Số tài khoản</span>
+                        <div class="flex items-center gap-2">
+                            <span id="account-number" class="text-sm font-black text-gray-900 font-mono tracking-wider">@Model.AccountNumber</span>
+                            <button onclick="copyText('account-number', this)" class="text-gray-400 hover:text-black transition-colors" title="Sao chép">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between px-6 py-4">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Chủ tài khoản</span>
+                        <span class="text-sm font-black text-gray-900 uppercase">@Model.AccountHolder</span>
+                    </div>
+                    <div class="flex items-center justify-between px-6 py-4">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Số tiền</span>
+                        <div class="flex items-center gap-2">
+                            <span id="bank-amount-display" class="text-lg font-black text-[#003189] tabular-nums">@Model.Amount.ToString("N0")₫</span>
+                            <span id="bank-amount-raw" class="hidden">@((long)Model.Amount)</span>
+                            <button onclick="copyText('bank-amount-raw', this)" class="text-gray-400 hover:text-black transition-colors" title="Sao chép số tiền">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between px-6 py-4">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Nội dung CK</span>
+                        <div class="flex items-center gap-2">
+                            <span id="bank-content" class="text-sm font-black text-gray-900 font-mono">@Model.TransferContent</span>
+                            <button onclick="copyText('bank-content', this)" class="text-gray-400 hover:text-black transition-colors" title="Sao chép">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MoMo card — SECONDARY -->
+        <div class="border border-gray-200 bg-white mb-6">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                <div class="w-8 h-8 bg-[#ae2070] flex items-center justify-center flex-shrink-0">
+                    <span class="text-white font-black text-[10px] tracking-widest">M</span>
+                </div>
+                <div>
+                    <h2 class="text-xs font-black uppercase tracking-[0.15em]">Hoặc chuyển khoản MoMo</h2>
+                    <p class="text-[10px] text-gray-400 mt-0.5">Ví điện tử MoMo</p>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row">
+                <div class="flex flex-col items-center justify-center px-6 py-5 border-b md:border-b-0 md:border-r border-gray-100 md:w-48 flex-shrink-0">
+                    <img src="/images/momo-qr.png" alt="QR MoMo"
+                         class="w-32 h-32 object-contain"
+                         onerror="this.style.display='none'" />
+                    <p class="text-[10px] text-gray-400 mt-1.5 font-semibold uppercase tracking-wide">Quét QR</p>
+                </div>
+                <div class="flex-1 divide-y divide-gray-50">
+                    <div class="flex items-center justify-between px-6 py-3">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Số điện thoại</span>
+                        <div class="flex items-center gap-2">
+                            <span id="momo-number" class="text-sm font-black text-gray-900 font-mono">0965481905</span>
+                            <button onclick="copyText('momo-number', this)" class="text-gray-400 hover:text-black transition-colors">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between px-6 py-3">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Tên tài khoản</span>
+                        <span class="text-sm font-black text-gray-900">Nguyễn Thế Hoàng Tùng</span>
+                    </div>
+                    <div class="flex items-center justify-between px-6 py-3">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Nội dung CK</span>
+                        <div class="flex items-center gap-2">
+                            <span id="momo-content-sec" class="text-sm font-black text-gray-900 font-mono">@Model.TransferContent</span>
+                            <button onclick="copyText('momo-content-sec', this)" class="text-gray-400 hover:text-black transition-colors" title="Sao chép">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Transfer details -->
+    <div class="border border-gray-200 bg-white mb-6">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+            <div class="w-8 h-8 bg-black flex items-center justify-center flex-shrink-0">
+                <i data-lucide="receipt" class="w-4 h-4 text-white"></i>
+            </div>
+            <h2 class="text-xs font-black uppercase tracking-[0.15em]">Thông tin chuyển khoản</h2>
+        </div>
+
+        <div class="divide-y divide-gray-50">
+            <div class="flex items-center justify-between px-6 py-4">
+                <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Số tiền</span>
+                <span class="text-lg font-black text-gray-900 tabular-nums">@Model.Amount.ToString("N0")₫</span>
+            </div>
+            <div class="flex items-center justify-between px-6 py-4">
+                <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Nội dung CK</span>
+                <div class="flex items-center gap-2">
+                    <span id="transfer-content" class="text-sm font-black text-gray-900 font-mono">@Model.TransferContent</span>
+                    <button onclick="copyText('transfer-content', this)" class="text-gray-400 hover:text-black transition-colors" title="Sao chép">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex items-center justify-between px-6 py-4">
+                <span class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Mã đơn hàng</span>
+                <span class="text-sm font-black text-gray-900 font-mono">@Model.OrderNumber</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Important note -->
+    <div class="bg-gray-50 border border-gray-200 px-5 py-4 mb-8 space-y-2">
+        <p class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Lưu ý quan trọng</p>
+        <div class="space-y-1.5 text-xs text-gray-600">
+            <div class="flex items-start gap-2">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5"></i>
+                <span>Nhập <strong>đúng nội dung chuyển khoản</strong> "<span class="font-mono font-bold text-black">@Model.TransferContent</span>" để đơn hàng được xác nhận tự động.</span>
+            </div>
+            <div class="flex items-start gap-2">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5"></i>
+                <span>Chuyển khoản <strong>đúng số tiền</strong> @Model.Amount.ToString("N0")₫.</span>
+            </div>
+            <div class="flex items-start gap-2">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5"></i>
+                <span>Đơn hàng sẽ được xác nhận trong <strong>1–2 giờ làm việc</strong> sau khi nhận được tiền.</span>
+            </div>
+            <div class="flex items-start gap-2">
+                <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5"></i>
+                <span>Nếu chưa chuyển khoản sau <strong>24 giờ</strong>, đơn hàng sẽ tự động bị hủy.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action buttons -->
+    <form method="post" asp-page-handler="Confirm">
+        <input type="hidden" name="orderNumber" value="@Model.OrderNumber" />
+        <div class="flex flex-col sm:flex-row gap-3">
+            <button type="submit"
+                    class="flex-1 bg-black text-white py-4 text-xs font-black tracking-[0.2em] uppercase hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
+                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                Tôi đã chuyển khoản xong
+            </button>
+            <a href="/Cart"
+               class="flex-1 border border-gray-300 text-gray-700 py-4 text-xs font-black tracking-[0.2em] uppercase hover:border-black hover:text-black transition-colors flex items-center justify-center gap-2">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                Quay lại giỏ hàng
+            </a>
+        </div>
+    </form>
+
+    <p class="text-center text-[10px] text-gray-400 mt-6">
+        Cần hỗ trợ? Liên hệ chúng tôi qua email
+        <a href="mailto:theoldpavement@gmail.com" class="underline hover:text-black transition-colors">theoldpavement@gmail.com</a>
+    </p>
+</main>
+
+<script>
+function copyText(elementId, btn) {
+    const text = document.getElementById(elementId).textContent.trim();
+    navigator.clipboard.writeText(text).then(function () {
+        const icon = btn.querySelector('[data-lucide]');
+        if (icon) {
+            icon.setAttribute('data-lucide', 'check');
+            lucide.createIcons();
+            setTimeout(function () {
+                icon.setAttribute('data-lucide', 'copy');
+                lucide.createIcons();
+            }, 1500);
+        }
+    });
+}
+
+// ── Payment status polling ──────────────────────────────────────────────────
+(function () {
+    const ORDER_NUMBER = '@Model.OrderNumber';
+    const POLL_INTERVAL = 4000; // 4 seconds
+    const REDIRECT_DELAY = 3000; // 3 seconds countdown before redirect
+    let pollTimer = null;
+    let stopped = false;
+
+    function showPaidOverlay(orderNumber) {
+        stopped = true;
+        clearInterval(pollTimer);
+
+        // Clear cart cookie/session via hidden form submit won't work here,
+        // so we rely on server-side clear on ThankYouCard load.
+        const overlay = document.getElementById('paid-overlay');
+        const orderEl = document.getElementById('paid-order-number');
+        const bar = document.getElementById('redirect-bar');
+        const countdownEl = document.getElementById('countdown');
+
+        if (orderEl) orderEl.textContent = orderNumber;
+        if (overlay) overlay.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+
+        // Animate progress bar over REDIRECT_DELAY
+        let elapsed = 0;
+        const step = 50;
+        const timer = setInterval(function () {
+            elapsed += step;
+            const pct = Math.min((elapsed / REDIRECT_DELAY) * 100, 100);
+            if (bar) bar.style.width = pct + '%';
+            const secs = Math.max(0, Math.ceil((REDIRECT_DELAY - elapsed) / 1000));
+            if (countdownEl) countdownEl.textContent = secs;
+            if (elapsed >= REDIRECT_DELAY) {
+                clearInterval(timer);
+                window.location.href = '/ThankYouCard?orderNumber=' + encodeURIComponent(orderNumber);
+            }
+        }, step);
+    }
+
+    async function checkStatus() {
+        if (stopped) return;
+        try {
+            const res = await fetch(
+                '/Public/Payment/BankTransfer?handler=CheckStatus&orderNumber=' + encodeURIComponent(ORDER_NUMBER),
+                { cache: 'no-store' }
+            );
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.paid) {
+                showPaidOverlay(data.orderNumber || ORDER_NUMBER);
+            }
+        } catch (e) {
+            // Network error — silently retry next interval
+        }
+    }
+
+    // Start polling immediately then every POLL_INTERVAL
+    if (ORDER_NUMBER) {
+        checkStatus();
+        pollTimer = setInterval(checkStatus, POLL_INTERVAL);
+    }
+
+    // Stop polling when tab is hidden, resume when visible
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+            clearInterval(pollTimer);
+        } else if (!stopped) {
+            checkStatus();
+            pollTimer = setInterval(checkStatus, POLL_INTERVAL);
+        }
+    });
+})();
+</script>

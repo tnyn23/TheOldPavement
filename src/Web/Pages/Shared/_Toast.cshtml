@@ -1,0 +1,178 @@
+@* ──────────────────────────────────────────────────────────
+   _Toast.cshtml — Global Toast Notification Component
+   Premium streetwear design: black bg, slide-in, progress bar
+   ────────────────────────────────────────────────────────── *@
+
+@{
+    var successMsg = TempData["SuccessMessage"] as string;
+    var errorMsg = TempData["ErrorMessage"] as string;
+}
+
+<!-- Toast Container -->
+<div id="toast-container" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none" style="max-width: 420px; width: calc(100vw - 3rem);"></div>
+
+<!-- Toast Styles -->
+<style>
+    .top-toast {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px 18px;
+        background: #111;
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.15);
+        pointer-events: auto;
+        position: relative;
+        overflow: hidden;
+        font-family: 'Inter', sans-serif;
+        animation: toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        transform: translateX(120%);
+        opacity: 0;
+    }
+    .top-toast.toast-error {
+        border-color: rgba(220, 38, 38, 0.4);
+    }
+    .top-toast.toast-dismissing {
+        animation: toast-slide-out 0.35s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+    }
+    .top-toast .toast-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+    .top-toast .toast-icon.success { background: #059669; }
+    .top-toast .toast-icon.error { background: #dc2626; }
+    .top-toast .toast-icon.info { background: #6b7280; }
+    .top-toast .toast-body {
+        flex: 1;
+        min-width: 0;
+    }
+    .top-toast .toast-title {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 3px;
+    }
+    .top-toast .toast-message {
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.4;
+        color: #fff;
+    }
+    .top-toast .toast-close {
+        background: none;
+        border: none;
+        color: rgba(255,255,255,0.4);
+        cursor: pointer;
+        padding: 2px;
+        flex-shrink: 0;
+        transition: color 0.2s;
+        margin-top: 1px;
+    }
+    .top-toast .toast-close:hover { color: #fff; }
+    .top-toast .toast-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: rgba(255,255,255,0.2);
+        animation: toast-progress-shrink 4s linear forwards;
+    }
+    .top-toast.toast-error .toast-progress {
+        background: rgba(220, 38, 38, 0.5);
+    }
+
+    @@keyframes toast-slide-in {
+        from { transform: translateX(120%); opacity: 0; }
+        to   { transform: translateX(0);    opacity: 1; }
+    }
+    @@keyframes toast-slide-out {
+        from { transform: translateX(0);    opacity: 1; max-height: 200px; margin-bottom: 12px; }
+        to   { transform: translateX(120%); opacity: 0; max-height: 0;     margin-bottom: 0; padding: 0; }
+    }
+    @@keyframes toast-progress-shrink {
+        from { width: 100%; }
+        to   { width: 0%; }
+    }
+</style>
+
+<!-- Toast JavaScript -->
+<script>
+    /**
+     * showToast — Global toast notification function
+     * @@param {string} message - The message to display
+     * @@param {'success'|'error'|'info'} type - Toast type
+     * @@param {number} duration - Auto-dismiss in ms (default 4000)
+     */
+    function showToast(message, type = 'success', duration = 4000) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const titles = { success: 'Thành công', error: 'Lỗi', info: 'Thông báo' };
+        const icons = {
+            success: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+            error:   '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+            info:    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>'
+        };
+
+        const toast = document.createElement('div');
+        toast.className = 'top-toast' + (type === 'error' ? ' toast-error' : '');
+        toast.innerHTML = `
+            <div class="toast-icon ${type}">${icons[type] || icons.info}</div>
+            <div class="toast-body">
+                <div class="toast-title">${titles[type] || titles.info}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+            <button class="toast-close" onclick="dismissToast(this.parentElement)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div class="toast-progress" style="animation-duration:${duration}ms"></div>
+        `;
+
+        container.appendChild(toast);
+
+        // Auto-dismiss
+        const timer = setTimeout(() => dismissToast(toast), duration);
+        toast._timer = timer;
+
+        // Pause on hover
+        toast.addEventListener('mouseenter', () => {
+            clearTimeout(toast._timer);
+            const progress = toast.querySelector('.toast-progress');
+            if (progress) progress.style.animationPlayState = 'paused';
+        });
+        toast.addEventListener('mouseleave', () => {
+            const progress = toast.querySelector('.toast-progress');
+            if (progress) progress.style.animationPlayState = 'running';
+            toast._timer = setTimeout(() => dismissToast(toast), 2000);
+        });
+    }
+
+    function dismissToast(el) {
+        if (!el || el._dismissed) return;
+        el._dismissed = true;
+        clearTimeout(el._timer);
+        el.classList.add('toast-dismissing');
+        el.addEventListener('animationend', () => el.remove(), { once: true });
+    }
+
+    // Auto-show server-side TempData toasts on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        @if (!string.IsNullOrEmpty(successMsg))
+        {
+            <text>showToast("@Html.Raw(successMsg.Replace("\"", "\\\"").Replace("\n", "\\n"))", "success");</text>
+        }
+        @if (!string.IsNullOrEmpty(errorMsg))
+        {
+            <text>showToast("@Html.Raw(errorMsg.Replace("\"", "\\\"").Replace("\n", "\\n"))", "error");</text>
+        }
+    });
+</script>

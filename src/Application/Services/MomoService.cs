@@ -1,172 +1,159 @@
-using System;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+using Application.DTOs;
 using Application.Interfaces;
+using Application.Options;
+using Domain.Interfaces;
 using Domain.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace Application.Services;
 
 public class MomoService : IMomoService
 {
     private readonly IConfiguration _configuration;
+    private readonly IOrderRepository _orderRepository;
 
-    public MomoService(IConfiguration configuration)
+    public MomoService(IConfiguration configuration, IOrderRepository orderRepository)
     {
         _configuration = configuration;
+        _orderRepository = orderRepository;
     }
 
-    public async Task<string> CreatePaymentUrlAsync(Order order, string redirectUrl, string ipnUrl)
-    {
-        var partnerCode = _configuration["Momo:PartnerCode"] ?? "MOMOBKUN20180529";
-        var accessKey = _configuration["Momo:AccessKey"] ?? "klm05TvNBzhg7h7j";
-        var secretKey = _configuration["Momo:SecretKey"] ?? "at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa";
-        var apiUrl = _configuration["Momo:ApiUrl"] ?? "https://test-payment.momo.vn/v2/gateway/api/create";
+    // ── helpers ──────────────────────────────────────────────────────────────
 
-        var requestId = Guid.NewGuid().ToString();
-        var orderInfo = $"Thanh toan don hang {order.OrderNumber} qua MoMo";
-        var amount = ((long)Math.Round(order.TotalAmount)).ToString(); // MoMo expects a string representable integer in VND
-        var extraData = ""; // optional
+    private string PartnerCode => _configuration["Momo:PartnerCode"] ?? "MOMOBKUN20180529";
+    private string AccessKey   => _configuration["Momo:AccessKey"]   ?? "klm05TvNBzhg7h7j";
+    private string SecretKey   => _configuration["Momo:SecretKey"]   ?? "at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa";
+    private string ApiUrl      => _configuration["Momo:ApiUrl"]      ?? "https://test-payment.momo.vn/v2/gateway/api/create";
+
+    // ── CreatePaymentAsync ────────────────────────────────────────────────────
+
+    public async Task<MomoPaymentResult> CreatePaymentAsync(
+        Order order,
+        string returnUrl,
+        string ipnUrl,
+        CancellationToken cancellationToken = default)
+    {
+        var requestId = Guid.NewGuid().ToString("N");
+        var amount    = (long)Math.Round(order.TotalAmount);
+        var orderInfo = $"Thanh toan don hang {order.OrderNumber}";
+        var extraData = string.Empty;
         var requestType = "captureWallet";
 
-        // Create raw data string exactly as required by MoMo API v2
-        var rawHash = $"accessKey={accessKey}&amount={amount}&extraData={extraData}&ipnUrl={ipnUrl}&orderId={order.OrderNumber}&orderInfo={orderInfo}&partnerCode={partnerCode}&redirectUrl={redirectUrl}&requestId={requestId}&requestType={requestType}";
+        var rawHash = $"accessKey={AccessKey}&amount={amount}&extraData={extraData}" +
+                      $"&ipnUrl={ipnUrl}&orderId={order.OrderNumber}&orderInfo={orderInfo}" +
+                      $"&partnerCode={PartnerCode}&redirectUrl={returnUrl}" +
+                      $"&requestId={requestId}&requestType={requestType}";
 
-        var signature = ComputeHmacSha256(rawHash, secretKey);
+        var signature = ComputeHmacSha256(rawHash, SecretKey);
 
-        // Build the payload
         var payload = new
         {
-            partnerCode,
+            partnerCode = PartnerCode,
             partnerName = "The Old Pavement Store",
-            storeId = "TheOldPavement",
+            storeId     = "TheOldPavement",
             requestId,
-            amount = long.Parse(amount),
-            orderId = order.OrderNumber,
+            amount,
+            orderId     = order.OrderNumber,
             orderInfo,
-            redirectUrl,
+            redirectUrl = returnUrl,
             ipnUrl,
-            lang = "vi",
+            lang        = "vi",
             extraData,
             requestType,
             signature
         };
 
-        using var client = new HttpClient();
-        var jsonPayload = JsonSerializer.Serialize(payload);
-        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
         try
         {
-            var response = await client.PostAsync(apiUrl, content);
-            var responseString = await response.Content.ReadAsStringAsync();
+            using var client  = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+            var json          = JsonSerializer.Serialize(payload);
+            var content       = new StringContent(json, Encoding.UTF8, "application/json");
+            var httpResponse  = await client.PostAsync(ApiUrl, content, cancellationToken);
+            var body          = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
 
-            if (!response.IsSuccessStatusCode)
+            if (!httpResponse.IsSuccessStatusCode)
+                return Fail($"MoMo API HTTP {(int)httpResponse.StatusCode}");
+
+            var resp = JsonSerializer.Deserialize<MomoCreatePaymentResponse>(body);
+            if (resp is null)
+                return Fail("Cannot deserialize MoMo response");
+
+            if (!resp.IsSuccess)
+                return new MomoPaymentResult { Success = false, ResultCode = resp.ResultCode, ErrorMessage = resp.Message };
+
+            return new MomoPaymentResult
             {
-                throw new Exception($"MoMo API returned status code {response.StatusCode}: {responseString}");
-            }
-
-            var momoResponse = JsonSerializer.Deserialize<MomoCreateResponse>(responseString);
-            if (momoResponse == null)
-            {
-                throw new Exception("Failed to deserialize MoMo API response.");
-            }
-
-            if (momoResponse.ResultCode != 0)
-            {
-                throw new Exception($"MoMo payment creation failed. ResultCode: {momoResponse.ResultCode}, Message: {momoResponse.Message}");
-            }
-
-            if (string.IsNullOrEmpty(momoResponse.PayUrl))
-            {
-                throw new Exception("MoMo API response did not contain a PayUrl.");
-            }
-
-            return momoResponse.PayUrl;
+                Success   = true,
+                PayUrl    = resp.PayUrl,
+                QrCodeUrl = resp.QrCodeUrl,
+                ShortLink = resp.ShortLink,
+                ResultCode = resp.ResultCode
+            };
         }
         catch (Exception ex)
         {
-            throw new Exception($"Error during MoMo payment creation: {ex.Message}", ex);
+            return Fail(ex.Message);
         }
     }
 
-    public bool ValidateSignature(
-        string partnerCode, 
-        string orderId, 
-        string requestId, 
-        string amount, 
-        string orderInfo, 
-        string orderType, 
-        string transId, 
-        string resultCode, 
-        string message, 
-        string payType, 
-        string responseTime, 
-        string extraData, 
-        string signature)
+    // ── VerifyCallbackSignature ───────────────────────────────────────────────
+
+    public bool VerifyCallbackSignature(MomoCallbackParams cb)
     {
-        var secretKey = _configuration["Momo:SecretKey"] ?? "at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa";
+        var rawHash = $"accessKey={AccessKey}&amount={cb.Amount}&extraData={cb.ExtraData}" +
+                      $"&message={cb.Message}&orderId={cb.OrderId}&orderInfo={cb.OrderInfo}" +
+                      $"&partnerCode={cb.PartnerCode}&payType={cb.PayType}&requestId={cb.RequestId}" +
+                      $"&responseTime={cb.ResponseTime}&resultCode={cb.ResultCode}&transId={cb.TransId}";
 
-        // MoMo v2 Callback raw signature string format:
-        // accessKey=$accessKey&amount=$amount&extraData=$extraData&message=$message&orderId=$orderId&orderInfo=$orderInfo&partnerCode=$partnerCode&paymentCode=$paymentCode&payType=$payType&requestId=$requestId&responseTime=$responseTime&resultCode=$resultCode&transId=$transId
-        // Note: The paymentCode is optional or not present in redirect callbacks.
-        // Let's verify standard MoMo Callback raw signature layout.
-        // Usually, the raw callback string is:
-        // accessKey={accessKey}&amount={amount}&extraData={extraData}&message={message}&orderId={orderId}&orderInfo={orderInfo}&partnerCode={partnerCode}&payType={payType}&requestId={requestId}&responseTime={responseTime}&resultCode={resultCode}&transId={transId}
-        // Let's build it carefully.
-        
-        var accessKey = _configuration["Momo:AccessKey"] ?? "klm05TvNBzhg7h7j";
-        
-        var rawHash = $"accessKey={accessKey}&amount={amount}&extraData={extraData}&message={message}&orderId={orderId}&orderInfo={orderInfo}&partnerCode={partnerCode}&payType={payType}&requestId={requestId}&responseTime={responseTime}&resultCode={resultCode}&transId={transId}";
-        
-        var calculatedSignature = ComputeHmacSha256(rawHash, secretKey);
-
-        return string.Equals(calculatedSignature, signature, StringComparison.OrdinalIgnoreCase);
+        var computed = ComputeHmacSha256(rawHash, SecretKey);
+        return string.Equals(computed, cb.Signature, StringComparison.OrdinalIgnoreCase);
     }
 
-    private string ComputeHmacSha256(string message, string secretKey)
-    {
-        var keyBytes = Encoding.UTF8.GetBytes(secretKey);
-        var messageBytes = Encoding.UTF8.GetBytes(message);
+    // ── ProcessCallbackAsync ──────────────────────────────────────────────────
 
+    public async Task<bool> ProcessCallbackAsync(MomoCallbackParams callback, CancellationToken cancellationToken = default)
+    {
+        var order = await _orderRepository.FirstOrDefaultAsync(
+            o => o.OrderNumber == callback.OrderId);
+
+        if (order == null)
+            return false;
+
+        if (order.PaymentStatus == "paid")
+            return true;
+
+        if (callback.IsSuccess)
+        {
+            order.PaymentStatus = "paid";
+            order.Status = "confirmed";
+            order.TransactionId = callback.TransId;
+            order.UpdatedAt = DateTime.Now;
+        }
+        else
+        {
+            order.PaymentStatus = "failed";
+            order.UpdatedAt = DateTime.Now;
+        }
+
+        await _orderRepository.UpdateAsync(order);
+        await _orderRepository.SaveChangesAsync();
+
+        return callback.IsSuccess;
+    }
+
+    // ── private ───────────────────────────────────────────────────────────────
+
+    private static string ComputeHmacSha256(string data, string key)
+    {
+        var keyBytes  = Encoding.UTF8.GetBytes(key);
+        var dataBytes = Encoding.UTF8.GetBytes(data);
         using var hmac = new HMACSHA256(keyBytes);
-        var hashBytes = hmac.ComputeHash(messageBytes);
-        return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+        return Convert.ToHexString(hmac.ComputeHash(dataBytes)).ToLowerInvariant();
     }
+
+    private static MomoPaymentResult Fail(string msg) =>
+        new() { Success = false, ErrorMessage = msg };
 }
-
-public class MomoCreateResponse
-{
-    [JsonPropertyName("partnerCode")]
-    public string PartnerCode { get; set; } = string.Empty;
-
-    [JsonPropertyName("orderId")]
-    public string OrderId { get; set; } = string.Empty;
-
-    [JsonPropertyName("requestId")]
-    public string RequestId { get; set; } = string.Empty;
-
-    [JsonPropertyName("amount")]
-    public long Amount { get; set; }
-
-    [JsonPropertyName("responseTime")]
-    public long ResponseTime { get; set; }
-
-    [JsonPropertyName("message")]
-    public string Message { get; set; } = string.Empty;
-
-    [JsonPropertyName("resultCode")]
-    public int ResultCode { get; set; }
-
-    [JsonPropertyName("payUrl")]
-    public string PayUrl { get; set; } = string.Empty;
-
-    [JsonPropertyName("shortLink")]
-    public string ShortLink { get; set; } = string.Empty;
-}
-
-

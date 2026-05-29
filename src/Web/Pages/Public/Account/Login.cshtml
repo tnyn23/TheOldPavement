@@ -19,12 +19,7 @@
             </p>
         </div>
         
-        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-        {
-            <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-                @Model.ErrorMessage
-            </div>
-        }
+
 
         <form class="mt-8 space-y-6" method="post">
             <div class="space-y-4">
@@ -68,5 +63,14 @@
     </div>
 </div>
 </main>
-</main>
 
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <text>showToast("@Html.Raw(Model.ErrorMessage.Replace("\"", "\\\""))", "error");</text>
+            }
+        });
+    </script>
+}

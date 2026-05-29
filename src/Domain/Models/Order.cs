@@ -25,6 +25,8 @@ public partial class Order
 
     public string? PaymentStatus { get; set; }
 
+    public string? TransactionId { get; set; }
+
     public int? PromoCodeId { get; set; }
 
     public string? Note { get; set; }

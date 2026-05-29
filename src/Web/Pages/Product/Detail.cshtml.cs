@@ -297,19 +297,27 @@ public class DetailModel : PageModel
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAddToCartAsync(string slug)
-    {
-        Product = await _productRepository.FirstOrDefaultAsync(p => p.Slug == slug);
+        Product = await _context.Products
+            .Include(p => p.ProductVariants)
+            .Include(p => p.ProductImages)
+            .FirstOrDefaultAsync(p => p.Slug == slug);
 
         if (Product == null)
         {
             GenerateFallbackProduct(slug);
         }
 
+        // Find the variant matching selected size and color
+        var matchingVariant = Product?.ProductVariants?
+            .FirstOrDefault(v => v.Size.Equals(SelectedSize, StringComparison.OrdinalIgnoreCase) && 
+                                 v.Color.Equals(SelectedColor, StringComparison.OrdinalIgnoreCase));
+        
+        int variantId = matchingVariant?.Id ?? (Product?.ProductVariants?.FirstOrDefault()?.Id ?? 1);
+
         var cartItem = new CartItemDTO
         {
             ProductId = Product?.Id ?? 0,
-            VariantId = 1, // Fallback variant ID
+            VariantId = variantId,
             ProductName = Product?.Name ?? "Sản phẩm",
             UnitPrice = Product?.Price ?? 0,
             Quantity = Quantity,

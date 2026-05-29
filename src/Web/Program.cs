@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Application.Interfaces;
 using Application.Mappings;
+using Application.Options;
 using Application.Services;
 using Domain.Interfaces;
 using Infrastructure.Context;
@@ -30,6 +31,16 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IMomoService, MomoService>();
 builder.Services.AddScoped<ICheckoutService, CheckoutService>();
+
+// ── MoMo: strongly-typed options + named HttpClient ──────────────────────────
+builder.Services.Configure<MomoOptions>(
+    builder.Configuration.GetSection(MomoOptions.SectionName));
+
+builder.Services.AddHttpClient("MoMo", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
 
 // Add Razor Pages
 builder.Services.AddRazorPages();
@@ -68,6 +79,26 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         Console.WriteLine($"Database Migration Warning: {ex.Message}");
+    }
+    // Add transaction_id column if not exists
+    try
+    {
+        context.Database.ExecuteSqlRaw(
+            "ALTER TABLE orders ADD COLUMN transaction_id VARCHAR(100) NULL;");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database Migration Warning (transaction_id): {ex.Message}");
+    }
+    // Expand payment_status enum to include awaiting_confirmation
+    try
+    {
+        context.Database.ExecuteSqlRaw(
+            "ALTER TABLE orders MODIFY COLUMN payment_status ENUM('pending','paid','failed','awaiting_confirmation','refunded') DEFAULT 'pending';");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database Migration Warning (payment_status): {ex.Message}");
     }
 }
 

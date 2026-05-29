@@ -332,7 +332,8 @@ public class DashboardModel : PageModel
     public async Task<IActionResult> OnPostSaveProductAsync(
         int? id, string? name, string? slug, decimal price, string? category, string? status,
         string? description, bool isOnSale, int? discountPercentage, decimal? originalPrice,
-        bool isCollab, string? collabPartner, bool isFeatured, bool isLimitedEdition, int? limitedQuantity)
+        bool isCollab, string? collabPartner, bool isFeatured, bool isLimitedEdition, int? limitedQuantity,
+        string[]? availableSizes, int defaultStock = 100)
     {
         // Guard: name and slug are required
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(slug))
@@ -364,6 +365,45 @@ public class DashboardModel : PageModel
 
         var uploadDir = Path.Combine(_environment.WebRootPath, "images", "products");
         if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
+
+        var sizesToCreate = (availableSizes == null || availableSizes.Length == 0) ? new[] { "L" } : availableSizes;
+        var colors = new List<string>();
+        for (int i = 0; i < 3; i++)
+        {
+            var colorValue = Request.Form[$"imageColor[{i}]"];
+            if (!string.IsNullOrWhiteSpace(colorValue))
+            {
+                var c = colorValue.ToString().Trim().ToLowerInvariant();
+                if (!colors.Contains(c)) colors.Add(c);
+            }
+        }
+        if (colors.Count == 0)
+        {
+            colors.Add("white");
+        }
+
+        var colorHexMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["white"] = "#FFFFFF",
+            ["black"] = "#111111",
+            ["gray"] = "#708090",
+            ["grey"] = "#708090",
+            ["slate"] = "#708090",
+            ["navy"] = "#1B2A4A",
+            ["blue"] = "#3B82F6",
+            ["red"] = "#DC2626",
+            ["green"] = "#16A34A",
+            ["olive"] = "#6B7C3A",
+            ["beige"] = "#D4C5A9",
+            ["cream"] = "#FFFDD0",
+            ["brown"] = "#92400E",
+            ["khaki"] = "#C3B091",
+            ["yellow"] = "#EAB308",
+            ["orange"] = "#F97316",
+            ["pink"] = "#EC4899",
+            ["purple"] = "#7C3AED",
+            ["charcoal"] = "#374151"
+        };
 
         try
         {
@@ -463,6 +503,33 @@ public class DashboardModel : PageModel
                     _context.ProductImages.Remove(img);
                 }
 
+                // Add or update variants
+                foreach (var size in sizesToCreate)
+                {
+                    foreach (var color in colors)
+                    {
+                        var existingVar = product.ProductVariants.FirstOrDefault(v => 
+                            v.Size.Equals(size, StringComparison.OrdinalIgnoreCase) && 
+                            v.Color.Equals(color, StringComparison.OrdinalIgnoreCase));
+                        
+                        if (existingVar == null)
+                        {
+                            var colorHex = colorHexMap.TryGetValue(color, out var hex) ? hex : "#FFFFFF";
+                            product.ProductVariants.Add(new ProductVariant
+                            {
+                                Size = size.ToUpper(),
+                                Color = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(color),
+                                ColorHex = colorHex,
+                                Sku = $"OP-{slug.ToUpper()}-{color.ToUpper()[..Math.Min(3, color.Length)]}-{size.ToUpper()}",
+                                StockQuantity = defaultStock,
+                                IsAvailable = true,
+                                CreatedAt = DateTime.Now,
+                                UpdatedAt = DateTime.Now
+                            });
+                        }
+                    }
+                }
+
                 _context.Products.Update(product);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = $"Cập nhật sản phẩm '{name}' thành công!";
@@ -529,18 +596,25 @@ public class DashboardModel : PageModel
                 });
             }
 
-            // Add default variant for the new product to make it immediately purchasable/stockable
-            product.ProductVariants.Add(new ProductVariant
+            // Add variants
+            foreach (var size in sizesToCreate)
             {
-                Size = "L",
-                Color = "White",
-                ColorHex = "#FFFFFF",
-                Sku = $"OP-{slug.ToUpper()}-WHT-L",
-                StockQuantity = 100,
-                IsAvailable = true,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
-            });
+                foreach (var color in colors)
+                {
+                    var colorHex = colorHexMap.TryGetValue(color, out var hex) ? hex : "#FFFFFF";
+                    product.ProductVariants.Add(new ProductVariant
+                    {
+                        Size = size.ToUpper(),
+                        Color = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(color),
+                        ColorHex = colorHex,
+                        Sku = $"OP-{slug.ToUpper()}-{color.ToUpper()[..Math.Min(3, color.Length)]}-{size.ToUpper()}",
+                        StockQuantity = defaultStock,
+                        IsAvailable = true,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now
+                    });
+                }
+            }
 
             _context.Products.Add(product);
             await _context.SaveChangesAsync();

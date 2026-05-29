@@ -437,8 +437,11 @@ public partial class TheOldPavementDbContext : DbContext
                 .HasColumnName("payment_method");
             entity.Property(e => e.PaymentStatus)
                 .HasDefaultValueSql("'pending'")
-                .HasColumnType("enum('pending','paid','failed')")
+                .HasColumnType("enum('pending','paid','failed','awaiting_confirmation','refunded')")
                 .HasColumnName("payment_status");
+            entity.Property(e => e.TransactionId)
+                .HasMaxLength(100)
+                .HasColumnName("transaction_id");
             entity.Property(e => e.PromoCodeId).HasColumnName("promo_code_id");
             entity.Property(e => e.ShippingFee)
                 .HasPrecision(10)

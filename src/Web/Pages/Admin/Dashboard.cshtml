@@ -519,15 +519,23 @@
                                 foreach (var o in Model.Orders.OrderByDescending(x => x.CreatedAt))
                                 {
                                     var st = o.Status?.ToLower() ?? "pending";
+                                    var ps = o.PaymentStatus?.ToLower() ?? "pending";
                                     var (badgeCls, lbl) = st switch {
                                         "delivered"  => ("badge-delivered",  "Đã giao"),
                                         "shipped"    => ("badge-shipped",    "Đang giao"),
                                         "processing" => ("badge-processing", "Xử lý"),
+                                        "confirmed"  => ("badge-delivered",  "Đã xác nhận"),
                                         "cancelled"  => ("badge-cancelled",  "Đã hủy"),
                                         _            => ("badge-pending",    "Chờ xử lý")
                                     };
-                                    var pm = o.PaymentMethod?.ToLower() == "cod" ? "cod" : "bank";
-                                    var pmLabel = pm == "cod" ? "COD" : "Chuyển khoản";
+                                    var pm = o.PaymentMethod?.ToLower() ?? "cod";
+                                    var pmLabel = pm switch {
+                                        "cod"  => "COD",
+                                        "momo" => "MoMo",
+                                        "bank" => "Chuyển khoản",
+                                        _      => pm.ToUpper()
+                                    };
+                                    var isAwaitingPayment = ps == "awaiting_confirmation" || (pm != "cod" && ps == "pending" && st != "cancelled");
                                     var itemCount = o.OrderItems?.Count ?? 0;
                                     <tr data-search="@o.OrderNumber @o.TotalAmount"
                                         data-status="@st"
@@ -543,17 +551,27 @@
                                         </td>
                                         <td><span class="badge @badgeCls">@lbl</span></td>
                                         <td>
-                                            <form method="post" asp-page-handler="UpdateOrderStatus">
-                                                <input type="hidden" name="orderId" value="@o.Id" />
-                                                <select name="status" onchange="this.form.submit()"
-                                                    class="form-input form-select text-[11px] py-1 px-2 pr-7 w-auto cursor-pointer">
-                                                    <option value="pending"    selected="@(st=="pending"    ? "selected" : null)">Chờ</option>
-                                                    <option value="processing" selected="@(st=="processing" ? "selected" : null)">Xử lý</option>
-                                                    <option value="shipped"    selected="@(st=="shipped"    ? "selected" : null)">Đang giao</option>
-                                                    <option value="delivered"  selected="@(st=="delivered"  ? "selected" : null)">Đã giao</option>
-                                                    <option value="cancelled"  selected="@(st=="cancelled"  ? "selected" : null)">Đã hủy</option>
-                                                </select>
-                                            </form>
+                                            <div class="flex items-center gap-2">
+                                                @if (isAwaitingPayment)
+                                                {
+                                                    <button onclick="adminConfirmPayment('@o.OrderNumber', this)"
+                                                            class="flex items-center gap-1 px-2.5 py-1 bg-emerald-600 text-white text-[10px] font-bold rounded hover:bg-emerald-700 transition-colors whitespace-nowrap">
+                                                        <i data-lucide="check" class="w-3 h-3"></i>
+                                                        Xác nhận TT
+                                                    </button>
+                                                }
+                                                <form method="post" asp-page-handler="UpdateOrderStatus">
+                                                    <input type="hidden" name="orderId" value="@o.Id" />
+                                                    <select name="status" onchange="this.form.submit()"
+                                                        class="form-input form-select text-[11px] py-1 px-2 pr-7 w-auto cursor-pointer">
+                                                        <option value="pending"    selected="@(st=="pending"    ? "selected" : null)">Chờ</option>
+                                                        <option value="processing" selected="@(st=="processing" ? "selected" : null)">Xử lý</option>
+                                                        <option value="shipped"    selected="@(st=="shipped"    ? "selected" : null)">Đang giao</option>
+                                                        <option value="delivered"  selected="@(st=="delivered"  ? "selected" : null)">Đã giao</option>
+                                                        <option value="cancelled"  selected="@(st=="cancelled"  ? "selected" : null)">Đã hủy</option>
+                                                    </select>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 }
@@ -713,11 +731,13 @@
                                                     var imgSlots = new (string Url, string Color)[3];
                                                     for (int si = 0; si < 3; si++)
                                                     {
-                                                        var slotImg = p.ProductImages?.FirstOrDefault(x => x.DisplayOrder == si);
-                                                        imgSlots[si] = (slotImg?.ImageUrl ?? "", slotImg?.AltText ?? "");
+                                                         var slotImg = p.ProductImages?.FirstOrDefault(x => x.DisplayOrder == si);
+                                                         imgSlots[si] = (slotImg?.ImageUrl ?? "", slotImg?.AltText ?? "");
                                                     }
                                                     var imgJson = System.Text.Json.JsonSerializer.Serialize(
-                                                        imgSlots.Select(s => new { url = s.Url, color = s.Color }));
+                                                         imgSlots.Select(s => new { url = s.Url, color = s.Color }));
+                                                    var sizeList = p.ProductVariants?.Select(v => v.Size.ToUpper()).Distinct().ToList() ?? new List<string>();
+                                                    var sizesJson = System.Text.Json.JsonSerializer.Serialize(sizeList);
                                                 }
                                                 <button type="button"
                                                     class="btn-icon edit-product-btn" title="Sửa"
@@ -736,7 +756,8 @@
                                                     data-featured="@(p.IsFeatured == true ? "true" : "false")"
                                                     data-limited="@(p.IsLimitedEdition == true ? "true" : "false")"
                                                     data-limitedqty="@(p.LimitedQuantity ?? 0)"
-                                                    data-images="@imgJson">
+                                                    data-images="@imgJson"
+                                                    data-sizes="@sizesJson">
                                                     <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                                 </button>
                                                 <form method="post" asp-page-handler="DeleteProduct" onsubmit="return confirm('Xóa sản phẩm này?')">
@@ -1102,6 +1123,29 @@
                     </div>
                 </div>
 
+                <!-- ── Kích thước & Tồn kho khởi tạo ── -->
+                <div class="border-t border-gray-100 pt-4">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Kích thước & Tồn kho khởi tạo</p>
+                    <div class="space-y-4">
+                        <div class="flex flex-wrap gap-4 items-center">
+                            <span class="text-xs font-semibold text-gray-700">Chọn các size có sẵn:</span>
+                            <div class="flex gap-4">
+                                @foreach (var sz in new[] { "S", "M", "L", "XL", "XXL" })
+                                {
+                                    <div class="flex items-center gap-1.5">
+                                        <input type="checkbox" id="size-chk-@sz" name="availableSizes" value="@sz" checked="@(sz == "L" ? "checked" : null)" class="w-4 h-4 accent-gray-900 size-checkbox" />
+                                        <label for="size-chk-@sz" class="text-xs font-semibold text-gray-700 cursor-pointer">@sz</label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label">Số lượng tồn kho mặc định cho mỗi size mới</label>
+                            <input type="number" id="default-stock" name="defaultStock" value="100" min="0" class="form-input w-36" placeholder="100" />
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ── Hình ảnh ── -->
                 <div class="border-t border-gray-100 pt-4">
                     <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Hình ảnh (tối đa 3 ảnh · mỗi ảnh = 1 màu)</p>
@@ -1278,6 +1322,11 @@ function openProductModal() {
         const colorInput = document.querySelector(`input[name="imageColor[${i}]"]`);
         if (colorInput) colorInput.value = '';
     }
+    // Reset size checkboxes (default to only L checked)
+    document.querySelectorAll('.size-checkbox').forEach(chk => {
+        chk.checked = chk.value === 'L';
+    });
+    document.getElementById('default-stock').value = 100;
     document.getElementById('product-modal').classList.add('open');
     if (window.lucide) lucide.createIcons();
 }
@@ -1424,6 +1473,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (colorInput) colorInput.value = slot.color || '';
         }
+
+        // Populate size checkboxes
+        let existingSizes = [];
+        try { existingSizes = JSON.parse(d.sizes || '[]'); } catch {}
+        document.querySelectorAll('.size-checkbox').forEach(chk => {
+            chk.checked = existingSizes.includes(chk.value.toUpperCase());
+        });
+        document.getElementById('default-stock').value = 100;
+
         document.getElementById('product-modal').classList.add('open');
         if (window.lucide) lucide.createIcons();
     });
@@ -1618,6 +1676,50 @@ function clearFilter(tabName) {
         if (el) el.value = '';
     });
     filterTable(tabName);
+}
+
+async function adminConfirmPayment(orderNumber, btn) {
+    if (!confirm('Xác nhận đã nhận đủ tiền thanh toán cho đơn hàng ' + orderNumber + '?')) return;
+    
+    // Find request verification token
+    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+    
+    btn.disabled = true;
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Đang xử lý...';
+    if (window.lucide) lucide.createIcons();
+
+    try {
+        const response = await fetch('/Public/Payment/BankTransfer?handler=AdminConfirmPayment&orderNumber=' + encodeURIComponent(orderNumber), {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': token
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Lỗi: ' + data.message);
+                btn.disabled = false;
+                btn.innerHTML = oldText;
+                if (window.lucide) lucide.createIcons();
+            }
+        } else {
+            alert('Lỗi server: ' + response.statusText);
+            btn.disabled = false;
+            btn.innerHTML = oldText;
+            if (window.lucide) lucide.createIcons();
+        }
+    } catch (e) {
+        alert('Lỗi kết nối: ' + e.message);
+        btn.disabled = false;
+        btn.innerHTML = oldText;
+        if (window.lucide) lucide.createIcons();
+    }
 }
 
 // Initialize all tables on load

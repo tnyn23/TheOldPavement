@@ -115,17 +115,23 @@
 
                 <label class="flex items-start gap-4 p-4 border border-gray-200 cursor-pointer hover:border-black transition-colors has-[:checked]:border-black has-[:checked]:bg-gray-50">
                     <input type="radio" asp-for="PaymentMethod" value="momo" class="mt-0.5 accent-black" />
-                    <div>
-                        <p class="text-xs font-black uppercase tracking-widest mb-0.5">Ví điện tử MoMo</p>
-                        <p class="text-xs text-gray-500">Thanh toán trực tuyến bảo mật qua MoMo (QR hoặc chuyển khoản ví)</p>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <span class="inline-flex items-center justify-center w-5 h-5 bg-[#ae2070] text-white font-black text-[9px]">M</span>
+                            <p class="text-xs font-black uppercase tracking-widest">Ví điện tử MoMo</p>
+                        </div>
+                        <p class="text-xs text-gray-500">Chuyển tiền MoMo đến <strong class="text-gray-800">0965481905</strong> — Nguyễn Thế Hoàng Tùng</p>
                     </div>
                 </label>
 
                 <label class="flex items-start gap-4 p-4 border border-gray-200 cursor-pointer hover:border-black transition-colors has-[:checked]:border-black has-[:checked]:bg-gray-50">
                     <input type="radio" asp-for="PaymentMethod" value="bank" class="mt-0.5 accent-black" />
-                    <div>
-                        <p class="text-xs font-black uppercase tracking-widest mb-0.5">Chuyển khoản ngân hàng</p>
-                        <p class="text-xs text-gray-500">Chuyển tiền trực tiếp vào tài khoản cửa hàng</p>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <span class="inline-flex items-center justify-center w-5 h-5 bg-[#003189] text-white font-black text-[9px]">MB</span>
+                            <p class="text-xs font-black uppercase tracking-widest">Chuyển khoản ngân hàng</p>
+                        </div>
+                        <p class="text-xs text-gray-500">MBBank — <strong class="text-gray-800">0965481905</strong> — Nguyen The Hoang Tung</p>
                     </div>
                 </label>
             </div>

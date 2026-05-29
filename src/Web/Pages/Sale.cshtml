@@ -30,7 +30,7 @@
         </div>
         <div class="relative z-10 max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 py-20 md:py-28">
             <div class="max-w-2xl">
-                <span class="inline-flex items-center gap-2 bg-white text-black px-4 py-1.5 text-[10px] font-black tracking-[0.2em] uppercase mb-6">
+                <span class="inline-flex items-center gap-2 bg-white text-black px-4 py-1.5 text-[10px] font-black tracking-[0.2em] uppercase mb-6 rounded-lg">
                     <i data-lucide="zap" class="w-3.5 h-3.5"></i>
                     Flash Sale
                 </span>
@@ -46,16 +46,6 @@
 
     <div class="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-16 pt-10">
 
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div class="mb-8 flex items-center gap-3 bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800 font-medium">
-                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
-                <span>@TempData["SuccessMessage"]</span>
-                <button onclick="this.parentElement.remove()" class="ml-auto text-emerald-500 hover:text-emerald-700">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-        }
 
         <!-- Toolbar -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-gray-100">
@@ -65,7 +55,7 @@
             <div class="flex items-center gap-3">
                 <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Sắp xếp</span>
                 <select onchange="window.location.href='?sortBy='+this.value"
-                        class="border border-gray-200 bg-white px-3 py-2 text-xs font-semibold outline-none focus:border-black cursor-pointer">
+                        class="border border-gray-200 bg-white px-3 py-2 text-xs font-semibold outline-none focus:border-black cursor-pointer rounded-lg">
                     <option value="discount" selected="@(Model.SortBy == "discount" || string.IsNullOrEmpty(Model.SortBy) ? "selected" : null)">Giảm nhiều nhất</option>
                     <option value="price-low" selected="@(Model.SortBy == "price-low" ? "selected" : null)">Giá: Thấp → Cao</option>
                     <option value="price-high" selected="@(Model.SortBy == "price-high" ? "selected" : null)">Giá: Cao → Thấp</option>

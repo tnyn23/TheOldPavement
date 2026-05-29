@@ -1,22 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="background-color:#ffffff;">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
     <title>@ViewData["Title"] - The Old Pavement</title>
     <meta name="description" content="The Old Pavement - Streetwear đậm chất phố cổ Hà Nội" />
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Custom Theme CSS -->
-    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
-    @RenderSection("Styles", required: false)
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Prevent black flash: set bg immediately before any external resource loads -->
     <style>
+        html { background-color: #ffffff !important; }
         html, body { height: 100%; margin: 0; }
         body {
             padding-top: 88px;
@@ -29,6 +21,17 @@
         #cart-drawer { will-change: transform; }
         #cart-drawer-overlay { will-change: opacity; }
     </style>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+    @RenderSection("Styles", required: false)
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <!-- Global anti-forgery token for cart drawer fetch calls -->
@@ -55,10 +58,13 @@
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <!-- Initialize Lucide Icons -->
-    <script>
-        lucide.createIcons();
-    </script>
+    <script>lucide.createIcons();</script>
+
+
+
     @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- Global Toast Notifications -->
+    <partial name="_Toast" />
 </body>
 </html>

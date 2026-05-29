@@ -17,24 +17,17 @@
         </h1>
     </div>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="mb-8 flex items-center gap-3 bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800 font-medium">
-            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
-            <span>@TempData["SuccessMessage"]</span>
-            <button onclick="this.parentElement.remove()" class="ml-auto"><i data-lucide="x" class="w-4 h-4"></i></button>
-        </div>
-    }
+
 
     @if (!Model.WishlistItems.Any())
     {
         <div class="flex flex-col items-center justify-center py-24 text-center">
-            <div class="w-20 h-20 border-2 border-dashed border-gray-200 flex items-center justify-center mb-6">
+            <div class="w-20 h-20 border-2 border-dashed border-gray-200 flex items-center justify-center mb-6 rounded-2xl">
                 <i data-lucide="heart" class="w-8 h-8 text-gray-300"></i>
             </div>
             <h2 class="text-xl font-black uppercase tracking-tight mb-2">Danh sách trống</h2>
             <p class="text-sm text-gray-500 mb-8 max-w-xs">Lưu những sản phẩm yêu thích để dễ dàng mua sắm sau.</p>
-            <a href="/Shop" class="inline-flex items-center gap-2 bg-black text-white px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors">
+            <a href="/Shop" class="inline-flex items-center gap-2 bg-black text-white px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors rounded-xl">
                 Khám phá Shop
                 <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
@@ -47,16 +40,16 @@
             {
                 <div class="group relative flex flex-col">
                     <!-- Image -->
-                    <div class="relative bg-gray-50 aspect-[3/4] overflow-hidden mb-3">
+                    <div class="relative bg-gray-50 aspect-[3/4] overflow-hidden mb-3 rounded-2xl">
                         <a href="/Product/@item.Slug">
                             <img src="@item.ImageUrl" alt="@item.ProductName"
-                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-2xl" />
                         </a>
                         <!-- Remove -->
                         <form method="post" asp-page-handler="Remove" asp-route-productId="@item.ProductId"
                               class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button type="submit"
-                                    class="w-8 h-8 bg-white border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all"
+                                    class="w-8 h-8 bg-white border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all rounded-lg"
                                     title="Xoá khỏi yêu thích">
                                 <i data-lucide="x" class="w-3.5 h-3.5"></i>
                             </button>
@@ -76,7 +69,7 @@
                                 <input type="hidden" name="slug" value="@item.Slug" />
                                 <input type="hidden" name="imageUrl" value="@item.ImageUrl" />
                                 <button type="submit"
-                                        class="w-full bg-black text-white py-2.5 text-[10px] font-black tracking-widest uppercase hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
+                                        class="w-full bg-black text-white py-2.5 text-[10px] font-black tracking-widest uppercase hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 rounded-xl">
                                     <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
                                     Thêm vào giỏ
                                 </button>
@@ -101,8 +94,8 @@
                 {
                     var img = p.ProductImages?.FirstOrDefault()?.ImageUrl ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?w=600&q=80";
                     <a href="/Product/@p.Slug" class="group block">
-                        <div class="bg-gray-50 aspect-[3/4] overflow-hidden mb-3">
-                            <img src="@img" alt="@p.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="bg-gray-50 aspect-[3/4] overflow-hidden mb-3 rounded-2xl">
+                            <img src="@img" alt="@p.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-2xl" />
                         </div>
                         <p class="text-xs font-bold uppercase tracking-wide text-gray-900 group-hover:opacity-60 transition-opacity truncate">@p.Name</p>
                         <p class="text-sm font-black text-gray-900 mt-0.5 tabular-nums">@p.Price.ToString("N0")₫</p>
@@ -124,11 +117,11 @@
                 {
                     var img = p.ProductImages?.FirstOrDefault()?.ImageUrl ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?w=600&q=80";
                     <a href="/Product/@p.Slug" class="group block">
-                        <div class="bg-gray-50 aspect-[3/4] overflow-hidden mb-3 relative">
-                            <img src="@img" alt="@p.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="bg-gray-50 aspect-[3/4] overflow-hidden mb-3 relative rounded-2xl">
+                            <img src="@img" alt="@p.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-2xl" />
                             @if (p.IsCollab == true)
                             {
-                                <span class="absolute bottom-2 left-2 bg-black text-white text-[9px] font-black px-2 py-0.5 uppercase tracking-widest">Collab</span>
+                                <span class="absolute bottom-2 left-2 bg-black text-white text-[9px] font-black px-2 py-0.5 uppercase tracking-widest rounded-lg">Collab</span>
                             }
                         </div>
                         <p class="text-xs font-bold uppercase tracking-wide text-gray-900 group-hover:opacity-60 transition-opacity truncate">@p.Name</p>
