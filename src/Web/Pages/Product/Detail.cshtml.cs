@@ -337,11 +337,20 @@ public class DetailModel : PageModel
 
     public async Task<IActionResult> OnPostAddToWishlistAsync(string slug)
     {
-        Product = await _productRepository.FirstOrDefaultAsync(p => p.Slug == slug);
+        // Load product WITH images so we can store the real thumbnail
+        Product = await _context.Products
+            .Include(p => p.ProductImages)
+            .FirstOrDefaultAsync(p => p.Slug == slug);
 
         if (Product == null)
         {
             GenerateFallbackProduct(slug);
+        }
+        else if (Product.ProductImages != null && Product.ProductImages.Any())
+        {
+            ProductImagesList = Product.ProductImages
+                .Select(pi => pi.ImageUrl)
+                .ToList();
         }
 
         var wishlistItem = new WishlistItemDTO
