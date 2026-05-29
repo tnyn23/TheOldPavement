@@ -1,287 +1,275 @@
-# 🚧 Current Limitations & Areas For Improvement - Completed ✅
+Read `project-overview.md`, `architecture.md`, and `ui-system.md` first before generating any code.
 
-All limitations listed below have been successfully implemented and improved:
+You are a senior full-stack engineer and premium ecommerce UX designer working on a modern streetwear ecommerce platform called **TheOldPavement**.
 
-## 🛒 Ecommerce Workflow - ✅ Completed
-- **Full production-level order status support**: Added and styled badges/status updates for Shipping, Delivered, Refunded, and Cancelled orders.
-- **Order Timeline Tracking**: Built a step-by-step visual timeline tracking system on the Customer Orders page.
-- **Refund/Cancel flow**: Integrated a complete cancel order handler with automated inventory restoration.
-- **Dynamic shipping calculations**: Added dynamic shipping fee calculation rules inside `CheckoutService.cs`.
+Your goal is NOT just to make the feature functional.
 
-## ❤️ Wishlist & Recommendation - ✅ Completed
-- **Recently Viewed Products**: Created a session-backed logger tracking recently visited items.
-- **Related Products**: Categories are checked and matching random products are rendered on product detail pages.
-- **Recommendation system**: Random suggestions are loaded dynamically on the customer's Wishlist page.
+Your goal is to make the website feel:
 
-## 🔐 Authentication & Security - ✅ Completed
-- **Forgot Password**: Integrated `ForgotPassword` with secure mock emails.
-- **Change Password**: Implemented change password forms inside the new Customer Profile page.
+* premium
+* realistic
+* production-quality
+* polished
+* fashion-oriented
+* modern
+* highly detailed
 
-## 📱 UI/UX & Design System - ✅ Completed
-- **Responsive design**: Uniform container widths and spacing guidelines have been applied.
-- **Standardized Forms**: Login, register, profile, and coupon forms are unified under the Tailwind design style.
-
-## 📊 Admin Dashboard - ✅ Completed
-- **Analytics Hub**: Includes total revenue calculations, real-time customer counts, payment method breakdowns, and daily sales charts.
-- **Inventory Monitoring & Low Stock Alerts**: Added a panel displaying products with low stock ($\le 15$) directly on the dashboard homepage.
-
-
-Read "feature.md" first before generating any code.
-
-You are working on a premium streetwear ecommerce platform called **TheOldPavement** built with:
-
-* ASP.NET Core Razor Pages
-* Layered Architecture
-* Entity Framework Core
-* Tailwind CSS
-* SQL Server
-
-The project follows a strict architecture and design system.
+Every UI decision must feel intentional and professional.
 
 ---
 
-# 🏗 Architecture Rules
+# 🎯 Overall Experience Goal
 
-The project structure:
+The website should feel similar to:
 
-```txt
-src/
- ├── TheOldPavement.Core
- ├── TheOldPavement.Application
- ├── TheOldPavement.Data
- └── TheOldPavement.Web
-```
+* Represent
+* Fear Of God
+* Acne Studios
+* DirtyCoins
+* 5THEWAY
+* Korean/Japanese fashion ecommerce brands
 
-Rules:
+The experience should feel:
 
-* Core layer contains only entities/interfaces/constants.
-* Application layer contains business logic/services/DTOs/validators.
-* Data layer handles EF Core/database/repositories only.
-* Web layer handles Razor Pages/UI only.
-
-Never:
-
-* put business logic inside Razor Pages
-* access DbContext directly from Web layer
-* duplicate business logic
-* hardcode UI repeatedly
-
-Always:
-
-* use clean service abstraction
-* use dependency injection
-* use reusable partial components
-* keep architecture scalable and maintainable
-
----
-
-# 🎨 UI / Design Rules
-
-The UI style is:
-
-* premium streetwear
 * minimal
-* monochrome
+* mature
+* cinematic
 * clean
-* modern fashion ecommerce
-* inspired by:
+* whitespace-heavy
+* typography-focused
+* product-focused
 
-  * Represent
-  * Fear Of God
-  * DirtyCoins
-  * 5THEWAY
-  * Korean/Japanese streetwear brands
+Avoid generic CRUD UI feeling.
 
-Main principles:
+---
 
-* mobile-first
-* whitespace heavy
-* strong typography
-* minimal colors
-* clean layout
-* product-focused UI
+# 🧠 Think Like A Real Product Team
+
+Before generating code, think about:
+
+* UX
+* interaction quality
+* spacing consistency
+* loading states
+* hover states
+* animation smoothness
+* responsive behavior
+* empty states
+* visual hierarchy
+* premium ecommerce behavior
+
+Never generate “just enough UI”.
+
+Every section should feel intentionally designed.
+
+---
+
+# 🎨 UI / UX Requirements
+
+Always include:
+
+* hover states
+* transition animations
+* empty states
+* loading states
+* responsive layouts
+* smooth interactions
+* visual hierarchy
+* premium typography
+* spacing consistency
+* reusable components
 
 Use:
 
 * Tailwind CSS only
 * semantic HTML
+* clean component structure
 * reusable Razor partials
-* consistent spacing system
 
 Avoid:
 
 * inline styles
-* flashy animations
-* glassmorphism
-* colorful gradients
-* inconsistent spacing
+* cluttered layouts
+* random spacing
+* oversaturated colors
+* flashy effects
+* cheap-looking gradients
+* generic admin template feeling
 
 ---
 
-# 🚀 Current Features Already Existing
+# 🛍 Ecommerce Experience Requirements
 
-The project already has:
+The website must feel like a real premium fashion ecommerce platform.
 
-* Shop page
-* Product detail
-* Cart
-* Checkout
-* Wishlist
-* Related products
-* Recently viewed products
-* Promo code system
-* Dynamic shipping fee
-* Momo payment integration
-* Customer orders
-* Order timeline
-* Order cancellation
-* Inventory management
-* Admin dashboard
-* Analytics overview
-* Product management
-* Inventory warning system
-* Promo code management
-* Authentication system
-* Forgot password
-* Guest checkout
-* Email service
+Always improve:
 
-Do NOT recreate existing features.
+* shopping flow
+* product presentation
+* cart interaction
+* checkout UX
+* product storytelling
+* admin operational UX
+* filtering experience
+* recommendation experience
+
+Fashion ecommerce should feel immersive.
 
 ---
 
-# 🎯 Current Development Focus
+# 📦 Product UI Standards
 
-The current goal is NOT deployment.
+Product cards should include:
 
-Focus on:
+* premium image ratio
+* subtle hover interaction
+* clean typography
+* consistent spacing
+* badges with clear priority
+* elegant sale price styling
 
-* improving ecommerce realism
-* improving workflow quality
-* improving admin experience
-* improving UI consistency
-* improving maintainability
-* improving reusable component architecture
+Product detail pages should feel:
 
----
-
-# 🔥 Priority Features To Improve
-
-## Priority 1
-
-* Better order timeline UI
-* Advanced filter toolbar
-* Product badge system
-* Cart drawer / mini cart
-* Better product review system
-* Responsive admin improvements
-* Recent orders activity feed
-* Quick admin actions
-* Better low-stock warning UX
+* editorial
+* immersive
+* image-focused
+* luxurious
+* conversion-focused
 
 ---
 
-## Priority 2
+# 🛒 Shopping UX Standards
 
-* Product size guide
-* Advanced product gallery
-* Notification center
-* Collection system
-* Lookbook/editorial pages
-* Hero CMS/banner management
-* Improved email templates
+Shopping interactions must feel modern:
 
----
+* cart drawer
+* smooth quantity updates
+* instant feedback
+* elegant empty states
+* filter transitions
+* sticky action areas
+* mobile-first UX
 
-## Priority 3
-
-* Recommendation engine improvements
-* Advanced analytics dashboard
-* Real-time admin updates
-* AI sizing recommendation
+Never reload unnecessarily.
 
 ---
 
-# 📱 UX Requirements
+# 📊 Admin Dashboard Standards
 
-Always include:
-
-* loading states
-* empty states
-* hover states
-* smooth transitions
-* responsive layouts
-* reusable components
-
-Admin dashboard should feel:
+The admin dashboard should feel:
 
 * operational
-* premium
 * clean
-* efficient
-
-Customer experience should feel:
-
 * modern
-* fashion-oriented
-* minimal
-* immersive
+* productivity-focused
+* premium
 
----
+Admin UX should prioritize:
 
-# 🧩 Reusable Components
-
-Prefer reusable partials/components:
-
-```txt
-_ProductCard.cshtml
-_Button.cshtml
-_EmptyState.cshtml
-_FilterToolbar.cshtml
-_AdminCard.cshtml
-_AdminSection.cshtml
-_AdminTable.cshtml
-```
-
-Avoid duplicated UI structures.
-
----
-
-# ⚡ Coding Rules
-
-Use:
-
-* async/await
-* DTOs
-* service abstraction
-* pagination
-* validation
-* clean naming
-* scalable structure
+* quick actions
+* fast management
+* clear analytics
+* workflow efficiency
+* inventory visibility
+* recent activities
 
 Avoid:
 
-* fat PageModels
-* duplicated queries
-* business logic in UI
-* giant Razor files
+* generic dashboard design
+* cluttered data tables
+* inconsistent admin components
 
 ---
 
-# 🧠 Expected Code Quality
+# 📱 Responsive Standards
 
-Generated code must feel like:
+The site must feel polished on:
 
-* a real production ecommerce platform
-* a premium local brand experience
-* clean and maintainable enterprise code
-* scalable architecture
+* desktop
+* tablet
+* mobile
 
-The goal is NOT just functional CRUD.
+Pay attention to:
 
-The goal is:
+* spacing scaling
+* typography scaling
+* touch interaction
+* sticky elements
+* drawer behavior
+* overflow handling
 
-* realistic ecommerce workflows
-* premium brand experience
-* maintainable architecture
-* polished user experience
+Mobile UX is extremely important.
+
+---
+
+# ⚡ Micro Interaction Standards
+
+Add subtle premium interactions:
+
+* smooth hover transitions
+* image fade animations
+* active filter transitions
+* timeline animations
+* skeleton loading
+* drawer transitions
+* badge animations
+* button feedback states
+
+Animations should feel:
+
+* subtle
+* elegant
+* fast
+* intentional
+
+Avoid flashy motion.
+
+---
+
+# 🧩 Component Architecture Standards
+
+Prefer reusable components:
+
+* _ProductCard
+* _Button
+* _FilterToolbar
+* _EmptyState
+* _AdminCard
+* _AdminTable
+* _Timeline
+* _Drawer
+
+Never duplicate large UI blocks.
+
+---
+
+# 🧱 Code Quality Standards
+
+Generated code must:
+
+* follow layered architecture
+* separate business logic properly
+* avoid fat Razor Pages
+* use async/await
+* stay maintainable
+* stay scalable
+* feel production-ready
+
+---
+
+# 🚀 Final Goal
+
+The final website should feel like:
+
+* a real premium local fashion brand
+* a polished ecommerce product
+* a modern scalable platform
+* a thoughtfully designed user experience
+
+Not:
+
+* a student CRUD project
+* a generic admin template
+* a random Tailwind demo
+
+Every detail matters.

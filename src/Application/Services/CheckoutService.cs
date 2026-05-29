@@ -4,6 +4,7 @@ using Application.DTOs;
 using Application.Interfaces;
 using Domain.Interfaces;
 using Domain.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services;
 
@@ -14,19 +15,22 @@ public class CheckoutService : ICheckoutService
     private readonly IRepository<PromoCode> _promoRepository;
     private readonly IRepository<ProductVariant> _variantRepository;
     private readonly IEmailService _emailService;
+    private readonly ILogger<CheckoutService> _logger;
 
     public CheckoutService(
         IOrderRepository orderRepository,
         IUserRepository userRepository,
         IRepository<PromoCode> promoRepository,
         IRepository<ProductVariant> variantRepository,
-        IEmailService emailService)
+        IEmailService emailService,
+        ILogger<CheckoutService> logger)
     {
         _orderRepository = orderRepository;
         _userRepository = userRepository;
         _promoRepository = promoRepository;
         _variantRepository = variantRepository;
         _emailService = emailService;
+        _logger = logger;
     }
 
     public async Task<PromoValidationResultDTO> ValidatePromoCodeAsync(string code, decimal subtotal)
@@ -236,7 +240,16 @@ public class CheckoutService : ICheckoutService
         // (which uses the shared DbContext underneath)
         await _orderRepository.SaveChangesAsync();
 
-        _ = Task.Run(() => _emailService.SendOrderConfirmationEmailAsync(order));
+        // Send confirmation email — await directly so ShippingAddress navigation property is still in scope
+        try
+        {
+            await _emailService.SendOrderConfirmationEmailAsync(order);
+        }
+        catch (Exception ex)
+        {
+            // Email failure should not block order completion
+            _logger.LogError(ex, "[Email] Gửi email xác nhận đơn hàng {OrderNumber} thất bại: {Message}", order.OrderNumber, ex.Message);
+        }
 
         return new CheckoutResultDTO 
         { 

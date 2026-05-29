@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Mail;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Application.Interfaces;
 using Domain.Models;
 
@@ -13,40 +14,60 @@ public class EmailService : IEmailService
     private readonly int _smtpPort;
     private readonly string _senderEmail;
     private readonly string _senderPassword;
+    private readonly ILogger<EmailService> _logger;
 
-    public EmailService(IConfiguration configuration)
+    public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
     {
-        _smtpServer = configuration["Email:SmtpServer"] ?? "smtp.gmail.com";
-        _smtpPort = int.Parse(configuration["Email:SmtpPort"] ?? "587");
-        _senderEmail = configuration["Email:SenderEmail"] ?? "";
+        _smtpServer   = configuration["Email:SmtpServer"]   ?? "smtp.gmail.com";
+        _smtpPort     = int.Parse(configuration["Email:SmtpPort"] ?? "587");
+        _senderEmail  = configuration["Email:SenderEmail"]  ?? "";
         _senderPassword = configuration["Email:SenderPassword"] ?? "";
+        _logger = logger;
     }
 
     public async Task SendEmailAsync(string toEmail, string subject, string body, bool isHtml = true)
     {
+        if (string.IsNullOrWhiteSpace(_senderEmail) || string.IsNullOrWhiteSpace(_senderPassword))
+        {
+            _logger.LogWarning("[Email] SenderEmail hoặc SenderPassword chưa được cấu hình trong appsettings.json");
+            return;
+        }
+
+        _logger.LogInformation("[Email] Đang gửi tới {To} | Subject: {Subject}", toEmail, subject);
+
         using var client = new SmtpClient(_smtpServer, _smtpPort)
         {
             EnableSsl = true,
-            Credentials = new NetworkCredential(_senderEmail, _senderPassword)
+            Credentials = new NetworkCredential(_senderEmail, _senderPassword),
+            DeliveryMethod = SmtpDeliveryMethod.Network,
+            Timeout = 20000
         };
 
         using var message = new MailMessage
         {
-            From = new MailAddress(_senderEmail, "The Old Pavement"),
-            Subject = subject,
-            Body = body,
-            IsBodyHtml = isHtml,
+            From        = new MailAddress(_senderEmail, "The Old Pavement"),
+            Subject     = subject,
+            Body        = body,
+            IsBodyHtml  = isHtml,
             BodyEncoding = Encoding.UTF8
         };
 
         message.To.Add(toEmail);
+
         await client.SendMailAsync(message);
+        _logger.LogInformation("[Email] Gửi thành công tới {To}", toEmail);
     }
 
     public async Task SendOrderConfirmationEmailAsync(Order order)
     {
         var address = order.ShippingAddress;
-        if (address == null) return;
+        if (address == null)
+        {
+            _logger.LogWarning("[Email] SendOrderConfirmationEmailAsync: ShippingAddress là null cho đơn hàng {OrderNumber}", order.OrderNumber);
+            return;
+        }
+
+        _logger.LogInformation("[Email] Chuẩn bị gửi xác nhận đơn hàng {OrderNumber} tới {Email}", order.OrderNumber, address.Email);
 
         // Build order items rows
         var itemsHtml = new StringBuilder();
@@ -71,7 +92,13 @@ public class EmailService : IEmailService
                  </tr>"
             : "";
 
-        var paymentMethodText = order.PaymentMethod == "cod" ? "Thanh toán khi nhận hàng (COD)" : "Chuyển khoản ngân hàng";
+        var paymentMethodText = order.PaymentMethod?.ToLower() switch
+        {
+            "cod"  => "Thanh toán khi nhận hàng (COD)",
+            "momo" => "Ví điện tử MoMo — 0965481905 (Nguyễn Thế Hoàng Tùng)",
+            "bank" => "Chuyển khoản MBBank — 0965481905 (Nguyen The Hoang Tung)",
+            _      => "Thanh toán khi nhận hàng (COD)"
+        };
         var fullAddress = $"{address.Address}, {address.Ward}, {address.District}, {address.City}".Replace(", ,", ",").Trim(',', ' ');
 
         var html = $@"
