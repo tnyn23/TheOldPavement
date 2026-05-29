@@ -1,93 +1,183 @@
-# TheOldPavement - Project Overview
+# TheOldPavement — Project Overview
 
-Dự án này là một ứng dụng Web thương mại điện tử chuyên về thời trang (Premium Streetwear / Local Brand) được xây dựng trên nền tảng **ASP.NET Core** với kiến trúc phân lớp (Layered Architecture).
-
-## 🏗 Kiến trúc Hệ thống
-
-Dự án được chia thành các Layer chính sau:
-
-1.  **TheOldPavement.Core**:
-    *   Chứa các **Entities (Models)**: Cart, Product, User, Order, Collaboration, v.v.
-    *   Các interface cơ bản và các hằng số (Constants).
-    *   Đây là trung tâm của dự án, không phụ thuộc vào các lớp khác.
-
-2.  **TheOldPavement.Application**:
-    *   Chứa logic nghiệp vụ (Business Logic).
-    *   **Services**: Xử lý logic cho Product, Auth, Email và tích hợp thanh toán (Momo).
-    *   **DTOs & Mappings**: Chuyển đổi dữ liệu giữa Core và Web.
-    *   **Validators**: Kiểm tra tính hợp lệ của dữ liệu đầu vào.
-
-3.  **TheOldPavement.Data**:
-    *   Chứa **DbContext** (Entity Framework Core).
-    *   **Repositories**: Các lớp truy xuất dữ liệu từ Database.
-    *   **Configurations & Seeds**: Cấu hình bảng và dữ liệu mẫu.
-
-4.  **TheOldPavement.Web**:
-    *   Sử dụng **Razor Pages** cho giao diện người dùng.
-    *   Chứa các Controller/PageModel xử lý yêu cầu từ trình duyệt.
-    *   Tích hợp Middleware và Helpers.
+Ứng dụng Web thương mại điện tử chuyên về thời trang **Premium Streetwear / Local Brand**, xây dựng trên **ASP.NET Core 9.0** với kiến trúc phân lớp (Clean Architecture).
 
 ---
 
-## 🚀 Tính năng & Giao diện hiện có (UI & Features Overview)
+## 🏗 Kiến trúc Hệ thống
 
-Hệ thống được chia thành 3 nhóm giao diện chính: **Public (Khách hàng)**, **Customer (Thành viên)**, và **Admin (Quản trị)**.
+```
+TheOldPavement
+├── Domain          → Models, Interfaces, Constants  (không phụ thuộc layer nào)
+├── Application     → Services, DTOs, Validators, Mappings  (→ Domain)
+├── Infrastructure  → EF Core DbContext, Repositories  (→ Domain)
+└── Web             → Razor Pages, Program.cs  (→ Application + Infrastructure)
+```
 
-### 1. Giao diện Public (Khách hàng)
-Các trang dành cho người dùng truy cập tự do, mua sắm và tìm hiểu thông tin thương hiệu.
-*   **Trang chủ (`/`)**: Landing page giới thiệu brand.
-*   **Cửa hàng (`/Shop`)**: Danh sách toàn bộ sản phẩm. Sử dụng UI Card chuẩn (`_ProductCard.cshtml`).
-*   **Chi tiết sản phẩm (`/Product/{slug}`)**: Hiển thị thông tin chi tiết, hình ảnh (gallery), chọn size/màu và nút Thêm vào giỏ hàng.
-*   **Bộ sưu tập / Chiến dịch**:
-    *   **Collabs (`/Collabs`)**: Các bộ sưu tập hợp tác.
-    *   **Rolling Stones (`/RollingStones`)**: Trang campaign đặc biệt mang phong cách rock/vintage.
-    *   **Commercial Project (`/CommercialProject`)**: Các dự án thương mại của brand.
-*   **Khuyến mãi & Xả hàng**:
-    *   **Sale (`/Sale`)**: Danh sách sản phẩm đang giảm giá.
-    *   **Outlet (`/Outlet`)**: Trang xả hàng cuối mùa (Clearance) với chiết khấu sâu (mặc định 40% trong code), điều khoản không đổi trả.
-*   **Trải nghiệm mua sắm**:
-    *   **Giỏ hàng (`/Cart`)**: Quản lý các sản phẩm đã thêm, điều chỉnh số lượng.
-    *   **Thanh toán (`/Checkout`)**: Điền thông tin giao hàng, chọn phương thức thanh toán (hỗ trợ tích hợp Momo).
-    *   **Thank You (`/ThankYouCard`)**: Trang xác nhận sau khi đặt hàng/thanh toán thành công.
-    *   **Wishlist (`/Wishlist`)**: Danh sách sản phẩm yêu thích (lưu tạm hoặc theo user).
-*   **Thông tin tĩnh**:
-    *   **Về chúng tôi (`/About`)**: Lịch sử và thông điệp của The Old Pavement.
-    *   **Bảo mật (`/Privacy`)**: Chính sách bảo mật thông tin.
-    *   **Lỗi (`/Error`)**: Trang xử lý hiển thị lỗi thân thiện với người dùng.
+### 1. Domain
+Trung tâm của hệ thống, không phụ thuộc layer nào.
 
-### 2. Giao diện Customer (Thành viên)
-Khu vực dành cho người dùng đã đăng nhập.
-*   **Trang cá nhân (`/Customer/Profile`)**: Xem và cập nhật thông tin cá nhân (Họ tên, Số điện thoại) và đổi mật khẩu an toàn.
-*   **Lịch sử đơn hàng (`/Customer/Orders`)**: 
-    *   Xem lịch sử mua sắm chi tiết.
-    *   **Theo dõi hành trình đơn hàng (Order Timeline)**: Trực quan hóa trạng thái đơn hàng (Đặt hàng → Vận chuyển → Giao hàng).
-    *   **Hủy đơn hàng**: Cho phép khách hàng tự hủy đơn hàng khi trạng thái còn là `Pending` (Hệ thống sẽ tự động hoàn lại tồn kho tương ứng cho các biến thể sản phẩm).
+**Models:**
+`Cart`, `CartItem`, `Collaboration`, `CollaborationProduct`, `Collection`, `CollectionDetail`,
+`CommercialProject`, `NewsletterSubscriber`, `Notification`, `Order`, `OrderItem`,
+`Product`, `ProductDetail`, `ProductImage`, `ProductReview`, `ProductVariant`, `ProductView`,
+`ProjectDeliverable`, `ProjectProduct`, `PromoCode`, `Promotion`, `Review`, `Sale`, `SaleProduct`,
+`ShippingAddress`, `SizeChart`, `Store`, `User`, `UserAddress`, `Wishlist`, `AddToCartEvent`
 
-### 3. Giao diện Admin (Quản trị hệ thống)
-Khu vực quản lý dành cho nhân viên/quản trị viên.
-*   **Dashboard (`/Admin/Dashboard`)**: Bảng điều khiển trung tâm đa chức năng.
-    *   **Analytics / Overview**: Biểu đồ doanh thu tuần, thống kê kênh thanh toán chính (COD vs Chuyển khoản), các sản phẩm bán chạy nhất, và bộ chỉ số tổng (Doanh thu, Đơn hàng, Sản phẩm, Khách hàng).
-    *   **Cảnh báo hết hàng**: Hiển thị danh sách cảnh báo tồn kho thấp (các biến thể sản phẩm có số lượng $\le 15$) trực tiếp tại trang tổng quan để quản trị viên kịp thời nhập thêm hàng.
-    *   Quản lý Sản phẩm (Thêm/Sửa/Xóa sản phẩm, ảnh, biến thể size, màu sắc).
-    *   Quản lý Tồn kho (Cập nhật nhanh số lượng tồn kho của từng biến thể sản phẩm).
-    *   Quản lý Mã khuyến mãi (Thêm/Sửa/Vô hiệu hóa code giảm giá theo loại phần trăm hoặc cố định, giới hạn đơn tối thiểu và lượt dùng).
+**Interfaces:** `IRepository<T>`, `IProductRepository`, `IOrderRepository`, `IUserRepository`
 
-### 4. Hệ thống Core & Tích hợp
-*   **Sản phẩm liên quan (Related Products)**: Tự động đề xuất các sản phẩm cùng loại trên trang chi tiết sản phẩm.
-*   **Sản phẩm đã xem & Đề xuất (Wishlist Page)**:
-    *   **Recently Viewed**: Ghi nhận và hiển thị các sản phẩm khách hàng vừa xem trong phiên làm việc.
-    *   **Gợi ý sản phẩm**: Thuật toán tự chọn gợi ý các sản phẩm phù hợp trên trang danh sách yêu thích.
-*   **Mua hàng & Tồn kho (Checkout & Inventory)**: Quản lý luồng đặt hàng chuyên biệt qua `CheckoutService`, tự động kiểm tra và trừ tồn kho (StockQuantity) của biến thể sản phẩm khi đặt hàng. Dynamic Shipping Fee tự động tính phí giao hàng dựa trên Tỉnh/Thành phố và chính sách miễn phí ship (hóa đơn $\ge 500k$).
-*   **Thanh toán**: Tích hợp API cổng thanh toán Momo.
-*   **Email**: Gửi email thông báo đơn hàng/đăng ký qua `EmailService`.
-*   **Xác thực (Authentication)**: Đăng nhập, đăng ký, quên mật khẩu qua hệ thống Identity/AuthService. Hỗ trợ tự động tạo tài khoản (Guest Checkout) cho khách chưa có tài khoản.
-*   **Khuyến mãi**: Hệ thống mã giảm giá (PromoCode) tính toán bảo mật tại Backend, kiểm tra chặt chẽ số lần dùng, thời hạn và giá trị đơn tối thiểu.
+**Constants:** `AppSettings`, `ErrorMessages`, `ValidationMessages`
+
+---
+
+### 2. Application
+Chứa toàn bộ business logic.
+
+**Services:**
+| Service | Interface |
+|---------|-----------|
+| `AuthService` | `IAuthService` |
+| `CheckoutService` | `ICheckoutService` |
+| `EmailService` | `IEmailService` |
+| `MomoService` | `IMomoService` |
+| `OrderService` | `IOrderService` |
+| `ProductService` | `IProductService` |
+| `UserService` | `IUserService` |
+
+**Khác:** DTOs, AutoMapper `MappingProfile`, FluentValidation Validators, `MomoOptions`
+
+---
+
+### 3. Infrastructure
+Tầng truy cập dữ liệu.
+
+**DbContext:** `TheOldPavementDbContext` (MySQL via Pomelo EF Core)
+
+**Repositories:**
+| Repository | Interface |
+|------------|-----------|
+| `Repository<T>` | `IRepository<T>` (generic) |
+| `ProductRepository` | `IProductRepository` |
+| `OrderRepository` | `IOrderRepository` |
+| `UserRepository` | `IUserRepository` |
+
+---
+
+### 4. Web
+Giao diện người dùng với Razor Pages + Tailwind CSS.
+
+**Shared Partials:** `_Layout`, `_Header`, `_Footer`, `_CartDrawer`, `_ProductCard`, `_Toast`, `_Pagination`
+
+---
+
+## 🚀 Tính năng & Giao diện
+
+### Public (Khách hàng — truy cập tự do)
+
+| Route | Trang |
+|-------|-------|
+| `/` | Trang chủ — Landing page giới thiệu brand |
+| `/Public/Shop` | Cửa hàng — Danh sách sản phẩm, filter, search |
+| `/Product/Detail/{slug}` | Chi tiết sản phẩm — Gallery, chọn size/màu, thêm giỏ |
+| `/Cart` | Giỏ hàng — Quản lý items, điều chỉnh số lượng |
+| `/Checkout` | Thanh toán — Thông tin giao hàng, phương thức thanh toán |
+| `/ThankYouCard` | Xác nhận đơn hàng thành công |
+| `/Wishlist` | Danh sách yêu thích + Recently Viewed + Gợi ý sản phẩm |
+| `/Sale` | Sản phẩm đang giảm giá |
+| `/Outlet` | Xả hàng cuối mùa — chiết khấu sâu, không đổi trả |
+| `/Collabs` | Các bộ sưu tập hợp tác |
+| `/Collections` | Danh sách bộ sưu tập |
+| `/CollectionDetail` | Chi tiết bộ sưu tập |
+| `/RollingStones` | Campaign đặc biệt phong cách rock/vintage |
+| `/CommercialProject` | Các dự án thương mại của brand |
+| `/Lookbook` | Lookbook |
+| `/About` | Về chúng tôi |
+| `/Privacy` | Chính sách bảo mật |
+| `/Error` | Trang lỗi thân thiện |
+
+**Authentication:**
+| Route | Chức năng |
+|-------|-----------|
+| `/Public/Account/Login` | Đăng nhập |
+| `/Public/Account/Register` | Đăng ký |
+| `/Public/Account/Logout` | Đăng xuất |
+| `/Public/Account/ForgotPassword` | Quên mật khẩu |
+
+**Payment:**
+| Route | Chức năng |
+|-------|-----------|
+| `/Public/Payment/BankTransfer` | Thanh toán chuyển khoản ngân hàng |
+| `/Public/Payment/MomoCallback` | Callback từ MoMo sau thanh toán |
+| `/Public/Payment/MomoSimulate` | Simulate MoMo (dev/test) |
+
+---
+
+### Customer (Thành viên đã đăng nhập)
+
+| Route | Chức năng |
+|-------|-----------|
+| `/Customer/Profile` | Xem/cập nhật thông tin cá nhân, đổi mật khẩu |
+| `/Customer/Orders` | Lịch sử đơn hàng, Order Timeline, hủy đơn (khi `Pending`) |
+
+---
+
+### Admin (Quản trị hệ thống)
+
+| Route | Chức năng |
+|-------|-----------|
+| `/Admin/Dashboard` | Bảng điều khiển trung tâm |
+
+**Dashboard bao gồm:**
+- Analytics: biểu đồ doanh thu tuần, thống kê COD vs Chuyển khoản, top sản phẩm bán chạy, KPI tổng (doanh thu, đơn hàng, sản phẩm, khách hàng)
+- Cảnh báo tồn kho thấp (biến thể ≤ 15 sản phẩm)
+- Quản lý Sản phẩm: thêm/sửa/xóa, ảnh, biến thể size/màu
+- Quản lý Tồn kho: cập nhật nhanh số lượng từng biến thể
+- Quản lý Mã khuyến mãi: thêm/sửa/vô hiệu hóa PromoCode (% hoặc cố định, giới hạn lượt dùng, đơn tối thiểu)
+
+---
+
+## ⚙️ Hệ thống Core & Tích hợp
+
+**Checkout & Inventory**
+- `CheckoutService` xử lý toàn bộ luồng đặt hàng
+- Tự động kiểm tra và trừ `StockQuantity` của `ProductVariant` khi đặt hàng
+- Dynamic Shipping Fee: tính phí theo Tỉnh/Thành phố, miễn phí ship khi đơn ≥ 500.000đ
+- Guest Checkout: tự động tạo tài khoản cho khách chưa đăng ký
+
+**Thanh toán**
+- MoMo API (HttpClient named `"MoMo"`, strongly-typed `MomoOptions`)
+- Chuyển khoản ngân hàng (BankTransfer)
+- `payment_status`: `pending` | `paid` | `failed` | `awaiting_confirmation` | `refunded`
+
+**Authentication**
+- Cookie-based (`TheOldPavementAuth`)
+- Session: 30 phút idle (`TheOldPavementSession`)
+- Roles: Admin / Customer
+
+**Khuyến mãi**
+- `PromoCode`: kiểm tra backend — số lần dùng, thời hạn, giá trị đơn tối thiểu, loại % hoặc cố định
+
+**Email**
+- `EmailService` gửi thông báo đơn hàng và xác nhận đăng ký
+
+**Sản phẩm liên quan & Gợi ý**
+- Related Products trên trang chi tiết sản phẩm
+- Recently Viewed + Suggested Products trên trang Wishlist
 
 ---
 
 ## 🛠 Công nghệ sử dụng
-*   **Backend**: .NET 9.0, Entity Framework Core.
-*   **Frontend**: Razor Pages, HTML5/CSS3 (Tailwind CSS cho Styling & Layout), Vanilla JS (Alpine/jQuery tuỳ ngữ cảnh).
-*   **Payment**: Momo API.
-*   **Database**: SQL Server (thông qua EF Core Migrations).
-*   **Icons**: Lucide Icons.
+
+| Hạng mục | Công nghệ |
+|----------|-----------|
+| **Runtime** | .NET 9.0 |
+| **Web Framework** | ASP.NET Core Razor Pages |
+| **ORM** | Entity Framework Core 8.0.6 |
+| **Database** | MySQL (Pomelo.EntityFrameworkCore.MySql 8.0.2) |
+| **Mapping** | AutoMapper 13.0.1 |
+| **Validation** | FluentValidation 11.9.2 |
+| **Logging** | Serilog.AspNetCore 8.0.3 |
+| **Payment** | MoMo API |
+| **Frontend** | Tailwind CSS (CDN), Vanilla JS, jQuery |
+| **Icons** | Lucide Icons |
+| **Auth** | ASP.NET Core Cookie Authentication |

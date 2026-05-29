@@ -20,6 +20,109 @@
         /* Cart drawer smooth transitions */
         #cart-drawer { will-change: transform; }
         #cart-drawer-overlay { will-change: opacity; }
+
+        /* ══════════════════════════════════════
+           PAGE INTRO — The Old Pavement
+        ══════════════════════════════════════ */
+
+        /* Curtain panels */
+        #intro-top, #intro-bottom {
+            position: fixed;
+            left: 0; right: 0;
+            z-index: 9999;
+            background: #0a0a0a;
+            transition: transform 0.85s cubic-bezier(0.76, 0, 0.24, 1);
+            pointer-events: none;
+        }
+        #intro-top    { top: 0; height: 50vh; transform: translateY(0); }
+        #intro-bottom { bottom: 0; height: 50vh; transform: translateY(0); }
+        #intro-top.exit    { transform: translateY(-100%); }
+        #intro-bottom.exit { transform: translateY(100%); }
+        #intro-top.done, #intro-bottom.done { display: none; }
+
+        /* Center stage */
+        #intro-stage {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.4s ease 0.1s;
+        }
+        #intro-stage.exit { opacity: 0; }
+        #intro-stage.done { display: none; }
+
+        /* Logo */
+        .intro-logo-wrap {
+            width: clamp(280px, 55vw, 520px);
+            aspect-ratio: 1;
+            transform: scale(0.75);
+            opacity: 0;
+            transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity 0.75s ease;
+        }
+        .intro-logo-wrap.reveal {
+            transform: scale(1);
+            opacity: 1;
+        }
+        .intro-logo-wrap img {
+            width: 100%; height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 40px rgba(196, 30, 30, 0.4))
+                    drop-shadow(0 0 12px rgba(232, 160, 0, 0.25));
+        }
+
+        /* Tagline */
+        .intro-tagline-wrap { overflow: hidden; margin-top: 12px; }
+        .intro-tagline-wrap span {
+            display: block;
+            color: rgba(255,255,255,0.4);
+            font-size: clamp(0.55rem, 1.8vw, 0.68rem);
+            font-weight: 600;
+            letter-spacing: 0.45em;
+            text-transform: uppercase;
+            transform: translateY(100%);
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.35s;
+        }
+        .intro-tagline-wrap.reveal span { transform: translateY(0); }
+
+        /* Counter */
+        #intro-counter {
+            position: fixed;
+            bottom: 32px; right: 40px;
+            z-index: 10001;
+            color: rgba(255,255,255,0.22);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #intro-counter.done { display: none; }
+
+        /* Progress bar */
+        #intro-progress {
+            position: fixed;
+            bottom: 0; left: 0;
+            z-index: 10001;
+            height: 2px; width: 0%;
+            background: linear-gradient(90deg, #c41e1e, #e8a000, #c41e1e);
+            background-size: 200% 100%;
+            animation: introShimmer 1.5s linear infinite;
+            transition: width 1.6s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+        #intro-progress.run  { width: 100%; }
+        #intro-progress.done { display: none; }
+
+        @@keyframes introShimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,6 +137,23 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+
+    <!-- ══ PAGE INTRO — The Old Pavement ══ -->
+    <div id="intro-top"    aria-hidden="true"></div>
+    <div id="intro-bottom" aria-hidden="true"></div>
+
+    <div id="intro-stage" aria-hidden="true">
+        <div class="intro-logo-wrap" id="intro-logo">
+            <img src="/images/logo.png" alt="The Old Pavement" />
+        </div>
+        <div class="intro-tagline-wrap" id="intro-tagline">
+            <span>Streetwear &middot; Phố Cổ Hà Nội</span>
+        </div>
+    </div>
+
+    <div id="intro-counter">000</div>
+    <div id="intro-progress"></div>
+
     <!-- Global anti-forgery token for cart drawer fetch calls -->
     <form id="__AntiForgeryForm" style="display:none">
         @Html.AntiForgeryToken()
@@ -59,6 +179,67 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script>lucide.createIcons();</script>
+
+    <!-- ══ Intro Script ══ -->
+    <script>
+    (function () {
+        var SESSION_KEY = 'top_intro_v5';
+        var elTop      = document.getElementById('intro-top');
+        var elBottom   = document.getElementById('intro-bottom');
+        var elStage    = document.getElementById('intro-stage');
+        var elLogo     = document.getElementById('intro-logo');
+        var elTagline  = document.getElementById('intro-tagline');
+        var elCounter  = document.getElementById('intro-counter');
+        var elProgress = document.getElementById('intro-progress');
+
+        function hideAll() {
+            elTop.classList.add('done');
+            elBottom.classList.add('done');
+            elStage.classList.add('done');
+            elCounter.classList.add('done');
+            elProgress.classList.add('done');
+        }
+
+        if (sessionStorage.getItem(SESSION_KEY)) { hideAll(); return; }
+        sessionStorage.setItem(SESSION_KEY, '1');
+
+        // Counter
+        var cnt = 0;
+        var civ = setInterval(function () {
+            cnt += Math.floor(Math.random() * 10) + 3;
+            if (cnt >= 100) { cnt = 100; clearInterval(civ); }
+            elCounter.textContent = String(cnt).padStart(3, '0');
+        }, 45);
+
+        // Step 1: reveal logo + progress
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                elLogo.classList.add('reveal');
+                elTagline.classList.add('reveal');
+                elProgress.classList.add('run');
+            });
+        });
+
+        // Step 2: exit after 1.8s
+        setTimeout(function () {
+            clearInterval(civ);
+            elCounter.textContent = '100';
+            elStage.classList.add('exit');
+            elCounter.style.opacity = '0';
+            setTimeout(function () {
+                elTop.classList.add('exit');
+                elBottom.classList.add('exit');
+            }, 200);
+        }, 1800);
+
+        // Step 3: cleanup
+        elTop.addEventListener('transitionend', function handler(e) {
+            if (e.propertyName !== 'transform') return;
+            hideAll();
+            elTop.removeEventListener('transitionend', handler);
+        });
+    })();
+    </script>
 
 
 
