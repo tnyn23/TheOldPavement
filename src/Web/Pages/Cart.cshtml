@@ -4,29 +4,260 @@
     ViewData["Title"] = "Giỏ hàng — The Old Pavement";
 }
 
+@section Styles {
+<style>
+    /* ── Cart Item ── */
+    .cart-item {
+        display: flex;
+        gap: 16px;
+        padding: 20px 0;
+        border-bottom: 1px solid rgba(62,80,60,0.1);
+        align-items: flex-start;
+    }
+    .cart-item:last-child { border-bottom: none; }
+
+    .cart-item-img {
+        width: 96px; height: 96px;
+        flex-shrink: 0;
+        overflow: hidden;
+        border: 1.5px solid rgba(62,80,60,0.12);
+        border-radius: 8px;
+        background: #faf7f2;
+    }
+    .cart-item-img img { width:100%; height:100%; object-fit:cover; }
+
+    .cart-item-name {
+        font-size: 13px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #1a1f19;
+        line-height: 1.3;
+    }
+    .cart-item-meta {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #7F886A;
+        margin-top: 4px;
+    }
+    .cart-item-price {
+        font-size: 14px;
+        font-weight: 900;
+        color: #1a1f19;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Qty control */
+    .qty-control {
+        display: inline-flex;
+        align-items: center;
+        border: 1.5px solid rgba(62,80,60,0.2);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .qty-btn {
+        width: 32px; height: 32px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px; font-weight: 700;
+        color: #3E503C;
+        background: transparent;
+        border: none; cursor: pointer;
+        transition: background-color 0.15s;
+    }
+    .qty-btn:hover { background-color: rgba(62,80,60,0.08); }
+    .qty-num {
+        width: 36px; height: 32px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 13px; font-weight: 700;
+        color: #1a1f19;
+        border-left: 1.5px solid rgba(62,80,60,0.15);
+        border-right: 1.5px solid rgba(62,80,60,0.15);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Remove btn */
+    .remove-btn {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 11px; font-weight: 600;
+        color: rgba(62,80,60,0.4);
+        background: none; border: none; cursor: pointer;
+        transition: color 0.15s;
+        padding: 0;
+    }
+    .remove-btn:hover { color: #d4183d; }
+
+    /* ── Order Summary Card ── */
+    .summary-card {
+        background: #faf7f2;
+        border: 1.5px solid rgba(62,80,60,0.15);
+        border-radius: 16px;
+        padding: 24px;
+        position: sticky;
+        top: 108px;
+    }
+    .summary-title {
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: #3E503C;
+        padding-bottom: 16px;
+        border-bottom: 1.5px solid rgba(62,80,60,0.1);
+        margin-bottom: 20px;
+    }
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        font-size: 13px;
+    }
+    .summary-row-label { color: #7F886A; font-weight: 500; }
+    .summary-row-value { font-weight: 700; color: #1a1f19; font-variant-numeric: tabular-nums; }
+    .summary-row-free { font-weight: 800; color: #3E503C; }
+
+    .summary-total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 16px;
+        border-top: 1.5px solid rgba(62,80,60,0.12);
+        margin-top: 4px;
+        margin-bottom: 20px;
+    }
+    .summary-total-label {
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #1a1f19;
+    }
+    .summary-total-value {
+        font-size: 20px;
+        font-weight: 900;
+        color: #1a1f19;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Checkout button */
+    .checkout-btn {
+        display: block;
+        width: 100%;
+        background-color: #3E503C;
+        color: #F3ECDB;
+        text-align: center;
+        padding: 15px;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border-radius: 10px;
+        transition: background-color 0.2s;
+        position: relative;
+        overflow: hidden;
+    }
+    .checkout-btn:hover { background-color: #2e3a2d; }
+    .checkout-btn::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0;
+        width: 0; height: 2px;
+        background-color: #FF6F3D;
+        transition: width 0.3s ease;
+    }
+    .checkout-btn:hover::after { width: 100%; }
+
+    /* Trust badges */
+    .trust-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(62,80,60,0.1);
+    }
+    .trust-item {
+        text-align: center;
+        padding: 10px 4px;
+        border-radius: 8px;
+        background: rgba(62,80,60,0.04);
+    }
+    .trust-item-icon { color: #7F886A; margin: 0 auto 6px; }
+    .trust-item-text {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #7F886A;
+        line-height: 1.4;
+    }
+
+    /* Empty state */
+    .cart-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 80px 0;
+        text-align: center;
+    }
+    .cart-empty-icon {
+        width: 80px; height: 80px;
+        border: 2px dashed rgba(62,80,60,0.2);
+        border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 24px;
+        color: rgba(62,80,60,0.3);
+    }
+
+    /* Continue shopping link */
+    .continue-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #7F886A;
+        text-decoration: none;
+        transition: color 0.2s;
+        margin-top: 24px;
+    }
+    .continue-link:hover { color: #3E503C; }
+</style>
+}
+
 <main class="px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto py-12 min-h-[70vh]">
 
     <!-- Page header -->
-    <div class="border-b border-gray-100 pb-6 mb-10">
-        <p class="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-1">The Old Pavement</p>
-        <h1 class="text-3xl md:text-4xl font-black uppercase tracking-tight">Giỏ hàng
+    <div class="pb-6 mb-8" style="border-bottom: 1.5px solid rgba(62,80,60,0.12)">
+        <p class="text-[10px] font-bold tracking-[0.2em] uppercase mb-1" style="color:#7F886A">The Old Pavement</p>
+        <h1 class="text-3xl md:text-4xl font-black uppercase tracking-tight" style="color:#1a1f19">
+            Giỏ hàng
             @if (Model.CartItems.Count > 0)
             {
-                <span class="text-gray-300 font-light ml-2">(@Model.TotalItems)</span>
+                <span class="font-light ml-2" style="color:rgba(62,80,60,0.3)">(@Model.TotalItems)</span>
             }
         </h1>
     </div>
 
     @if (Model.CartItems.Count == 0)
     {
-        <!-- Empty state -->
-        <div class="flex flex-col items-center justify-center py-24 text-center">
-            <div class="w-20 h-20 border-2 border-dashed border-gray-200 flex items-center justify-center mb-6">
-                <i data-lucide="shopping-bag" class="w-8 h-8 text-gray-300"></i>
+        <div class="cart-empty">
+            <div class="cart-empty-icon">
+                <i data-lucide="shopping-bag" style="width:32px;height:32px"></i>
             </div>
-            <h2 class="text-xl font-black uppercase tracking-tight mb-2">Giỏ hàng trống</h2>
-            <p class="text-sm text-gray-500 mb-8 max-w-xs">Chưa có sản phẩm nào. Khám phá bộ sưu tập của chúng tôi.</p>
-            <a href="/Shop" class="inline-flex items-center gap-2 bg-black text-white px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-gray-800 transition-colors">
+            <h2 class="text-xl font-black uppercase tracking-tight mb-2" style="color:#1a1f19">Giỏ hàng trống</h2>
+            <p class="text-sm mb-8 max-w-xs" style="color:#7F886A">Chưa có sản phẩm nào. Khám phá bộ sưu tập của chúng tôi.</p>
+            <a href="/Shop" class="inline-flex items-center gap-2 px-8 py-3 text-xs font-bold tracking-widest uppercase transition-colors"
+               style="background-color:#3E503C; color:#F3ECDB"
+               onmouseover="this.style.backgroundColor='#2e3a2d'"
+               onmouseout="this.style.backgroundColor='#3E503C'">
                 Khám phá Shop
                 <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
@@ -34,44 +265,44 @@
     }
     else
     {
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
-            <!-- Cart items -->
-            <div class="lg:col-span-7 xl:col-span-8 space-y-0 divide-y divide-gray-100">
+            <!-- ── Cart Items ── -->
+            <div class="lg:col-span-7 xl:col-span-8">
                 @foreach (var item in Model.CartItems)
                 {
-                    <div class="flex gap-5 py-6 items-start">
+                    <div class="cart-item">
                         <!-- Image -->
-                        <div class="w-24 h-24 md:w-28 md:h-28 bg-gray-50 border border-gray-100 flex-shrink-0 overflow-hidden">
-                            <img src="@item.ProductThumbnail" alt="@item.ProductName" class="w-full h-full object-cover" />
-                        </div>
+                        <a href="/Product/@item.ProductName?.ToLower().Replace(" ", "-")" class="cart-item-img">
+                            <img src="@item.ProductThumbnail" alt="@item.ProductName" />
+                        </a>
 
                         <!-- Info -->
                         <div class="flex-1 min-w-0">
                             <div class="flex items-start justify-between gap-3">
                                 <div>
-                                    <p class="text-sm font-bold uppercase tracking-wide text-gray-900 line-clamp-2">@item.ProductName</p>
-                                    <p class="text-xs text-gray-400 mt-1 uppercase tracking-wider font-medium">@item.Color · Size @item.Size</p>
+                                    <p class="cart-item-name">@item.ProductName</p>
+                                    <p class="cart-item-meta">@item.Color · Size @item.Size</p>
                                 </div>
-                                <p class="text-sm font-black text-gray-900 flex-shrink-0 tabular-nums">@item.TotalPrice.ToString("N0")₫</p>
+                                <p class="cart-item-price">@item.TotalPrice.ToString("N0")₫</p>
                             </div>
 
                             <div class="flex items-center justify-between mt-4">
                                 <!-- Qty -->
-                                <form method="post" asp-page-handler="UpdateQuantity" class="flex items-center gap-0 border border-gray-200">
+                                <form method="post" asp-page-handler="UpdateQuantity">
                                     <input type="hidden" name="itemId" value="@item.Id" />
-                                    <button type="submit" name="quantity" value="@(item.Quantity - 1)"
-                                            class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors text-sm font-bold">−</button>
-                                    <span class="w-10 text-center text-sm font-semibold border-x border-gray-200 h-8 flex items-center justify-center tabular-nums">@item.Quantity</span>
-                                    <button type="submit" name="quantity" value="@(item.Quantity + 1)"
-                                            class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors text-sm font-bold">+</button>
+                                    <div class="qty-control">
+                                        <button type="submit" name="quantity" value="@(item.Quantity - 1)" class="qty-btn">−</button>
+                                        <span class="qty-num">@item.Quantity</span>
+                                        <button type="submit" name="quantity" value="@(item.Quantity + 1)" class="qty-btn">+</button>
+                                    </div>
                                 </form>
 
                                 <!-- Remove -->
                                 <form method="post" asp-page-handler="Remove">
                                     <input type="hidden" name="itemId" value="@item.Id" />
-                                    <button type="submit" class="text-xs text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1.5 font-medium">
-                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    <button type="submit" class="remove-btn">
+                                        <i data-lucide="trash-2" style="width:14px;height:14px"></i>
                                         Xoá
                                     </button>
                                 </form>
@@ -81,59 +312,53 @@
                 }
 
                 <!-- Continue shopping -->
-                <div class="pt-6">
-                    <a href="/Shop" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">
-                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
-                        Tiếp tục mua sắm
-                    </a>
-                </div>
+                <a href="/Shop" class="continue-link">
+                    <i data-lucide="arrow-left" style="width:14px;height:14px"></i>
+                    Tiếp tục mua sắm
+                </a>
             </div>
 
-            <!-- Order summary -->
+            <!-- ── Order Summary ── -->
             <div class="lg:col-span-5 xl:col-span-4">
-                <div class="bg-gray-50 border border-gray-100 p-6 sticky top-28">
-                    <h2 class="text-xs font-black uppercase tracking-[0.18em] text-gray-900 mb-6 pb-4 border-b border-gray-200">Tóm tắt đơn hàng</h2>
+                <div class="summary-card">
+                    <p class="summary-title">Tóm tắt đơn hàng</p>
 
-                    <div class="space-y-3 mb-6">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-500">Tạm tính (@Model.TotalItems sản phẩm)</span>
-                            <span class="font-semibold tabular-nums">@Model.TotalPrice.ToString("N0")₫</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-500">Phí vận chuyển</span>
-                            <span class="font-semibold text-emerald-600">Miễn phí</span>
-                        </div>
+                    <div class="summary-row">
+                        <span class="summary-row-label">Tạm tính (@Model.TotalItems sản phẩm)</span>
+                        <span class="summary-row-value">@Model.TotalPrice.ToString("N0")₫</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-row-label">Phí vận chuyển</span>
+                        <span class="summary-row-free">Miễn phí</span>
                     </div>
 
-                    <div class="border-t border-gray-200 pt-4 mb-6">
-                        <div class="flex justify-between">
-                            <span class="text-sm font-black uppercase tracking-wide">Tổng cộng</span>
-                            <span class="text-lg font-black tabular-nums">@Model.TotalPrice.ToString("N0")₫</span>
-                        </div>
+                    <div class="summary-total-row">
+                        <span class="summary-total-label">Tổng cộng</span>
+                        <span class="summary-total-value">@Model.TotalPrice.ToString("N0")₫</span>
                     </div>
 
-                    <a href="/Checkout"
-                       class="block w-full bg-black text-white text-center py-3.5 text-xs font-black uppercase tracking-[0.18em] hover:bg-gray-800 transition-colors mb-3">
-                        Tiến hành thanh toán
+                    <a href="/Checkout" class="checkout-btn">
+                        Tiến hành thanh toán →
                     </a>
 
                     <!-- Trust badges -->
-                    <div class="grid grid-cols-3 gap-2 mt-5 pt-5 border-t border-gray-200">
-                        <div class="text-center">
-                            <i data-lucide="shield-check" class="w-4 h-4 mx-auto text-gray-400 mb-1"></i>
-                            <p class="text-[9px] text-gray-400 font-semibold uppercase tracking-wide leading-tight">Thanh toán<br/>bảo mật</p>
+                    <div class="trust-grid">
+                        <div class="trust-item">
+                            <i data-lucide="shield-check" class="trust-item-icon" style="width:18px;height:18px"></i>
+                            <p class="trust-item-text">Thanh toán<br/>bảo mật</p>
                         </div>
-                        <div class="text-center">
-                            <i data-lucide="refresh-cw" class="w-4 h-4 mx-auto text-gray-400 mb-1"></i>
-                            <p class="text-[9px] text-gray-400 font-semibold uppercase tracking-wide leading-tight">Đổi trả<br/>7 ngày</p>
+                        <div class="trust-item">
+                            <i data-lucide="refresh-cw" class="trust-item-icon" style="width:18px;height:18px"></i>
+                            <p class="trust-item-text">Đổi trả<br/>7 ngày</p>
                         </div>
-                        <div class="text-center">
-                            <i data-lucide="truck" class="w-4 h-4 mx-auto text-gray-400 mb-1"></i>
-                            <p class="text-[9px] text-gray-400 font-semibold uppercase tracking-wide leading-tight">Ship toàn<br/>quốc</p>
+                        <div class="trust-item">
+                            <i data-lucide="truck" class="trust-item-icon" style="width:18px;height:18px"></i>
+                            <p class="trust-item-text">Ship toàn<br/>quốc</p>
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
     }
 </main>

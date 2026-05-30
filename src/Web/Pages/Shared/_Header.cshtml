@@ -4,17 +4,17 @@
 }
 
 <!-- Announcement Bar -->
-<div class="fixed top-0 left-0 right-0 z-[60] bg-black text-white text-center py-2 px-4 text-[10px] font-bold tracking-[0.2em] uppercase">
-    Miễn phí vận chuyển cho đơn từ 500.000₫ &nbsp;·&nbsp; <a href="/Sale" class="underline underline-offset-2 hover:opacity-70 transition-opacity">Flash Sale đang diễn ra →</a>
+<div class="fixed top-0 left-0 right-0 z-[60] text-white text-center py-2 px-4 text-[10px] font-bold tracking-[0.2em] uppercase" style="background-color:#3E503C">
+    Miễn phí vận chuyển cho đơn từ 500.000₫ &nbsp;·&nbsp; <a href="/Sale" class="underline underline-offset-2 hover:opacity-70 transition-opacity" style="color:#FF6F3D">Flash Sale đang diễn ra →</a>
 </div>
 
-<header class="fixed top-8 left-0 right-0 bg-white z-50 border-b border-gray-100">
+<header class="fixed top-8 left-0 right-0 z-50 border-b" style="background-color:#F3ECDB; border-color:rgba(62,80,60,0.15)">
     <div class="px-4 md:px-8 lg:px-12">
         <div class="flex items-center h-14 gap-0">
 
             <!-- Logo -->
-            <a href="/" class="flex-shrink-0 flex items-center justify-center w-11 h-11 bg-black mr-5 select-none hover:bg-gray-900 transition-colors" title="The Old Pavement">
-                <span class="text-white font-black text-[10px] tracking-[0.12em] uppercase">OP</span>
+            <a href="/" class="flex-shrink-0 flex items-center justify-center w-11 h-11 mr-5 select-none transition-colors hover:opacity-80" style="background-color:#3E503C" title="The Old Pavement">
+                <span class="font-black text-[10px] tracking-[0.12em] uppercase" style="color:#F3ECDB">OP</span>
             </a>
 
             <!-- Desktop Nav -->
@@ -33,9 +33,10 @@
                 {
                     var isActive = currentPath.StartsWith(href.ToLower());
                     <a href="@href"
-                       class="px-3.5 h-14 flex items-center text-[11px] font-bold tracking-[0.12em] uppercase transition-colors relative group @(isActive ? "text-black" : "text-gray-500 hover:text-black")">
+                       class="px-3.5 h-14 flex items-center text-[11px] font-bold tracking-[0.12em] uppercase transition-colors relative group @(isActive ? "" : "hover:opacity-100")"
+                       style="color: @(isActive ? "#3E503C" : "#7F886A")">
                         @label
-                        <span class="absolute bottom-0 left-0 right-0 h-[2px] bg-black transition-transform origin-left @(isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100")"></span>
+                        <span class="absolute bottom-0 left-0 right-0 h-[2px] transition-transform origin-left @(isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100")" style="background-color:#FF6F3D"></span>
                     </a>
                 }
             </nav>
@@ -46,7 +47,10 @@
                     <div class="relative flex items-center">
                         <i data-lucide="search" class="absolute left-3.5 w-3.5 h-3.5 text-gray-400 pointer-events-none flex-shrink-0"></i>
                         <input type="text" name="SearchQuery" placeholder="Tìm kiếm sản phẩm..."
-                               class="w-full bg-gray-50 border border-gray-200 pl-9 pr-4 py-2 text-xs text-gray-700 placeholder-gray-400 outline-none focus:border-gray-400 focus:bg-white transition-all" />
+                               class="w-full pl-9 pr-4 py-2 text-xs placeholder-gray-400 outline-none transition-all"
+                               style="background-color:#ede8df; border:1px solid rgba(62,80,60,0.2); color:#1a1f19"
+                               onfocus="this.style.borderColor='#3E503C'; this.style.backgroundColor='#faf7f2'"
+                               onblur="this.style.borderColor='rgba(62,80,60,0.2)'; this.style.backgroundColor='#ede8df'" />
                     </div>
                 </form>
             </div>
@@ -55,13 +59,13 @@
             <div class="flex items-center gap-0.5 ml-3 flex-shrink-0">
 
                 <!-- Wishlist -->
-                <a href="/Wishlist" class="relative flex items-center justify-center w-9 h-9 hover:bg-gray-100 transition-colors" title="Yêu thích">
-                    <i data-lucide="heart" class="w-4.5 h-4.5 text-gray-700" style="width:18px;height:18px"></i>
+                <a href="/Wishlist" class="relative flex items-center justify-center w-9 h-9 transition-colors hover:opacity-70" title="Yêu thích">
+                    <i data-lucide="heart" class="w-4.5 h-4.5" style="width:18px;height:18px;color:#3E503C"></i>
                     @{
                         var totalWishlist = Web.Helpers.WishlistManager.GetTotalItems(Context.Session);
                         if (totalWishlist > 0)
                         {
-                            <span class="absolute top-1 right-1 bg-black text-white text-[8px] rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold leading-none">@totalWishlist</span>
+                            <span class="absolute top-1 right-1 text-white text-[8px] rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold leading-none" style="background-color:#FF6F3D">@totalWishlist</span>
                         }
                     }
                 </a>
@@ -71,31 +75,31 @@
                 {
                     var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "User";
                     <div class="relative" id="user-menu-btn">
-                        <button class="flex items-center justify-center w-9 h-9 hover:bg-gray-100 transition-colors" title="@userName">
-                            <i data-lucide="user" style="width:18px;height:18px" class="text-gray-700"></i>
+                        <button class="flex items-center justify-center w-9 h-9 transition-colors hover:opacity-70" title="@userName">
+                            <i data-lucide="user" style="width:18px;height:18px;color:#3E503C"></i>
                         </button>
-                        <div class="absolute right-0 top-full mt-1 w-52 bg-white border border-gray-200 shadow-lg hidden overflow-hidden z-50 py-1" id="user-menu-dropdown">
-                            <div class="px-4 py-2.5 border-b border-gray-100">
-                                <p class="text-xs font-bold text-gray-900 truncate">@userName</p>
-                                <p class="text-[10px] text-gray-400 mt-0.5">Tài khoản của tôi</p>
+                        <div class="absolute right-0 top-full mt-1 w-52 border shadow-lg hidden overflow-hidden z-50 py-1" style="background-color:#faf7f2; border-color:rgba(62,80,60,0.15)" id="user-menu-dropdown">
+                            <div class="px-4 py-2.5 border-b" style="border-color:rgba(62,80,60,0.1)">
+                                <p class="text-xs font-bold truncate" style="color:#1a1f19">@userName</p>
+                                <p class="text-[10px] mt-0.5" style="color:#7F886A">Tài khoản của tôi</p>
                             </div>
                             @if (User.IsInRole("admin"))
                             {
-                                <a href="/Admin/Dashboard" class="flex items-center gap-2 px-4 py-2.5 text-[11px] font-bold text-black hover:bg-gray-50 uppercase tracking-wider border-b border-gray-100">
+                                <a href="/Admin/Dashboard" class="flex items-center gap-2 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider border-b transition-colors hover:opacity-80" style="color:#3E503C; border-color:rgba(62,80,60,0.1)">
                                     <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
                                     Admin Panel
                                 </a>
                             }
-                            <a href="/Customer/Orders" class="flex items-center gap-2 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50">
-                                <i data-lucide="package" class="w-3.5 h-3.5 text-gray-400"></i>
+                            <a href="/Customer/Orders" class="flex items-center gap-2 px-4 py-2.5 text-xs transition-colors hover:opacity-70" style="color:#1a1f19">
+                                <i data-lucide="package" class="w-3.5 h-3.5" style="color:#7F886A"></i>
                                 Đơn hàng của tôi
                             </a>
-                            <a href="/Wishlist" class="flex items-center gap-2 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50">
-                                <i data-lucide="heart" class="w-3.5 h-3.5 text-gray-400"></i>
+                            <a href="/Wishlist" class="flex items-center gap-2 px-4 py-2.5 text-xs transition-colors hover:opacity-70" style="color:#1a1f19">
+                                <i data-lucide="heart" class="w-3.5 h-3.5" style="color:#7F886A"></i>
                                 Danh sách yêu thích
                             </a>
-                            <div class="border-t border-gray-100 mt-1">
-                                <a href="/Public/Account/Logout" class="flex items-center gap-2 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50">
+                            <div class="border-t mt-1" style="border-color:rgba(62,80,60,0.1)">
+                                <a href="/Public/Account/Logout" class="flex items-center gap-2 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 transition-colors">
                                     <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
                                     Đăng xuất
                                 </a>
@@ -105,42 +109,44 @@
                 }
                 else
                 {
-                    <a href="/Public/Account/Login" class="flex items-center justify-center w-9 h-9 hover:bg-gray-100 transition-colors" title="Đăng nhập">
-                        <i data-lucide="user" style="width:18px;height:18px" class="text-gray-700"></i>
+                    <a href="/Public/Account/Login" class="flex items-center justify-center w-9 h-9 transition-colors hover:opacity-70" title="Đăng nhập">
+                        <i data-lucide="user" style="width:18px;height:18px;color:#3E503C"></i>
                     </a>
                 }
 
                 <!-- Cart -->
                 @{ var totalCartItems = Web.Helpers.CartManager.GetTotalItems(Context.Session); }
                 <button onclick="openCartDrawer()"
-                        class="relative flex items-center justify-center w-9 h-9 hover:bg-gray-100 transition-colors"
+                        class="relative flex items-center justify-center w-9 h-9 transition-colors hover:opacity-70"
                         title="Giỏ hàng" aria-label="Mở giỏ hàng">
-                    <i data-lucide="shopping-bag" style="width:18px;height:18px" class="text-gray-700"></i>
+                    <i data-lucide="shopping-bag" style="width:18px;height:18px;color:#3E503C"></i>
                     <span id="header-cart-badge"
-                          class="absolute top-1 right-1 bg-black text-white text-[8px] rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold leading-none @(totalCartItems == 0 ? "hidden" : "")">@totalCartItems</span>
+                          class="absolute top-1 right-1 text-white text-[8px] rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold leading-none @(totalCartItems == 0 ? "hidden" : "")"
+                          style="background-color:#FF6F3D">@totalCartItems</span>
                 </button>
 
                 <!-- Mobile Toggle -->
-                <button class="lg:hidden flex items-center justify-center w-9 h-9 hover:bg-gray-100 transition-colors" id="mobile-menu-btn" aria-label="Menu">
-                    <i data-lucide="menu" style="width:18px;height:18px" class="text-gray-700"></i>
+                <button class="lg:hidden flex items-center justify-center w-9 h-9 transition-colors hover:opacity-70" id="mobile-menu-btn" aria-label="Menu">
+                    <i data-lucide="menu" style="width:18px;height:18px;color:#3E503C"></i>
                 </button>
             </div>
         </div>
 
         <!-- Mobile Nav -->
-        <nav id="mobile-menu" class="hidden lg:hidden border-t border-gray-100 py-3 space-y-0.5">
-            <a href="/Shop" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase hover:bg-gray-50 text-gray-900 transition-colors">SHOP</a>
-            <a href="/sale" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase hover:bg-gray-50 text-gray-900 transition-colors">SALE</a>
-            <a href="/rolling-stones" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase hover:bg-gray-50 text-gray-900 transition-colors">ROLLING STONES</a>
-            <a href="/collabs" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase hover:bg-gray-50 text-gray-900 transition-colors">COLLAB'S</a>
-            <a href="/outlet" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase hover:bg-gray-50 text-gray-900 transition-colors">OUTLET</a>
-            <a href="/about" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase hover:bg-gray-50 text-gray-900 transition-colors">ABOUT</a>
+        <nav id="mobile-menu" class="hidden lg:hidden border-t py-3 space-y-0.5" style="border-color:rgba(62,80,60,0.15)">
+            <a href="/Shop" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase transition-colors hover:opacity-70" style="color:#3E503C">SHOP</a>
+            <a href="/sale" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase transition-colors hover:opacity-70" style="color:#3E503C">SALE</a>
+            <a href="/rolling-stones" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase transition-colors hover:opacity-70" style="color:#3E503C">ROLLING STONES</a>
+            <a href="/collabs" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase transition-colors hover:opacity-70" style="color:#3E503C">COLLAB'S</a>
+            <a href="/outlet" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase transition-colors hover:opacity-70" style="color:#3E503C">OUTLET</a>
+            <a href="/about" class="flex items-center px-3 py-2.5 text-[11px] font-bold tracking-widest uppercase transition-colors hover:opacity-70" style="color:#3E503C">ABOUT</a>
             <div class="px-3 pt-2 pb-1">
                 <form action="/Shop" method="get">
                     <div class="relative">
-                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none"></i>
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" style="color:#7F886A"></i>
                         <input type="text" name="SearchQuery" placeholder="Tìm kiếm..."
-                               class="w-full bg-gray-50 border border-gray-200 pl-9 pr-4 py-2 text-xs outline-none" />
+                               class="w-full pl-9 pr-4 py-2 text-xs outline-none"
+                               style="background-color:#ede8df; border:1px solid rgba(62,80,60,0.2)" />
                     </div>
                 </form>
             </div>

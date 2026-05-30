@@ -20,16 +20,205 @@
 @section Styles {
     <link rel="stylesheet" href="~/css/product-card.css" asp-append-version="true" />
     <style>
-        .size-btn { display:inline-flex; align-items:center; justify-content:center; width:40px; height:36px; border:1px solid #e5e7eb; font-size:11px; font-weight:700; cursor:pointer; transition:all 150ms ease; background:#fff; color:#374151; }
-        .size-btn:hover, .size-btn.active { border-color:#111827; background:#111827; color:#fff; }
-        .color-swatch { width:20px; height:20px; border-radius:50%; border:2px solid transparent; cursor:pointer; transition:all 150ms ease; }
-        .color-swatch:hover, .color-swatch.active { border-color:#111827; transform:scale(1.15); }
-        .filter-section { border-bottom:1px solid #f3f4f6; padding-bottom:20px; margin-bottom:20px; }
-        .filter-section:last-child { border-bottom:none; }
-        .filter-label { font-size:11px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:#111827; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
+        /* ── Filter Sidebar ── */
+        .filter-sidebar {
+            background-color: #fff8f0;
+            border: 1.5px solid rgba(62,80,60,0.15);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .filter-section {
+            border-bottom: 1px solid rgba(62,80,60,0.1);
+            padding-bottom: 18px;
+            margin-bottom: 18px;
+        }
+        .filter-section:last-of-type { border-bottom: none; margin-bottom: 0; }
+
+        .filter-label {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #3E503C;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Search input */
+        .filter-search-input {
+            width: 100%;
+            border: 1.5px solid rgba(62,80,60,0.2);
+            background: #F3ECDB;
+            padding: 8px 10px 8px 34px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #1a1f19;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .filter-search-input::placeholder { color: rgba(62,80,60,0.4); }
+        .filter-search-input:focus { border-color: #3E503C; }
+
+        /* Category links */
+        .cat-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 7px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(62,80,60,0.55);
+            border-radius: 6px;
+            transition: all 0.15s;
+            text-decoration: none;
+        }
+        .cat-link:hover {
+            background-color: rgba(62,80,60,0.07);
+            color: #3E503C;
+        }
+        .cat-link.active {
+            background-color: #3E503C;
+            color: #F3ECDB;
+            font-weight: 800;
+        }
+        .cat-link.active .cat-dot { background-color: #FF6F3D; }
+        .cat-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background-color: #FF6F3D;
+            flex-shrink: 0;
+        }
+
         /* Price range */
-        input[type=range] { -webkit-appearance:none; width:100%; height:3px; background:#e5e7eb; outline:none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:#111827; cursor:pointer; }
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 3px;
+            background: rgba(62,80,60,0.2);
+            outline: none;
+            border-radius: 2px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: #3E503C;
+            cursor: pointer;
+            border: 2px solid #F3ECDB;
+            box-shadow: 0 0 0 1.5px #3E503C;
+        }
+
+        /* Size buttons */
+        .size-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px; height: 36px;
+            border: 1.5px solid rgba(62,80,60,0.2);
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 150ms ease;
+            background: #F3ECDB;
+            color: rgba(62,80,60,0.6);
+            border-radius: 6px;
+        }
+        .size-btn:hover {
+            border-color: #3E503C;
+            color: #3E503C;
+            background: rgba(62,80,60,0.06);
+        }
+        .size-btn.active {
+            border-color: #3E503C;
+            background: #3E503C;
+            color: #F3ECDB;
+        }
+
+        /* Sort select */
+        .filter-select {
+            width: 100%;
+            border: 1.5px solid rgba(62,80,60,0.2);
+            background: #F3ECDB;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1a1f19;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            border-radius: 6px;
+            transition: border-color 0.2s;
+        }
+        .filter-select:focus { border-color: #3E503C; }
+
+        /* Apply button */
+        .filter-apply-btn {
+            width: 100%;
+            background-color: #3E503C;
+            color: #F3ECDB;
+            padding: 11px;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            margin-bottom: 8px;
+        }
+        .filter-apply-btn:hover { background-color: #2e3a2d; }
+
+        .filter-clear-btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 9px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(62,80,60,0.5);
+            border: 1.5px solid rgba(62,80,60,0.2);
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .filter-clear-btn:hover {
+            border-color: #FF6F3D;
+            color: #FF6F3D;
+        }
+
+        /* Active filter chips */
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background-color: #3E503C;
+            color: #F3ECDB;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 4px 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.15s;
+        }
+        .filter-chip:hover { background-color: #FF6F3D; }
+
+        /* Mobile filter panel */
+        .mobile-filter-panel {
+            background-color: #fff8f0;
+            border: 1.5px solid rgba(62,80,60,0.15);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
     </style>
 }
 
@@ -58,22 +247,24 @@
     <div class="flex gap-8">
 
         <!-- ── SIDEBAR FILTER ── -->
-        <aside class="hidden lg:block w-56 flex-shrink-0">
+        <aside class="hidden lg:block w-60 flex-shrink-0">
             <form method="get" id="filter-form">
+                <div class="filter-sidebar">
+
                 <!-- Search -->
                 <div class="filter-section">
                     <p class="filter-label">Tìm kiếm</p>
                     <div class="relative">
-                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none"></i>
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" style="color:rgba(62,80,60,0.4)"></i>
                         <input asp-for="SearchQuery" type="text" placeholder="Tên sản phẩm..."
-                               class="w-full border border-gray-200 bg-white pl-9 pr-3 py-2 text-xs font-medium outline-none focus:border-black transition-colors" />
+                               class="filter-search-input" />
                     </div>
                 </div>
 
                 <!-- Category -->
                 <div class="filter-section">
                     <p class="filter-label">Danh mục sản phẩm</p>
-                    <div class="space-y-1.5">
+                    <div class="space-y-0.5">
                         @{
                             var cats = new[] {
                                 ("all", "Tất cả"),
@@ -88,9 +279,9 @@
                         {
                             var isActive = (Model.Category ?? "all") == val;
                             <a href="/Shop?Category=@val@(!string.IsNullOrEmpty(Model.SearchQuery) ? "&SearchQuery="+Uri.EscapeDataString(Model.SearchQuery) : "")@(Model.SortBy != "newest" ? "&SortBy="+Model.SortBy : "")"
-                               class="flex items-center justify-between py-1.5 text-xs font-medium transition-colors @(isActive ? "text-black font-bold" : "text-gray-500 hover:text-black")">
+                               class="cat-link @(isActive ? "active" : "")">
                                 <span>@label</span>
-                                @if (isActive) { <span class="w-1.5 h-1.5 bg-black rounded-full"></span> }
+                                @if (isActive) { <span class="cat-dot"></span> }
                             </a>
                         }
                     </div>
@@ -98,14 +289,17 @@
 
                 <!-- Price Range -->
                 <div class="filter-section">
-                    <p class="filter-label">Khoảng giá</p>
-                    <div class="space-y-3">
+                    <p class="filter-label">
+                        Khoảng giá
+                        <span id="price-max-display" class="font-black text-[10px]" style="color:#FF6F3D">@((Model.MaxPrice ?? 2000000).ToString("N0"))₫</span>
+                    </p>
+                    <div class="space-y-2">
                         <input type="range" id="price-max-slider" min="0" max="2000000" step="50000"
                                value="@(Model.MaxPrice ?? 2000000)"
                                oninput="document.getElementById('price-max-display').textContent = Number(this.value).toLocaleString('vi-VN') + '₫'; document.getElementById('MaxPrice').value = this.value;" />
-                        <div class="flex justify-between text-[10px] text-gray-500 font-semibold">
+                        <div class="flex justify-between text-[10px] font-semibold" style="color:rgba(62,80,60,0.45)">
                             <span>0₫</span>
-                            <span id="price-max-display">@((Model.MaxPrice ?? 2000000).ToString("N0"))₫</span>
+                            <span>2,000,000₫</span>
                         </div>
                         <input type="hidden" asp-for="MaxPrice" id="MaxPrice" />
                         <input type="hidden" asp-for="MinPrice" />
@@ -126,26 +320,25 @@
                 <!-- Sort -->
                 <div class="filter-section">
                     <p class="filter-label">Sắp xếp</p>
-                    <select asp-for="SortBy" onchange="this.form.submit()"
-                            class="w-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold outline-none focus:border-black cursor-pointer appearance-none">
-                        <option value="newest">Mới nhất</option>
-                        <option value="bestselling">Bán chạy</option>
-                        <option value="price_asc">Giá: Thấp → Cao</option>
-                        <option value="price_desc">Giá: Cao → Thấp</option>
-                        <option value="name_asc">Tên: A-Z</option>
-                    </select>
+                    <div class="relative">
+                        <select asp-for="SortBy" onchange="this.form.submit()" class="filter-select">
+                            <option value="newest">Mới nhất</option>
+                            <option value="bestselling">Bán chạy</option>
+                            <option value="price_asc">Giá: Thấp → Cao</option>
+                            <option value="price_desc">Giá: Cao → Thấp</option>
+                            <option value="name_asc">Tên: A-Z</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" style="color:#3E503C"></i>
+                    </div>
                 </div>
 
-                <button type="submit"
-                        class="w-full bg-black text-white py-2.5 text-[10px] font-black tracking-widest uppercase hover:bg-gray-800 transition-colors mb-2">
-                    Áp dụng
-                </button>
+                <button type="submit" class="filter-apply-btn">Áp dụng</button>
                 @if (hasActiveFilters)
                 {
-                    <a href="/Shop" class="block w-full text-center py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors border border-gray-200 hover:border-black">
-                        Xoá bộ lọc
-                    </a>
+                    <a href="/Shop" class="filter-clear-btn">Xoá bộ lọc</a>
                 }
+
+                </div><!-- end filter-sidebar -->
             </form>
         </aside>
 
@@ -207,25 +400,25 @@
             @if (hasActiveFilters)
             {
                 <div class="flex flex-wrap items-center gap-2 mb-5">
-                    <span class="text-[9px] font-black uppercase tracking-widest text-gray-400">Đang lọc:</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest" style="color:rgba(62,80,60,0.45)">Đang lọc:</span>
                     @if (!string.IsNullOrEmpty(Model.SearchQuery))
                     {
                         <a href="/Shop?Category=@(Model.Category ?? "all")&SortBy=@(Model.SortBy ?? "newest")"
-                           class="inline-flex items-center gap-1 bg-gray-900 text-white text-[9px] font-bold px-2.5 py-1 uppercase tracking-wide hover:bg-black transition-colors">
+                           class="filter-chip">
                             "@Model.SearchQuery" <i data-lucide="x" class="w-2.5 h-2.5"></i>
                         </a>
                     }
                     @if (Model.Category != null && Model.Category != "all")
                     {
                         <a href="/Shop?SearchQuery=@(Model.SearchQuery)&SortBy=@(Model.SortBy ?? "newest")"
-                           class="inline-flex items-center gap-1 bg-gray-900 text-white text-[9px] font-bold px-2.5 py-1 uppercase tracking-wide hover:bg-black transition-colors">
+                           class="filter-chip">
                             @Model.Category <i data-lucide="x" class="w-2.5 h-2.5"></i>
                         </a>
                     }
                     @if (Model.MaxPrice.HasValue)
                     {
                         <a href="/Shop?SearchQuery=@(Model.SearchQuery)&Category=@(Model.Category ?? "all")&SortBy=@(Model.SortBy ?? "newest")"
-                           class="inline-flex items-center gap-1 bg-gray-900 text-white text-[9px] font-bold px-2.5 py-1 uppercase tracking-wide hover:bg-black transition-colors">
+                           class="filter-chip">
                             ≤ @Model.MaxPrice.Value.ToString("N0")₫ <i data-lucide="x" class="w-2.5 h-2.5"></i>
                         </a>
                     }

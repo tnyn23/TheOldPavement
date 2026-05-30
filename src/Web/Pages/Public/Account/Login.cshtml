@@ -2,75 +2,461 @@
 @model Web.Pages.Public.Account.LoginModel
 @{
     ViewData["Title"] = "Đăng nhập";
+    Layout = "_Layout";
 }
 
-<main class="page-shell">
-    <div class="page-container flex items-center justify-center min-h-[70vh] bg-gray-50 py-12 lg:px-8">
-    <div class="max-w-md w-full space-y-8 bg-white p-8 border border-gray-200 rounded-lg shadow-sm">
-        <div>
-            <h2 class="mt-2 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
-                Đăng nhập
-            </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
-                Hoặc
-                <a href="/Public/Account/Register" class="font-medium text-black hover:underline">
-                    tạo tài khoản mới
-                </a>
+@section Styles {
+<style>
+    /* Override body bg for this page */
+    body { background-color: #F3ECDB !important; }
+
+    .login-wrap {
+        min-height: calc(100vh - 88px);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+    @@media (max-width: 900px) {
+        .login-wrap { grid-template-columns: 1fr; }
+        .login-visual { display: none; }
+    }
+
+    /* ── Left visual panel ── */
+    .login-visual {
+        position: relative;
+        background-color: #3E503C;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 3rem;
+    }
+
+    /* Noise grain texture */
+    .login-visual::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+        opacity: 0.18;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    /* Decorative big text watermark */
+    .login-visual-bg-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-12deg);
+        font-size: clamp(5rem, 12vw, 9rem);
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        text-transform: uppercase;
+        color: rgba(243, 236, 219, 0.06);
+        white-space: nowrap;
+        pointer-events: none;
+        line-height: 1;
+        z-index: 0;
+        user-select: none;
+    }
+
+    /* Diagonal stripe accent */
+    .login-visual-stripe {
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 180px; height: 180px;
+        background-color: #FF6F3D;
+        opacity: 0.15;
+        transform: rotate(45deg);
+        z-index: 0;
+    }
+    .login-visual-stripe-2 {
+        position: absolute;
+        bottom: 30%; left: -30px;
+        width: 80px; height: 80px;
+        background-color: #FF6F3D;
+        opacity: 0.1;
+        transform: rotate(30deg);
+        z-index: 0;
+    }
+
+    /* Horizontal rule accent */
+    .login-visual-rule {
+        width: 48px;
+        height: 3px;
+        background-color: #FF6F3D;
+        margin-bottom: 1.25rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .login-visual-content { position: relative; z-index: 2; }
+
+    .login-visual-tag {
+        display: inline-block;
+        font-size: 0.6rem;
+        font-weight: 800;
+        letter-spacing: 0.35em;
+        text-transform: uppercase;
+        color: #FF6F3D;
+        border: 1px solid rgba(255,111,61,0.4);
+        padding: 4px 10px;
+        margin-bottom: 1.5rem;
+    }
+
+    .login-visual-title {
+        font-size: clamp(2.2rem, 4vw, 3.5rem);
+        font-weight: 900;
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        text-transform: uppercase;
+        color: #F3ECDB;
+        margin-bottom: 1rem;
+    }
+    .login-visual-title em {
+        font-style: normal;
+        color: #FF6F3D;
+    }
+
+    .login-visual-desc {
+        font-size: 0.8rem;
+        color: rgba(243,236,219,0.5);
+        line-height: 1.7;
+        max-width: 280px;
+        margin-bottom: 2rem;
+    }
+
+    .login-visual-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .login-visual-badge {
+        font-size: 0.55rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        padding: 5px 10px;
+        border: 1px solid rgba(243,236,219,0.2);
+        color: rgba(243,236,219,0.5);
+    }
+
+    /* ── Right form panel ── */
+    .login-form-panel {
+        background-color: #F3ECDB;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 2rem;
+    }
+
+    .login-form-inner {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .login-form-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 2.5rem;
+    }
+    .login-form-logo-box {
+        width: 36px; height: 36px;
+        background-color: #3E503C;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .login-form-logo-box span {
+        color: #F3ECDB;
+        font-size: 0.6rem;
+        font-weight: 900;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+    }
+    .login-form-logo-name {
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #3E503C;
+    }
+
+    .login-form-heading {
+        font-size: 2rem;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        text-transform: uppercase;
+        color: #1a1f19;
+        line-height: 1;
+        margin-bottom: 0.4rem;
+    }
+    .login-form-sub {
+        font-size: 0.75rem;
+        color: #7F886A;
+        margin-bottom: 2rem;
+    }
+    .login-form-sub a {
+        color: #FF6F3D;
+        font-weight: 700;
+        text-decoration: none;
+    }
+    .login-form-sub a:hover { text-decoration: underline; }
+
+    /* Divider */
+    .login-divider {
+        width: 32px; height: 2px;
+        background-color: #FF6F3D;
+        margin-bottom: 2rem;
+    }
+
+    /* Inputs */
+    .login-field { margin-bottom: 1.25rem; }
+    .login-label {
+        display: block;
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #3E503C;
+        margin-bottom: 6px;
+    }
+    .login-input {
+        width: 100%;
+        padding: 12px 14px;
+        background-color: rgba(62,80,60,0.06);
+        border: 1.5px solid rgba(62,80,60,0.18);
+        color: #1a1f19;
+        font-size: 0.875rem;
+        outline: none;
+        transition: border-color 0.2s, background-color 0.2s;
+        box-sizing: border-box;
+    }
+    .login-input::placeholder { color: rgba(62,80,60,0.35); }
+    .login-input:focus {
+        border-color: #3E503C;
+        background-color: rgba(62,80,60,0.04);
+    }
+
+    /* Remember + forgot */
+    .login-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.75rem;
+    }
+    .login-remember {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 0.75rem;
+        color: #7F886A;
+        cursor: pointer;
+    }
+    .login-remember input[type=checkbox] {
+        width: 14px; height: 14px;
+        accent-color: #3E503C;
+        cursor: pointer;
+    }
+    .login-forgot {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: #7F886A;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: color 0.2s;
+    }
+    .login-forgot:hover { color: #3E503C; }
+
+    /* Submit button */
+    .login-btn {
+        width: 100%;
+        padding: 14px;
+        background-color: #3E503C;
+        color: #F3ECDB;
+        font-size: 0.7rem;
+        font-weight: 900;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+        position: relative;
+        overflow: hidden;
+    }
+    .login-btn:hover { background-color: #2e3a2d; }
+    .login-btn:active { transform: scale(0.99); }
+
+    /* Orange accent line on button */
+    .login-btn::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0;
+        width: 0; height: 2px;
+        background-color: #FF6F3D;
+        transition: width 0.3s ease;
+    }
+    .login-btn:hover::after { width: 100%; }
+
+    /* Register link */
+    .login-register-link {
+        margin-top: 1.5rem;
+        text-align: center;
+        font-size: 0.72rem;
+        color: #7F886A;
+    }
+    .login-register-link a {
+        color: #3E503C;
+        font-weight: 800;
+        text-decoration: none;
+        letter-spacing: 0.05em;
+    }
+    .login-register-link a:hover { color: #FF6F3D; }
+
+    /* Bottom brand stamp */
+    .login-stamp {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(62,80,60,0.12);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .login-stamp-dot {
+        width: 6px; height: 6px;
+        background-color: #FF6F3D;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .login-stamp-text {
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: rgba(62,80,60,0.4);
+    }
+</style>
+}
+
+<div class="login-wrap">
+
+    <!-- ── Left: Visual Panel ── -->
+    <div class="login-visual">
+        <div class="login-visual-bg-text">The Old<br>Pavement</div>
+        <div class="login-visual-stripe"></div>
+        <div class="login-visual-stripe-2"></div>
+
+        <div class="login-visual-content">
+            <div class="login-visual-tag">Hanoi Streetwear · Est. 2022</div>
+            <div class="login-visual-rule"></div>
+            <h1 class="login-visual-title">
+                Phố Cổ<br>
+                <em>Vỉa Hè</em><br>
+                Style
+            </h1>
+            <p class="login-visual-desc">
+                Local brand mang tinh thần đường phố Hà Nội — nơi văn hoá phố cổ gặp gỡ streetwear đương đại.
             </p>
+            <div class="login-visual-badges">
+                <span class="login-visual-badge">Premium Quality</span>
+                <span class="login-visual-badge">Local Brand</span>
+                <span class="login-visual-badge">Hà Nội</span>
+            </div>
         </div>
-        
+    </div>
 
+    <!-- ── Right: Form Panel ── -->
+    <div class="login-form-panel">
+        <div class="login-form-inner">
 
-        <form class="mt-8 space-y-6" method="post">
-            <div class="space-y-4">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input id="email" name="Email" type="email" autocomplete="email" required asp-for="Email"
-                           class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm"
-                           placeholder="Địa chỉ email">
+            <!-- Logo -->
+            <div class="login-form-logo">
+                <div class="login-form-logo-box">
+                    <span>OP</span>
                 </div>
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">Mật khẩu</label>
-                    <input id="password" name="Password" type="password" autocomplete="current-password" required asp-for="Password"
-                           class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm"
-                           placeholder="Mật khẩu">
-                </div>
+                <span class="login-form-logo-name">The Old Pavement</span>
             </div>
 
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <input id="remember-me" name="remember-me" type="checkbox"
-                           class="h-4 w-4 text-black focus:ring-black border-gray-300 rounded">
-                    <label for="remember-me" class="ml-2 block text-sm text-gray-900">
+            <!-- Heading -->
+            <h2 class="login-form-heading">Đăng nhập</h2>
+            <p class="login-form-sub">
+                Chưa có tài khoản?
+                <a href="/Public/Account/Register">Tạo ngay</a>
+            </p>
+            <div class="login-divider"></div>
+
+            <!-- Form -->
+            <form method="post">
+                <div class="login-field">
+                    <label class="login-label" for="email">Email</label>
+                    <input class="login-input" id="email" name="Email" type="email"
+                           autocomplete="email" required asp-for="Email"
+                           placeholder="your@email.com" />
+                </div>
+
+                <div class="login-field">
+                    <label class="login-label" for="password">Mật khẩu</label>
+                    <div style="position:relative">
+                        <input class="login-input" id="password" name="Password" type="password"
+                               autocomplete="current-password" required asp-for="Password"
+                               placeholder="••••••••" style="padding-right:44px" />
+                        <button type="button" onclick="togglePwd()"
+                                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:#7F886A">
+                            <i data-lucide="eye" id="pwd-eye" style="width:16px;height:16px"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="login-row">
+                    <label class="login-remember">
+                        <input type="checkbox" name="remember-me" id="remember-me" />
                         Ghi nhớ đăng nhập
                     </label>
+                    <a href="/Public/Account/ForgotPassword" class="login-forgot">Quên mật khẩu?</a>
                 </div>
 
-                <div class="text-sm">
-                    <a href="/Public/Account/ForgotPassword" class="font-medium text-black hover:underline">
-                        Quên mật khẩu?
-                    </a>
-                </div>
-            </div>
-
-            <div>
-                <button type="submit"
-                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors uppercase tracking-wide">
+                <button type="submit" class="login-btn">
                     Đăng nhập
                 </button>
+            </form>
+
+            <p class="login-register-link">
+                Chưa có tài khoản? &nbsp;
+                <a href="/Public/Account/Register">Đăng ký ngay →</a>
+            </p>
+
+            <!-- Brand stamp -->
+            <div class="login-stamp">
+                <div class="login-stamp-dot"></div>
+                <span class="login-stamp-text">The Old Pavement · Phố Cổ Hà Nội · Streetwear</span>
             </div>
-        </form>
+
+        </div>
     </div>
+
 </div>
-</main>
 
 @section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-            {
-                <text>showToast("@Html.Raw(Model.ErrorMessage.Replace("\"", "\\\""))", "error");</text>
-            }
-        });
-    </script>
+<script>
+    function togglePwd() {
+        var inp = document.getElementById('password');
+        var eye = document.getElementById('pwd-eye');
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            eye.setAttribute('data-lucide', 'eye-off');
+        } else {
+            inp.type = 'password';
+            eye.setAttribute('data-lucide', 'eye');
+        }
+        if (window.lucide) lucide.createIcons();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <text>showToast("@Html.Raw(Model.ErrorMessage.Replace("\"", "\\\""))", "error");</text>
+        }
+    });
+</script>
 }
