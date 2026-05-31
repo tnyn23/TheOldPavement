@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<TheOldPavementDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0))));
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
