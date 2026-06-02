@@ -117,9 +117,10 @@ public class AuthService : IAuthService
             {
                 await emailService.SendPasswordRecoveryEmailAsync(toEmail, fullName, rawPassword);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Email failure is non-critical — password was already reset in DB
+                Console.WriteLine($"[Email BACKGROUND ERROR] {ex.GetType().Name}: {ex.Message}");
             }
         });
         
