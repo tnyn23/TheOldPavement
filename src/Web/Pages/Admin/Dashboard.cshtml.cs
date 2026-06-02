@@ -18,6 +18,7 @@ public class DashboardModel : PageModel
     public List<Order> Orders { get; set; } = new();
     public List<ProductVariant> ProductVariants { get; set; } = new();
     public List<PromoCode> PromoCodes { get; set; } = new();
+    public HashSet<int> OrderedProductIds { get; set; } = new(); // sản phẩm đã có order
     
     // Analytics Metrics
     public decimal TotalRevenue { get; set; }
@@ -264,6 +265,12 @@ public class DashboardModel : PageModel
             .OrderByDescending(o => o.Id)
             .ToListAsync();
 
+        // Tập hợp product IDs đã có trong order
+        OrderedProductIds = Orders
+            .SelectMany(o => o.OrderItems)
+            .Select(oi => oi.ProductId)
+            .ToHashSet();
+
         ProductVariants = await _context.ProductVariants
             .Include(v => v.Product)
             .ToListAsync();
@@ -339,7 +346,7 @@ public class DashboardModel : PageModel
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(slug))
         {
             TempData["ErrorMessage"] = "Tên sản phẩm và Slug không được để trống!";
-            return RedirectToPage();
+            return RedirectToPage(new { tab = "products" });
         }
 
         name     = name.Trim();
@@ -352,15 +359,15 @@ public class DashboardModel : PageModel
         if (!validCategories.Contains(category))
         {
             TempData["ErrorMessage"] = $"Danh mục '{category}' không hợp lệ. Chỉ chấp nhận: tee, hoodie, accessories.";
-            return RedirectToPage();
+            return RedirectToPage(new { tab = "products" });
         }
 
         // Validate status against DB enum
-        var validStatuses = new[] { "available", "sold_out", "coming_soon", "discontinued" };
+        var validStatuses = new[] { "available", "sold_out", "coming_soon", "discontinued", "hidden" };
         if (!validStatuses.Contains(status))
         {
             TempData["ErrorMessage"] = $"Trạng thái '{status}' không hợp lệ.";
-            return RedirectToPage();
+            return RedirectToPage(new { tab = "products" });
         }
 
         var uploadDir = Path.Combine(_environment.WebRootPath, "images", "products");
@@ -407,9 +414,17 @@ public class DashboardModel : PageModel
 
         try
         {
-
-        if (id.HasValue && id.Value > 0)
+        // Đọc id trực tiếp từ form để tránh model binding issue
+        int? resolvedId = id;
+        if (!resolvedId.HasValue || resolvedId.Value <= 0)
         {
+            var rawId = Request.Form["id"].ToString();
+            if (int.TryParse(rawId, out var parsedId) && parsedId > 0)
+                resolvedId = parsedId;
+        }
+        Console.WriteLine($"[SaveProduct] id={id}, resolvedId={resolvedId}, name={name}, slug={slug}");
+
+        if (resolvedId.HasValue && resolvedId.Value > 0)        {
             var product = await _context.Products
                 .Include(p => p.ProductImages)
                 .Include(p => p.ProductVariants)
@@ -621,7 +636,7 @@ public class DashboardModel : PageModel
             TempData["SuccessMessage"] = $"Thêm mới sản phẩm '{name}' thành công!";
         }
 
-        return RedirectToPage();
+        return RedirectToPage(new { tab = "products" });
         }
         catch (Exception ex)
         {
@@ -632,24 +647,31 @@ public class DashboardModel : PageModel
                 TempData["ErrorMessage"] = $"Giá trị không hợp lệ: {innerMsg}";
             else
                 TempData["ErrorMessage"] = $"Lỗi khi lưu sản phẩm: {innerMsg}";
-            return RedirectToPage();
+            return RedirectToPage(new { tab = "products" });
         }
     }
 
     public async Task<IActionResult> OnPostDeleteProductAsync(int id)
     {
-        var product = await _context.Products
-            .Include(p => p.ProductImages)
-            .Include(p => p.ProductVariants)
-            .FirstOrDefaultAsync(p => p.Id == id);
-
-        if (product != null)
+        try
         {
-            _context.Products.Remove(product);
+            var product = await _context.Products.FindAsync(id);
+
+            if (product == null)
+                return new JsonResult(new { success = false, message = "Không tìm thấy sản phẩm!" });
+
+            // Soft delete: ẩn sản phẩm thay vì xóa cứng
+            // Giữ nguyên data để không ảnh hưởng lịch sử đơn hàng
+            product.Status = "hidden";
+            _context.Products.Update(product);
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = $"Xóa sản phẩm '{product.Name}' thành công!";
+
+            return new JsonResult(new { success = true, message = $"Đã ẩn sản phẩm '{product.Name}' khỏi cửa hàng!" });
         }
-        return RedirectToPage();
+        catch (Exception ex)
+        {
+            return new JsonResult(new { success = false, message = ex.InnerException?.Message ?? ex.Message });
+        }
     }
 
     public async Task<IActionResult> OnPostUpdateStockAsync(int variantId, int stockQuantity)

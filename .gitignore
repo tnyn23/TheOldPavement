@@ -22,8 +22,8 @@ appsettings.Development.json
 .env
 .env.local
 
-# Docker
-.dockerignore
+# Docker (keep .dockerignore tracked)
+# .dockerignore
 
 # IDE
 .vscode/

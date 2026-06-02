@@ -601,7 +601,7 @@ public partial class TheOldPavementDbContext : DbContext
             entity.Property(e => e.Slug).HasColumnName("slug");
             entity.Property(e => e.Status)
                 .HasDefaultValueSql("'available'")
-                .HasColumnType("enum('available','sold_out','coming_soon','discontinued')")
+                .HasColumnType("enum('available','sold_out','coming_soon','discontinued','hidden')")
                 .HasColumnName("status");
             entity.Property(e => e.UpdatedAt)
                 .ValueGeneratedOnAddOrUpdate()

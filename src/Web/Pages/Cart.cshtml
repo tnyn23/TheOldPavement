@@ -289,7 +289,8 @@
 
                             <div class="flex items-center justify-between mt-4">
                                 <!-- Qty -->
-                                <form method="post" asp-page-handler="UpdateQuantity">
+                                <form method="post" asp-page-handler="UpdateQuantity" class="inline-block">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="itemId" value="@item.Id" />
                                     <div class="qty-control">
                                         <button type="submit" name="quantity" value="@(item.Quantity - 1)" class="qty-btn">−</button>
@@ -299,7 +300,8 @@
                                 </form>
 
                                 <!-- Remove -->
-                                <form method="post" asp-page-handler="Remove">
+                                <form method="post" asp-page-handler="Remove" class="inline-block" onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?');">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="itemId" value="@item.Id" />
                                     <button type="submit" class="remove-btn">
                                         <i data-lucide="trash-2" style="width:14px;height:14px"></i>

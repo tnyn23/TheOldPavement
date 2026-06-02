@@ -754,11 +754,21 @@
                                                     data-sizes="@sizesJson">
                                                     <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                                 </button>
-                                                <button type="button" onclick="quickDeleteProduct(@p.Id)"
-                                                    class="btn-icon" style="color:#dc2626;border-color:#fecaca" title="Xóa">
-                                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                                </button>
-                                            </div>
+                                                @if (Model.OrderedProductIds.Contains(p.Id))
+                                                {
+                                                    <button type="button" disabled
+                                                        class="btn-icon" style="color:#9ca3af;border-color:#e5e7eb;cursor:not-allowed" 
+                                                        title="Sản phẩm đã có đơn hàng — không thể xóa">
+                                                        <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="button" onclick="quickDeleteProduct(@p.Id, '@p.Name')"
+                                                        class="btn-icon" style="color:#dc2626;border-color:#fecaca" title="Xóa sản phẩm">
+                                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                                    </button>
+                                                }                                            </div>
                                         </td>
                                     </tr>
                                 }
@@ -1409,9 +1419,39 @@ function previewImage(input, previewId) {
     reader.readAsDataURL(file);
 }
 
+// ── showToast: hiển thị toast động từ JS ──────────────────────────────────
+function showToast(message, type = 'success') {
+    const existing = document.getElementById('toast-dynamic');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'toast-dynamic';
+    toast.className = 'toast';
+    toast.style.background = type === 'success' ? '#3E503C' : '#dc2626';
+    toast.innerHTML = `
+        <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(255,255,255,0.25)">
+            <i data-lucide="${type === 'success' ? 'check' : 'alert-circle'}" class="w-3 h-3 text-white"></i>
+        </div>
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()" class="ml-2 opacity-60 hover:opacity-100">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>`;
+    document.body.appendChild(toast);
+    if (window.lucide) lucide.createIcons();
+    setTimeout(() => toast.remove(), 4000);
+}
+
 // ── Auto-slug from name ────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
+
+    // Tự động chuyển sang tab products nếu URL có ?tab=products
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam) {
+        const tabBtn = document.querySelector(`[data-tab="${tabParam}"]`);
+        if (tabBtn) tabBtn.click();
+    }
 
     // Edit product buttons — use event delegation to avoid inline onclick issues
     document.addEventListener('click', e => {
@@ -1732,14 +1772,19 @@ async function quickUpdateStatus(orderId, status) {
     else alert('Lỗi cập nhật trạng thái');
 }
 
-async function quickDeleteProduct(id) {
-    if (!confirm('Xóa sản phẩm này?')) return;
+async function quickDeleteProduct(id, name) {
+    if (!confirm(`Xóa sản phẩm "${name}"?\nSản phẩm sẽ bị xóa khỏi cửa hàng.`)) return;
     const fd = new FormData();
     fd.append('id', id);
     fd.append('__RequestVerificationToken', getToken());
     const res = await fetch('?handler=DeleteProduct', { method: 'POST', body: fd });
-    if (res.ok) location.reload();
-    else alert('Lỗi xóa sản phẩm');
+    const data = await res.json();
+    if (data.success) {
+        showToast(data.message, 'success');
+        setTimeout(() => location.reload(), 1200);
+    } else {
+        showToast('Lỗi: ' + data.message, 'error');
+    }
 }
 
 async function quickUpdateStock(variantId) {
