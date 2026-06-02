@@ -1,6 +1,6 @@
-using System.Net;
-using System.Net.Mail;
+using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Application.Interfaces;
@@ -10,67 +10,60 @@ namespace Application.Services;
 
 public class EmailService : IEmailService
 {
-    private readonly string _smtpServer;
-    private readonly int _smtpPort;
-    private readonly string _senderEmail;
-    private readonly string _senderPassword;
     private readonly string _fromEmail;
+    private readonly string _fromName;
+    private readonly string _apiKey;
     private readonly ILogger<EmailService> _logger;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
+    public EmailService(IConfiguration configuration, ILogger<EmailService> logger, IHttpClientFactory httpClientFactory)
     {
-        _smtpServer     = configuration["Email:SmtpServer"]   ?? "smtp.gmail.com";
-        _smtpPort       = int.Parse(configuration["Email:SmtpPort"] ?? "587");
-        _senderEmail    = configuration["Email:SenderEmail"]  ?? "";
-        _senderPassword = configuration["Email:SenderPassword"] ?? "";
-        // FromEmail: địa chỉ hiển thị cho người nhận (có thể khác SMTP login)
-        _fromEmail      = configuration["Email:FromEmail"] ?? _senderEmail;
-        _logger = logger;
+        _fromEmail       = configuration["Email:FromEmail"] ?? configuration["Email:SenderEmail"] ?? "";
+        _fromName        = "The Old Pavement";
+        _apiKey          = configuration["Email:BrevoApiKey"] ?? "";
+        _logger          = logger;
+        _httpClientFactory = httpClientFactory;
     }
 
     public async Task SendEmailAsync(string toEmail, string subject, string body, bool isHtml = true)
     {
-        if (string.IsNullOrWhiteSpace(_senderEmail) || string.IsNullOrWhiteSpace(_senderPassword))
+        if (string.IsNullOrWhiteSpace(_apiKey))
         {
-            _logger.LogWarning("[Email] SenderEmail hoặc SenderPassword chưa được cấu hình");
+            _logger.LogWarning("[Email] BrevoApiKey chưa được cấu hình trong Railway Variables (Email__BrevoApiKey)");
             return;
         }
 
-        _logger.LogInformation("[Email] Đang gửi tới {To} | Subject: {Subject} | Server: {Server}:{Port}", 
-            toEmail, subject, _smtpServer, _smtpPort);
+        _logger.LogInformation("[Email] Đang gửi tới {To} | Subject: {Subject}", toEmail, subject);
+
+        var payload = new
+        {
+            sender = new { email = _fromEmail, name = _fromName },
+            to = new[] { new { email = toEmail } },
+            subject = subject,
+            htmlContent = isHtml ? body : null,
+            textContent = isHtml ? null : body
+        };
+
+        var json = JsonSerializer.Serialize(payload);
 
         try
         {
-            // Thử port 465 (SSL) trước, nếu config là 587 thì override
-            var port = _smtpPort;
-            var enableSsl = true;
+            var client = _httpClientFactory.CreateClient("Brevo");
+            using var request = new HttpRequestMessage(HttpMethod.Post, "https://api.brevo.com/v3/smtp/email");
+            request.Headers.Add("api-key", _apiKey);
+            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            using var client = new SmtpClient(_smtpServer, port)
-            {
-                EnableSsl = enableSsl,
-                Credentials = new NetworkCredential(_senderEmail, _senderPassword),
-                DeliveryMethod = SmtpDeliveryMethod.Network,
-                Timeout = 10000
-            };
+            var response = await client.SendAsync(request);
+            var responseBody = await response.Content.ReadAsStringAsync();
 
-            using var message = new MailMessage
-            {
-                From        = new MailAddress(_fromEmail, "The Old Pavement"),
-                Subject     = subject,
-                Body        = body,
-                IsBodyHtml  = isHtml,
-                BodyEncoding = Encoding.UTF8
-            };
-
-            message.To.Add(toEmail);
-
-            await client.SendMailAsync(message);
-            _logger.LogInformation("[Email] Gửi thành công tới {To}", toEmail);
+            if (response.IsSuccessStatusCode)
+                _logger.LogInformation("[Email] Gửi thành công tới {To} | Status: {Status}", toEmail, response.StatusCode);
+            else
+                _logger.LogError("[Email] Brevo API lỗi | Status: {Status} | Body: {Body}", response.StatusCode, responseBody);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[Email] SMTP FAILED tới {To} | Server: {Server}:{Port} | Error: {Error}", 
-                toEmail, _smtpServer, _smtpPort, ex.Message);
+            _logger.LogError(ex, "[Email] HTTP request failed tới Brevo | Error: {Error}", ex.Message);
             throw;
         }
     }
@@ -80,13 +73,10 @@ public class EmailService : IEmailService
         var address = order.ShippingAddress;
         if (address == null)
         {
-            _logger.LogWarning("[Email] SendOrderConfirmationEmailAsync: ShippingAddress là null cho đơn hàng {OrderNumber}", order.OrderNumber);
+            _logger.LogWarning("[Email] ShippingAddress null cho đơn hàng {OrderNumber}", order.OrderNumber);
             return;
         }
 
-        _logger.LogInformation("[Email] Chuẩn bị gửi xác nhận đơn hàng {OrderNumber} tới {Email}", order.OrderNumber, address.Email);
-
-        // Build order items rows
         var itemsHtml = new StringBuilder();
         foreach (var item in order.OrderItems)
         {
@@ -118,276 +108,139 @@ public class EmailService : IEmailService
         };
         var fullAddress = $"{address.Address}, {address.Ward}, {address.District}, {address.City}".Replace(", ,", ",").Trim(',', ' ');
 
-        var html = $@"
-<!DOCTYPE html>
-<html lang=""vi"">
-<head><meta charset=""UTF-8""><meta name=""viewport"" content=""width=device-width, initial-scale=1.0""></head>
+        var html = $@"<!DOCTYPE html><html lang=""vi""><head><meta charset=""UTF-8""></head>
 <body style=""margin:0;padding:0;background:#f5f5f5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;"">
   <table width=""100%"" cellpadding=""0"" cellspacing=""0"" style=""background:#f5f5f5;padding:40px 0;"">
     <tr><td align=""center"">
       <table width=""600"" cellpadding=""0"" cellspacing=""0"" style=""background:#fff;max-width:600px;width:100%;"">
-
-        <!-- Header -->
-        <tr>
-          <td style=""background:#0a0a0a;padding:36px 40px;text-align:center;"">
+        <tr><td style=""background:#0a0a0a;padding:36px 40px;text-align:center;"">
             <h1 style=""margin:0;color:#fff;font-size:22px;letter-spacing:6px;font-weight:300;text-transform:uppercase;"">THE OLD PAVEMENT</h1>
             <p style=""margin:8px 0 0;color:#888;font-size:11px;letter-spacing:2px;text-transform:uppercase;"">Xác nhận đơn hàng</p>
-          </td>
-        </tr>
-
-        <!-- Order info banner -->
-        <tr>
-          <td style=""background:#f8f8f8;padding:20px 40px;border-bottom:1px solid #eee;"">
-            <table width=""100%"" cellpadding=""0"" cellspacing=""0"">
-              <tr>
-                <td>
-                  <p style=""margin:0;font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px;"">Mã đơn hàng</p>
-                  <p style=""margin:4px 0 0;font-size:16px;font-weight:700;color:#0a0a0a;letter-spacing:1px;"">#{order.OrderNumber}</p>
-                </td>
-                <td align=""right"">
-                  <p style=""margin:0;font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px;"">Ngày đặt hàng</p>
-                  <p style=""margin:4px 0 0;font-size:14px;font-weight:600;color:#0a0a0a;"">{order.CreatedAt:dd/MM/yyyy HH:mm}</p>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-
-        <!-- Greeting -->
-        <tr>
-          <td style=""padding:32px 40px 16px;"">
+        </td></tr>
+        <tr><td style=""background:#f8f8f8;padding:20px 40px;border-bottom:1px solid #eee;"">
+            <table width=""100%""><tr>
+                <td><p style=""margin:0;font-size:12px;color:#888;text-transform:uppercase;"">Mã đơn hàng</p>
+                    <p style=""margin:4px 0 0;font-size:16px;font-weight:700;color:#0a0a0a;"">#{order.OrderNumber}</p></td>
+                <td align=""right""><p style=""margin:0;font-size:12px;color:#888;text-transform:uppercase;"">Ngày đặt hàng</p>
+                    <p style=""margin:4px 0 0;font-size:14px;font-weight:600;color:#0a0a0a;"">{order.CreatedAt:dd/MM/yyyy HH:mm}</p></td>
+            </tr></table>
+        </td></tr>
+        <tr><td style=""padding:32px 40px 16px;"">
             <h2 style=""margin:0 0 8px;font-size:18px;color:#0a0a0a;font-weight:700;"">Cảm ơn bạn, {address.FullName}! 🖤</h2>
-            <p style=""margin:0;font-size:14px;color:#555;line-height:1.6;"">Đơn hàng của bạn đã được nhận thành công và đang trong quá trình xử lý. Chúng tôi sẽ thông báo cho bạn khi đơn hàng được gửi đi.</p>
-          </td>
-        </tr>
-
-        <!-- Items Table -->
-        <tr>
-          <td style=""padding:0 40px 16px;"">
-            <p style=""margin:0 0 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#888;"">Chi tiết đơn hàng</p>
-            <table width=""100%"" cellpadding=""0"" cellspacing=""0"" style=""border:1px solid #eee;"">
-              <thead>
-                <tr style=""background:#f8f8f8;"">
-                  <th style=""padding:10px 16px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#888;font-weight:600;"">Sản phẩm</th>
-                  <th style=""padding:10px 16px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#888;font-weight:600;"">Thành tiền</th>
-                </tr>
-              </thead>
-              <tbody>
-                {itemsHtml}
-              </tbody>
+            <p style=""margin:0;font-size:14px;color:#555;line-height:1.6;"">Đơn hàng đã được nhận và đang xử lý.</p>
+        </td></tr>
+        <tr><td style=""padding:0 40px 16px;"">
+            <table width=""100%"" style=""border:1px solid #eee;"">
+              <thead><tr style=""background:#f8f8f8;"">
+                <th style=""padding:10px 16px;text-align:left;font-size:11px;text-transform:uppercase;color:#888;"">Sản phẩm</th>
+                <th style=""padding:10px 16px;text-align:right;font-size:11px;text-transform:uppercase;color:#888;"">Thành tiền</th>
+              </tr></thead>
+              <tbody>{itemsHtml}</tbody>
             </table>
-          </td>
-        </tr>
-
-        <!-- Price Summary -->
-        <tr>
-          <td style=""padding:0 40px 32px;"">
-            <table width=""100%"" cellpadding=""0"" cellspacing=""0"" style=""border:1px solid #eee;border-top:none;"">
-              <tr>
-                <td style=""padding:8px 16px;color:#555;font-size:13px;"">Tạm tính</td>
-                <td style=""padding:8px 16px;text-align:right;font-size:13px;color:#1a1a1a;font-weight:600;"">{order.Subtotal:N0}₫</td>
-              </tr>
+        </td></tr>
+        <tr><td style=""padding:0 40px 32px;"">
+            <table width=""100%"" style=""border:1px solid #eee;border-top:none;"">
+              <tr><td style=""padding:8px 16px;color:#555;font-size:13px;"">Tạm tính</td>
+                  <td style=""padding:8px 16px;text-align:right;font-size:13px;font-weight:600;"">{order.Subtotal:N0}₫</td></tr>
               {discountRow}
-              <tr>
-                <td style=""padding:8px 16px;color:#555;font-size:13px;"">Phí vận chuyển</td>
-                <td style=""padding:8px 16px;text-align:right;font-size:13px;color:#27ae60;font-weight:600;"">Miễn phí</td>
-              </tr>
+              <tr><td style=""padding:8px 16px;color:#555;font-size:13px;"">Phí vận chuyển</td>
+                  <td style=""padding:8px 16px;text-align:right;font-size:13px;color:#27ae60;font-weight:600;"">Miễn phí</td></tr>
               <tr style=""background:#0a0a0a;"">
-                <td style=""padding:14px 16px;color:#fff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;"">Tổng cộng</td>
-                <td style=""padding:14px 16px;text-align:right;font-size:16px;font-weight:700;color:#fff;"">{order.TotalAmount:N0}₫</td>
+                  <td style=""padding:14px 16px;color:#fff;font-size:14px;font-weight:700;text-transform:uppercase;"">Tổng cộng</td>
+                  <td style=""padding:14px 16px;text-align:right;font-size:16px;font-weight:700;color:#fff;"">{order.TotalAmount:N0}₫</td>
               </tr>
             </table>
-          </td>
-        </tr>
-
-        <!-- Shipping + Payment Info -->
-        <tr>
-          <td style=""padding:0 40px 32px;"">
-            <table width=""100%"" cellpadding=""0"" cellspacing=""0"">
-              <tr>
+        </td></tr>
+        <tr><td style=""padding:0 40px 32px;"">
+            <table width=""100%""><tr>
                 <td width=""50%"" valign=""top"" style=""padding-right:16px;"">
-                  <p style=""margin:0 0 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#888;"">Địa chỉ giao hàng</p>
-                  <p style=""margin:0;font-size:13px;color:#1a1a1a;line-height:1.7;"">{address.FullName}<br>{address.Phone}<br>{fullAddress}</p>
+                    <p style=""margin:0 0 8px;font-size:11px;font-weight:700;text-transform:uppercase;color:#888;"">Địa chỉ giao hàng</p>
+                    <p style=""margin:0;font-size:13px;color:#1a1a1a;line-height:1.7;"">{address.FullName}<br>{address.Phone}<br>{fullAddress}</p>
                 </td>
                 <td width=""50%"" valign=""top"" style=""padding-left:16px;border-left:1px solid #eee;"">
-                  <p style=""margin:0 0 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#888;"">Phương thức thanh toán</p>
-                  <p style=""margin:0;font-size:13px;color:#1a1a1a;line-height:1.7;"">{paymentMethodText}</p>
+                    <p style=""margin:0 0 8px;font-size:11px;font-weight:700;text-transform:uppercase;color:#888;"">Phương thức thanh toán</p>
+                    <p style=""margin:0;font-size:13px;color:#1a1a1a;line-height:1.7;"">{paymentMethodText}</p>
                 </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-
-        <!-- Footer -->
-        <tr>
-          <td style=""background:#0a0a0a;padding:24px 40px;text-align:center;"">
-            <p style=""margin:0 0 6px;font-size:11px;color:#666;letter-spacing:1px;"">© 2024 THE OLD PAVEMENT. All rights reserved.</p>
-            <p style=""margin:0;font-size:11px;color:#555;"">Email này được gửi tự động, vui lòng không trả lời trực tiếp.</p>
-          </td>
-        </tr>
-
+            </tr></table>
+        </td></tr>
+        <tr><td style=""background:#0a0a0a;padding:24px 40px;text-align:center;"">
+            <p style=""margin:0;font-size:11px;color:#666;"">© 2024 THE OLD PAVEMENT. All rights reserved.</p>
+        </td></tr>
       </table>
     </td></tr>
   </table>
-</body>
-</html>";
+</body></html>";
 
-        await SendEmailAsync(
-            address.Email,
-            $"[The Old Pavement] Xác nhận đơn hàng #{order.OrderNumber}",
-            html
-        );
+        await SendEmailAsync(address.Email, $"[The Old Pavement] Xác nhận đơn hàng #{order.OrderNumber}", html);
     }
 
     public async Task SendAccountCreationEmailAsync(string toEmail, string fullName, string rawPassword)
     {
-        var html = $@"
-<!DOCTYPE html>
-<html lang=""vi"">
-<head><meta charset=""UTF-8""><meta name=""viewport"" content=""width=device-width, initial-scale=1.0""></head>
+        var html = $@"<!DOCTYPE html><html lang=""vi""><head><meta charset=""UTF-8""></head>
 <body style=""margin:0;padding:0;background:#f5f5f5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;"">
   <table width=""100%"" cellpadding=""0"" cellspacing=""0"" style=""background:#f5f5f5;padding:40px 0;"">
     <tr><td align=""center"">
       <table width=""600"" cellpadding=""0"" cellspacing=""0"" style=""background:#fff;max-width:600px;width:100%;"">
-
-        <!-- Header -->
-        <tr>
-          <td style=""background:#0a0a0a;padding:36px 40px;text-align:center;"">
+        <tr><td style=""background:#0a0a0a;padding:36px 40px;text-align:center;"">
             <h1 style=""margin:0;color:#fff;font-size:22px;letter-spacing:6px;font-weight:300;text-transform:uppercase;"">THE OLD PAVEMENT</h1>
-            <p style=""margin:8px 0 0;color:#888;font-size:11px;letter-spacing:2px;text-transform:uppercase;"">Tài khoản của bạn</p>
-          </td>
-        </tr>
-
-        <!-- Body -->
-        <tr>
-          <td style=""padding:40px 40px 16px;"">
-            <h2 style=""margin:0 0 16px;font-size:20px;color:#0a0a0a;font-weight:700;"">Chào mừng, {fullName}! 🖤</h2>
-            <p style=""margin:0 0 20px;font-size:14px;color:#555;line-height:1.8;"">
-              Chúng tôi đã tự động tạo một tài khoản cho bạn để bạn có thể dễ dàng theo dõi các đơn hàng và lịch sử mua sắm của mình.
-            </p>
-            <p style=""margin:0 0 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#888;"">Thông tin đăng nhập</p>
-            <table width=""100%"" cellpadding=""0"" cellspacing=""0"" style=""background:#f8f8f8;border:1px solid #eee;"">
-              <tr>
-                <td style=""padding:14px 20px;border-bottom:1px solid #eee;"">
-                  <span style=""font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;"">Email</span>
+        </td></tr>
+        <tr><td style=""padding:40px;"">
+            <h2 style=""margin:0 0 16px;font-size:20px;color:#0a0a0a;"">Chào mừng, {fullName}! 🖤</h2>
+            <p style=""margin:0 0 20px;font-size:14px;color:#555;line-height:1.8;"">Tài khoản của bạn đã được tạo thành công.</p>
+            <table width=""100%"" style=""background:#f8f8f8;border:1px solid #eee;"">
+              <tr><td style=""padding:14px 20px;border-bottom:1px solid #eee;"">
+                  <span style=""font-size:11px;color:#888;text-transform:uppercase;"">Email</span>
                   <strong style=""display:block;margin-top:4px;font-size:14px;color:#0a0a0a;"">{toEmail}</strong>
-                </td>
-              </tr>
-              <tr>
-                <td style=""padding:14px 20px;"">
-                  <span style=""font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;"">Mật khẩu</span>
+              </td></tr>
+              <tr><td style=""padding:14px 20px;"">
+                  <span style=""font-size:11px;color:#888;text-transform:uppercase;"">Mật khẩu tạm thời</span>
                   <strong style=""display:block;margin-top:4px;font-size:18px;color:#0a0a0a;letter-spacing:3px;font-family:monospace;"">{rawPassword}</strong>
-                </td>
-              </tr>
+              </td></tr>
             </table>
-            <p style=""margin:20px 0 0;font-size:13px;color:#888;line-height:1.6;"">
-              ⚠️ Để bảo mật tài khoản, vui lòng đăng nhập và <strong>đổi mật khẩu</strong> ngay sau khi nhận được email này.
-            </p>
-          </td>
-        </tr>
-
-        <!-- CTA -->
-        <tr>
-          <td style=""padding:24px 40px 40px;"">
-            <a href=""/Public/Account/Login"" style=""display:inline-block;background:#0a0a0a;color:#fff;padding:14px 32px;font-size:12px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:2px;"">Đăng nhập ngay →</a>
-          </td>
-        </tr>
-
-        <!-- Footer -->
-        <tr>
-          <td style=""background:#0a0a0a;padding:24px 40px;text-align:center;"">
-            <p style=""margin:0 0 6px;font-size:11px;color:#666;letter-spacing:1px;"">© 2024 THE OLD PAVEMENT. All rights reserved.</p>
-            <p style=""margin:0;font-size:11px;color:#555;"">Email này được gửi tự động, vui lòng không trả lời trực tiếp.</p>
-          </td>
-        </tr>
-
+            <p style=""margin:20px 0 0;font-size:13px;color:#888;"">⚠️ Vui lòng đổi mật khẩu sau khi đăng nhập.</p>
+        </td></tr>
+        <tr><td style=""background:#0a0a0a;padding:24px 40px;text-align:center;"">
+            <p style=""margin:0;font-size:11px;color:#666;"">© 2024 THE OLD PAVEMENT. All rights reserved.</p>
+        </td></tr>
       </table>
     </td></tr>
   </table>
-</body>
-</html>";
+</body></html>";
 
-        await SendEmailAsync(
-            toEmail,
-            "[The Old Pavement] Tài khoản của bạn đã được tạo",
-            html
-        );
+        await SendEmailAsync(toEmail, "[The Old Pavement] Tài khoản của bạn đã được tạo", html);
     }
 
     public async Task SendPasswordRecoveryEmailAsync(string toEmail, string fullName, string tempPassword, string loginUrl = "")
     {
-        if (string.IsNullOrEmpty(loginUrl))
-            loginUrl = "/Public/Account/Login";
-        var html = $@"
-<!DOCTYPE html>
-<html lang=""vi"">
-<head><meta charset=""UTF-8""><meta name=""viewport"" content=""width=device-width, initial-scale=1.0""></head>
+        var html = $@"<!DOCTYPE html><html lang=""vi""><head><meta charset=""UTF-8""></head>
 <body style=""margin:0;padding:0;background:#f5f5f5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;"">
   <table width=""100%"" cellpadding=""0"" cellspacing=""0"" style=""background:#f5f5f5;padding:40px 0;"">
     <tr><td align=""center"">
       <table width=""600"" cellpadding=""0"" cellspacing=""0"" style=""background:#fff;max-width:600px;width:100%;"">
-
-        <!-- Header -->
-        <tr>
-          <td style=""background:#0a0a0a;padding:36px 40px;text-align:center;"">
+        <tr><td style=""background:#0a0a0a;padding:36px 40px;text-align:center;"">
             <h1 style=""margin:0;color:#fff;font-size:22px;letter-spacing:6px;font-weight:300;text-transform:uppercase;"">THE OLD PAVEMENT</h1>
             <p style=""margin:8px 0 0;color:#888;font-size:11px;letter-spacing:2px;text-transform:uppercase;"">Khôi phục mật khẩu</p>
-          </td>
-        </tr>
-
-        <!-- Body -->
-        <tr>
-          <td style=""padding:40px 40px 16px;"">
-            <h2 style=""margin:0 0 16px;font-size:20px;color:#0a0a0a;font-weight:700;"">Xin chào, {fullName}</h2>
-            <p style=""margin:0 0 24px;font-size:14px;color:#555;line-height:1.8;"">
-              Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Dưới đây là mật khẩu tạm thời mới:
-            </p>
-
-            <table width=""100%"" cellpadding=""0"" cellspacing=""0"" style=""background:#f8f8f8;border:1px solid #eee;margin-bottom:20px;"">
-              <tr>
-                <td style=""padding:20px;text-align:center;"">
-                  <p style=""margin:0 0 6px;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:2px;"">Mật khẩu tạm thời</p>
+        </td></tr>
+        <tr><td style=""padding:40px;"">
+            <h2 style=""margin:0 0 16px;font-size:20px;color:#0a0a0a;"">Xin chào, {fullName}</h2>
+            <p style=""margin:0 0 24px;font-size:14px;color:#555;line-height:1.8;"">Mật khẩu tạm thời mới của bạn:</p>
+            <table width=""100%"" style=""background:#f8f8f8;border:1px solid #eee;margin-bottom:20px;"">
+              <tr><td style=""padding:20px;text-align:center;"">
+                  <p style=""margin:0 0 6px;font-size:11px;color:#888;text-transform:uppercase;"">Mật khẩu tạm thời</p>
                   <strong style=""display:block;font-size:24px;color:#0a0a0a;letter-spacing:4px;font-family:monospace;"">{tempPassword}</strong>
-                </td>
-              </tr>
+              </td></tr>
             </table>
-
-            <p style=""margin:0;font-size:13px;color:#888;line-height:1.6;"">
-              ⚠️ Mật khẩu này có giá trị sử dụng ngay lập tức. Vui lòng đăng nhập và <strong>đổi mật khẩu</strong> ngay để bảo vệ tài khoản của bạn.
-            </p>
-            <p style=""margin:12px 0 0;font-size:13px;color:#888;line-height:1.6;"">
-              Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này. Tài khoản của bạn vẫn an toàn.
-            </p>
-          </td>
-        </tr>
-
-        <!-- CTA -->
-        <tr>
-          <td style=""padding:24px 40px 40px;"">
-            <a href=""{loginUrl}"" style=""display:inline-block;background:#0a0a0a;color:#fff;padding:14px 32px;font-size:12px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:2px;"">Đăng nhập ngay →</a>
-          </td>
-        </tr>
-
-        <!-- Footer -->
-        <tr>
-          <td style=""background:#0a0a0a;padding:24px 40px;text-align:center;"">
-            <p style=""margin:0 0 6px;font-size:11px;color:#666;letter-spacing:1px;"">© 2024 THE OLD PAVEMENT. All rights reserved.</p>
-            <p style=""margin:0;font-size:11px;color:#555;"">Email này được gửi tự động, vui lòng không trả lời trực tiếp.</p>
-          </td>
-        </tr>
-
+            <p style=""margin:0;font-size:13px;color:#888;line-height:1.6;"">⚠️ Vui lòng đăng nhập và <strong>đổi mật khẩu</strong> ngay để bảo vệ tài khoản.</p>
+            <p style=""margin:12px 0 0;font-size:13px;color:#888;"">Nếu bạn không yêu cầu đặt lại, hãy bỏ qua email này.</p>
+        </td></tr>
+        <tr><td style=""background:#0a0a0a;padding:24px 40px;text-align:center;"">
+            <p style=""margin:0;font-size:11px;color:#666;"">© 2024 THE OLD PAVEMENT. All rights reserved.</p>
+        </td></tr>
       </table>
     </td></tr>
   </table>
-</body>
-</html>";
+</body></html>";
 
-        await SendEmailAsync(
-            toEmail,
-            "[The Old Pavement] Mật khẩu mới của bạn",
-            html
-        );
+        await SendEmailAsync(toEmail, "[The Old Pavement] Mật khẩu mới của bạn", html);
     }
 }
-
-

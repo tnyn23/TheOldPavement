@@ -335,7 +335,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12">
                 @foreach (var p in Model.RelatedProducts)
                 {
-                    var img = p.ProductImages?.FirstOrDefault()?.ImageUrl ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+                    var img = p.ProductImages?.FirstOrDefault()?.ImageUrl ?? "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=70&w=400";
                     <div class="group cursor-pointer" onclick="window.location.href='/Product/@p.Slug'">
                         <div class="relative bg-gray-50 mb-4 overflow-hidden aspect-square rounded-2xl">
                             <img src="@img" alt="@p.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 rounded-2xl" />
