@@ -106,8 +106,22 @@ public class AuthService : IAuthService
         await _userRepository.UpdateAsync(user);
         await _userRepository.SaveChangesAsync();
 
-        // Send email — await trực tiếp để bắt lỗi SMTP
-        await _emailService.SendPasswordRecoveryEmailAsync(user.Email, user.FullName ?? "Khách hàng", rawPassword);
+        // Send email in background — không block request, timeout 15s
+        var emailService = _emailService;
+        var toEmail = user.Email;
+        var fullName = user.FullName ?? "Khách hàng";
+        _ = Task.Run(async () =>
+        {
+            using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(15));
+            try
+            {
+                await emailService.SendPasswordRecoveryEmailAsync(toEmail, fullName, rawPassword);
+            }
+            catch (Exception)
+            {
+                // Email failure is non-critical — password was already reset in DB
+            }
+        });
         
         return true;
     }

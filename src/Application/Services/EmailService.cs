@@ -40,7 +40,7 @@ public class EmailService : IEmailService
             EnableSsl = true,
             Credentials = new NetworkCredential(_senderEmail, _senderPassword),
             DeliveryMethod = SmtpDeliveryMethod.Network,
-            Timeout = 20000
+            Timeout = 10000
         };
 
         using var message = new MailMessage
@@ -54,8 +54,17 @@ public class EmailService : IEmailService
 
         message.To.Add(toEmail);
 
-        await client.SendMailAsync(message);
-        _logger.LogInformation("[Email] Gửi thành công tới {To}", toEmail);
+        try
+        {
+            await client.SendMailAsync(message);
+            _logger.LogInformation("[Email] Gửi thành công tới {To}", toEmail);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[Email] SMTP FAILED tới {To} | Server: {Server}:{Port} | Error: {Error}", 
+                toEmail, _smtpServer, _smtpPort, ex.Message);
+            throw;
+        }
     }
 
     public async Task SendOrderConfirmationEmailAsync(Order order)
