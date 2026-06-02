@@ -1453,6 +1453,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tabBtn) tabBtn.click();
     }
 
+    // Highlight sản phẩm mới thêm nếu có ?newId=
+    const newId = urlParams.get('newId');
+    if (newId) {
+        setTimeout(() => {
+            const btn = document.querySelector(`.edit-product-btn[data-id="${newId}"]`);
+            if (btn) {
+                const row = btn.closest('tr');
+                if (row) {
+                    row.style.display = '';
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    row.style.background = '#fef9c3';
+                    setTimeout(() => row.style.background = '', 2000);
+                }
+            }
+        }, 300);
+    }
+
     // Edit product buttons — use event delegation to avoid inline onclick issues
     document.addEventListener('click', e => {
         const btn = e.target.closest('.edit-product-btn');
@@ -1547,7 +1564,7 @@ document.addEventListener('keydown', e => {
 // ══════════════════════════════════════════════════════════════════════════
 // FILTER + PAGINATION ENGINE
 // ══════════════════════════════════════════════════════════════════════════
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 50;
 const tableState = {};
 
 // Config per tab: which data-* attributes to check against which filter inputs

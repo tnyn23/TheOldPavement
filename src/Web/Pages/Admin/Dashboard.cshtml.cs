@@ -328,11 +328,12 @@ public class DashboardModel : PageModel
         }
         Console.WriteLine($"[SaveProduct] id={id}, resolvedId={resolvedId}, name={name}, slug={slug}");
 
-        if (resolvedId.HasValue && resolvedId.Value > 0)        {
+        if (resolvedId.HasValue && resolvedId.Value > 0)
+        {
             var product = await _context.Products
                 .Include(p => p.ProductImages)
                 .Include(p => p.ProductVariants)
-                .FirstOrDefaultAsync(p => p.Id == id.Value);
+                .FirstOrDefaultAsync(p => p.Id == resolvedId.Value);
 
             if (product != null)
             {
@@ -352,13 +353,11 @@ public class DashboardModel : PageModel
                 product.LimitedQuantity = limitedQuantity;
                 product.UpdatedAt = DateTime.Now;
 
-                // Update images for slots 0, 1, 2
                 for (int i = 0; i < 3; i++)
                 {
                     var f = Request.Form.Files[$"imageFiles[{i}]"];
                     var colorValue = Request.Form[$"imageColor[{i}]"];
                     string? color = string.IsNullOrWhiteSpace(colorValue) ? null : colorValue.ToString().ToLowerInvariant();
-
                     var existingImage = product.ProductImages.FirstOrDefault(img => img.DisplayOrder == i);
 
                     if (f != null && f.Length > 0)
@@ -366,21 +365,15 @@ public class DashboardModel : PageModel
                         var fileName = Guid.NewGuid().ToString() + Path.GetExtension(f.FileName);
                         var filePath = Path.Combine(uploadDir, fileName);
                         using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
                             await f.CopyToAsync(stream);
-                        }
                         var imageUrl = "/images/products/" + fileName;
 
                         if (existingImage != null)
                         {
-                            // Delete old file if it is local
                             if (existingImage.ImageUrl.StartsWith("/images/products/"))
                             {
                                 var oldPath = Path.Combine(_environment.WebRootPath, existingImage.ImageUrl.TrimStart('/'));
-                                if (System.IO.File.Exists(oldPath))
-                                {
-                                    try { System.IO.File.Delete(oldPath); } catch {}
-                                }
+                                if (System.IO.File.Exists(oldPath)) try { System.IO.File.Delete(oldPath); } catch { }
                             }
                             existingImage.ImageUrl = imageUrl;
                             existingImage.AltText = color;
@@ -388,49 +381,33 @@ public class DashboardModel : PageModel
                         }
                         else
                         {
-                            product.ProductImages.Add(new ProductImage
-                            {
-                                ImageUrl = imageUrl,
-                                AltText = color,
-                                IsPrimary = i == 0,
-                                DisplayOrder = i,
-                                CreatedAt = DateTime.Now
-                            });
+                            product.ProductImages.Add(new ProductImage { ImageUrl = imageUrl, AltText = color, IsPrimary = i == 0, DisplayOrder = i, CreatedAt = DateTime.Now });
                         }
                     }
                     else if (existingImage != null)
                     {
-                        // No new file uploaded, but update the color/AltText if it has changed
                         existingImage.AltText = color;
                     }
                 }
 
-                // Delete any images with DisplayOrder outside 0, 1, 2, or duplicates
-                var imagesToDelete = product.ProductImages
-                    .Where(img => img.DisplayOrder < 0 || img.DisplayOrder > 2)
-                    .ToList();
+                var imagesToDelete = product.ProductImages.Where(img => img.DisplayOrder < 0 || img.DisplayOrder > 2).ToList();
                 foreach (var img in imagesToDelete)
                 {
                     if (img.ImageUrl.StartsWith("/images/products/"))
                     {
-                        var filePath = Path.Combine(_environment.WebRootPath, img.ImageUrl.TrimStart('/'));
-                        if (System.IO.File.Exists(filePath))
-                        {
-                            try { System.IO.File.Delete(filePath); } catch {}
-                        }
+                        var fp = Path.Combine(_environment.WebRootPath, img.ImageUrl.TrimStart('/'));
+                        if (System.IO.File.Exists(fp)) try { System.IO.File.Delete(fp); } catch { }
                     }
                     _context.ProductImages.Remove(img);
                 }
 
-                // Add or update variants
                 foreach (var size in sizesToCreate)
                 {
                     foreach (var color in colors)
                     {
-                        var existingVar = product.ProductVariants.FirstOrDefault(v => 
-                            v.Size.Equals(size, StringComparison.OrdinalIgnoreCase) && 
+                        var existingVar = product.ProductVariants.FirstOrDefault(v =>
+                            v.Size.Equals(size, StringComparison.OrdinalIgnoreCase) &&
                             v.Color.Equals(color, StringComparison.OrdinalIgnoreCase));
-                        
                         if (existingVar == null)
                         {
                             var colorHex = colorHexMap.TryGetValue(color, out var hex) ? hex : "#FFFFFF";
@@ -440,10 +417,8 @@ public class DashboardModel : PageModel
                                 Color = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(color),
                                 ColorHex = colorHex,
                                 Sku = $"OP-{slug.ToUpper()}-{color.ToUpper()[..Math.Min(3, color.Length)]}-{size.ToUpper()}",
-                                StockQuantity = defaultStock,
-                                IsAvailable = true,
-                                CreatedAt = DateTime.Now,
-                                UpdatedAt = DateTime.Now
+                                StockQuantity = defaultStock, IsAvailable = true,
+                                CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now
                             });
                         }
                     }
@@ -452,28 +427,18 @@ public class DashboardModel : PageModel
                 _context.Products.Update(product);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = $"Cập nhật sản phẩm '{name}' thành công!";
+                return RedirectToPage(new { tab = "products" });
             }
         }
         else
         {
             var product = new Domain.Models.Product
             {
-                Name = name,
-                Slug = slug,
-                Price = price,
-                Category = category,
-                Status = status,
-                Description = description,
-                IsOnSale = isOnSale,
-                DiscountPercentage = discountPercentage,
-                OriginalPrice = originalPrice,
-                IsCollab = isCollab,
-                CollabPartner = collabPartner,
-                IsFeatured = isFeatured,
-                IsLimitedEdition = isLimitedEdition,
-                LimitedQuantity = limitedQuantity,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                Name = name, Slug = slug, Price = price, Category = category, Status = status,
+                Description = description, IsOnSale = isOnSale, DiscountPercentage = discountPercentage,
+                OriginalPrice = originalPrice, IsCollab = isCollab, CollabPartner = collabPartner,
+                IsFeatured = isFeatured, IsLimitedEdition = isLimitedEdition, LimitedQuantity = limitedQuantity,
+                CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now
             };
 
             for (int i = 0; i < 3; i++)
@@ -481,41 +446,25 @@ public class DashboardModel : PageModel
                 var f = Request.Form.Files[$"imageFiles[{i}]"];
                 var colorValue = Request.Form[$"imageColor[{i}]"];
                 string? color = string.IsNullOrWhiteSpace(colorValue) ? null : colorValue.ToString().ToLowerInvariant();
-
                 if (f != null && f.Length > 0)
                 {
                     var fileName = Guid.NewGuid().ToString() + Path.GetExtension(f.FileName);
                     var filePath = Path.Combine(uploadDir, fileName);
                     using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
                         await f.CopyToAsync(stream);
-                    }
-                    var imageUrl = "/images/products/" + fileName;
-
-                    product.ProductImages.Add(new ProductImage
-                    {
-                        ImageUrl = imageUrl,
-                        AltText = color,
-                        IsPrimary = i == 0,
-                        DisplayOrder = i,
-                        CreatedAt = DateTime.Now
-                    });
+                    product.ProductImages.Add(new ProductImage { ImageUrl = "/images/products/" + fileName, AltText = color, IsPrimary = i == 0, DisplayOrder = i, CreatedAt = DateTime.Now });
                 }
             }
 
             if (!product.ProductImages.Any())
             {
-                // Fallback / default image if no image uploaded
                 product.ProductImages.Add(new ProductImage
                 {
-                    ImageUrl = "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-                    IsPrimary = true,
-                    DisplayOrder = 0,
-                    CreatedAt = DateTime.Now
+                    ImageUrl = "https://images.unsplash.com/photo-1651761179569-4ba2aa054997?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+                    IsPrimary = true, DisplayOrder = 0, CreatedAt = DateTime.Now
                 });
             }
 
-            // Add variants
             foreach (var size in sizesToCreate)
             {
                 foreach (var color in colors)
@@ -527,10 +476,8 @@ public class DashboardModel : PageModel
                         Color = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(color),
                         ColorHex = colorHex,
                         Sku = $"OP-{slug.ToUpper()}-{color.ToUpper()[..Math.Min(3, color.Length)]}-{size.ToUpper()}",
-                        StockQuantity = defaultStock,
-                        IsAvailable = true,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        StockQuantity = defaultStock, IsAvailable = true,
+                        CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now
                     });
                 }
             }
@@ -538,6 +485,7 @@ public class DashboardModel : PageModel
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = $"Thêm mới sản phẩm '{name}' thành công!";
+            return RedirectToPage(new { tab = "products", newId = product.Id });
         }
 
         return RedirectToPage(new { tab = "products" });
