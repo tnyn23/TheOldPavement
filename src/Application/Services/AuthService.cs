@@ -106,23 +106,21 @@ public class AuthService : IAuthService
         await _userRepository.UpdateAsync(user);
         await _userRepository.SaveChangesAsync();
 
-        // Send email in background — không block request, timeout 15s
-        var emailService = _emailService;
-        var toEmail = user.Email;
-        var fullName = user.FullName ?? "Khách hàng";
-        _ = Task.Run(async () =>
+        // Send email với timeout 12s — await thẳng để Railway log được lỗi
+        try
         {
-            using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(15));
-            try
-            {
-                await emailService.SendPasswordRecoveryEmailAsync(toEmail, fullName, rawPassword);
-            }
-            catch (Exception ex)
-            {
-                // Email failure is non-critical — password was already reset in DB
-                Console.WriteLine($"[Email BACKGROUND ERROR] {ex.GetType().Name}: {ex.Message}");
-            }
-        });
+            var emailTask = _emailService.SendPasswordRecoveryEmailAsync(user.Email, user.FullName ?? "Khách hàng", rawPassword);
+            var timeoutTask = Task.Delay(12000);
+            await Task.WhenAny(emailTask, timeoutTask);
+            if (emailTask.IsCompletedSuccessfully)
+                Console.WriteLine($"[Email] Sent successfully to {user.Email}");
+            else
+                Console.WriteLine($"[Email] Timeout or pending for {user.Email}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Email ERROR] {ex.GetType().Name}: {ex.Message}");
+        }
         
         return true;
     }

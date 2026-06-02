@@ -29,33 +29,38 @@ public class EmailService : IEmailService
     {
         if (string.IsNullOrWhiteSpace(_senderEmail) || string.IsNullOrWhiteSpace(_senderPassword))
         {
-            _logger.LogWarning("[Email] SenderEmail hoặc SenderPassword chưa được cấu hình trong appsettings.json");
+            _logger.LogWarning("[Email] SenderEmail hoặc SenderPassword chưa được cấu hình");
             return;
         }
 
-        _logger.LogInformation("[Email] Đang gửi tới {To} | Subject: {Subject}", toEmail, subject);
-
-        using var client = new SmtpClient(_smtpServer, _smtpPort)
-        {
-            EnableSsl = true,
-            Credentials = new NetworkCredential(_senderEmail, _senderPassword),
-            DeliveryMethod = SmtpDeliveryMethod.Network,
-            Timeout = 10000
-        };
-
-        using var message = new MailMessage
-        {
-            From        = new MailAddress(_senderEmail, "The Old Pavement"),
-            Subject     = subject,
-            Body        = body,
-            IsBodyHtml  = isHtml,
-            BodyEncoding = Encoding.UTF8
-        };
-
-        message.To.Add(toEmail);
+        _logger.LogInformation("[Email] Đang gửi tới {To} | Subject: {Subject} | Server: {Server}:{Port}", 
+            toEmail, subject, _smtpServer, _smtpPort);
 
         try
         {
+            // Thử port 465 (SSL) trước, nếu config là 587 thì override
+            var port = _smtpPort;
+            var enableSsl = true;
+
+            using var client = new SmtpClient(_smtpServer, port)
+            {
+                EnableSsl = enableSsl,
+                Credentials = new NetworkCredential(_senderEmail, _senderPassword),
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                Timeout = 10000
+            };
+
+            using var message = new MailMessage
+            {
+                From        = new MailAddress(_senderEmail, "The Old Pavement"),
+                Subject     = subject,
+                Body        = body,
+                IsBodyHtml  = isHtml,
+                BodyEncoding = Encoding.UTF8
+            };
+
+            message.To.Add(toEmail);
+
             await client.SendMailAsync(message);
             _logger.LogInformation("[Email] Gửi thành công tới {To}", toEmail);
         }
