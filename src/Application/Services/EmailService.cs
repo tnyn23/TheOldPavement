@@ -14,14 +14,17 @@ public class EmailService : IEmailService
     private readonly int _smtpPort;
     private readonly string _senderEmail;
     private readonly string _senderPassword;
+    private readonly string _fromEmail;
     private readonly ILogger<EmailService> _logger;
 
     public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
     {
-        _smtpServer   = configuration["Email:SmtpServer"]   ?? "smtp.gmail.com";
-        _smtpPort     = int.Parse(configuration["Email:SmtpPort"] ?? "587");
-        _senderEmail  = configuration["Email:SenderEmail"]  ?? "";
+        _smtpServer     = configuration["Email:SmtpServer"]   ?? "smtp.gmail.com";
+        _smtpPort       = int.Parse(configuration["Email:SmtpPort"] ?? "587");
+        _senderEmail    = configuration["Email:SenderEmail"]  ?? "";
         _senderPassword = configuration["Email:SenderPassword"] ?? "";
+        // FromEmail: địa chỉ hiển thị cho người nhận (có thể khác SMTP login)
+        _fromEmail      = configuration["Email:FromEmail"] ?? _senderEmail;
         _logger = logger;
     }
 
@@ -52,7 +55,7 @@ public class EmailService : IEmailService
 
             using var message = new MailMessage
             {
-                From        = new MailAddress(_senderEmail, "The Old Pavement"),
+                From        = new MailAddress(_fromEmail, "The Old Pavement"),
                 Subject     = subject,
                 Body        = body,
                 IsBodyHtml  = isHtml,
