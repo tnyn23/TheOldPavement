@@ -106,8 +106,8 @@ public class AuthService : IAuthService
         await _userRepository.UpdateAsync(user);
         await _userRepository.SaveChangesAsync();
 
-        // Send email in background
-        _ = Task.Run(() => _emailService.SendPasswordRecoveryEmailAsync(user.Email, user.FullName ?? "Khách hàng", rawPassword));
+        // Send email — await trực tiếp để bắt lỗi SMTP
+        await _emailService.SendPasswordRecoveryEmailAsync(user.Email, user.FullName ?? "Khách hàng", rawPassword);
         
         return true;
     }

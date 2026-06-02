@@ -272,7 +272,7 @@ public class EmailService : IEmailService
         <!-- CTA -->
         <tr>
           <td style=""padding:24px 40px 40px;"">
-            <a href=""https://localhost:7001/Public/Account/Login"" style=""display:inline-block;background:#0a0a0a;color:#fff;padding:14px 32px;font-size:12px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:2px;"">Đăng nhập ngay →</a>
+            <a href=""/Public/Account/Login"" style=""display:inline-block;background:#0a0a0a;color:#fff;padding:14px 32px;font-size:12px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:2px;"">Đăng nhập ngay →</a>
           </td>
         </tr>
 
@@ -297,8 +297,10 @@ public class EmailService : IEmailService
         );
     }
 
-    public async Task SendPasswordRecoveryEmailAsync(string toEmail, string fullName, string tempPassword)
+    public async Task SendPasswordRecoveryEmailAsync(string toEmail, string fullName, string tempPassword, string loginUrl = "")
     {
+        if (string.IsNullOrEmpty(loginUrl))
+            loginUrl = "/Public/Account/Login";
         var html = $@"
 <!DOCTYPE html>
 <html lang=""vi"">
@@ -345,7 +347,7 @@ public class EmailService : IEmailService
         <!-- CTA -->
         <tr>
           <td style=""padding:24px 40px 40px;"">
-            <a href=""https://localhost:7001/Public/Account/Login"" style=""display:inline-block;background:#0a0a0a;color:#fff;padding:14px 32px;font-size:12px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:2px;"">Đăng nhập ngay →</a>
+            <a href=""{loginUrl}"" style=""display:inline-block;background:#0a0a0a;color:#fff;padding:14px 32px;font-size:12px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:2px;"">Đăng nhập ngay →</a>
           </td>
         </tr>
 
