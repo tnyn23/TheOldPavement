@@ -5,5 +5,5 @@ namespace Application.Interfaces;
 public interface ICheckoutService
 {
     Task<CheckoutResultDTO> ProcessCheckoutAsync(CheckoutRequestDTO request);
-    Task<PromoValidationResultDTO> ValidatePromoCodeAsync(string code, decimal subtotal);
+    Task<PromoValidationResultDTO> ValidatePromoCodeAsync(string code, decimal subtotal, int? userId, List<CartItemDTO> cartItems);
 }

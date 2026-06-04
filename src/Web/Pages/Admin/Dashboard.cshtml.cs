@@ -18,6 +18,7 @@ public class DashboardModel : PageModel
     public List<Order> Orders { get; set; } = new();
     public List<ProductVariant> ProductVariants { get; set; } = new();
     public List<PromoCode> PromoCodes { get; set; } = new();
+    public List<ProductReview> Reviews { get; set; } = new();
     public HashSet<int> OrderedProductIds { get; set; } = new(); // sản phẩm đã có order
     
     // Analytics Metrics
@@ -36,10 +37,13 @@ public class DashboardModel : PageModel
     public int CodPercentage { get; set; } = 50;
     public int TransferPercentage { get; set; } = 50;
 
-    public DashboardModel(TheOldPavementDbContext context, IWebHostEnvironment environment)
+    private readonly Application.Interfaces.IReviewService _reviewService;
+
+    public DashboardModel(TheOldPavementDbContext context, IWebHostEnvironment environment, Application.Interfaces.IReviewService reviewService)
     {
         _context = context;
         _environment = environment;
+        _reviewService = reviewService;
     }
 
     public async Task<IActionResult> OnGetAsync()
@@ -183,6 +187,8 @@ public class DashboardModel : PageModel
             .OrderByDescending(p => p.Id)
             .ToListAsync();
 
+        Reviews = await _reviewService.GetAllReviewsAsync();
+
         // 3. Compute Analytics metrics dynamically
         TotalRevenue = Orders.Sum(o => o.TotalAmount);
         TotalOrdersCount = Orders.Count;
@@ -229,15 +235,46 @@ public class DashboardModel : PageModel
 
     public async Task<IActionResult> OnPostUpdateOrderStatusAsync(int orderId, string status)
     {
-        var order = await _context.Orders.FindAsync(orderId);
-        if (order != null)
+        var orderService = HttpContext.RequestServices.GetService(typeof(Application.Interfaces.IOrderService)) as Application.Interfaces.IOrderService;
+        if (orderService != null)
         {
-            order.Status = status;
-            _context.Orders.Update(order);
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = $"Cập nhật trạng thái đơn hàng {order.OrderNumber} thành '{status}' thành công!";
+            await orderService.UpdateOrderStatusAsync(orderId, status);
+            var order = await _context.Orders.FindAsync(orderId);
+            TempData["SuccessMessage"] = $"Cập nhật trạng thái đơn hàng {order?.OrderNumber} thành '{status}' thành công!";
+        }
+        else
+        {
+            // Fallback in case DI fails
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order != null)
+            {
+                order.Status = status;
+                _context.Orders.Update(order);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"Cập nhật trạng thái đơn hàng {order.OrderNumber} thành '{status}' thành công!";
+            }
         }
         return RedirectToPage();
+    }
+
+    public async Task<IActionResult> OnPostToggleReviewStatusAsync(int id)
+    {
+        var success = await _reviewService.ApproveReviewAsync(id);
+        if (success)
+        {
+            TempData["SuccessMessage"] = "Cập nhật trạng thái đánh giá thành công!";
+        }
+        return RedirectToPage(new { tab = "reviews" });
+    }
+
+    public async Task<IActionResult> OnPostDeleteReviewAsync(int id)
+    {
+        var success = await _reviewService.DeleteReviewAsync(id);
+        if (success)
+        {
+            TempData["SuccessMessage"] = "Đã xóa đánh giá thành công!";
+        }
+        return RedirectToPage(new { tab = "reviews" });
     }
 
     public async Task<IActionResult> OnPostSaveProductAsync(
@@ -537,7 +574,7 @@ public class DashboardModel : PageModel
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = $"Cập nhật tồn kho thành công!";
         }
-        return RedirectToPage();
+        return RedirectToPage(new { tab = "inventory" });
     }
 
     public async Task<IActionResult> OnPostSavePromoCodeAsync(int? id, string code, string promoType, decimal value, decimal? minOrderValue, int? usageLimit, DateTime startDate, DateTime endDate, bool isActive)

@@ -25,6 +25,12 @@ public partial class User
 
     public DateTime? UpdatedAt { get; set; }
 
+    [System.ComponentModel.DataAnnotations.Schema.Column("total_spent")]
+    public decimal TotalSpent { get; set; } = 0;
+
+    [System.ComponentModel.DataAnnotations.Schema.Column("tier")]
+    public string Tier { get; set; } = "Standard";
+
     public virtual ICollection<AddToCartEvent> AddToCartEvents { get; set; } = new List<AddToCartEvent>();
 
     public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();

@@ -14,6 +14,7 @@ public class CheckoutService : ICheckoutService
     private readonly IUserRepository _userRepository;
     private readonly IRepository<PromoCode> _promoRepository;
     private readonly IRepository<ProductVariant> _variantRepository;
+    private readonly IProductRepository _productRepository;
     private readonly IEmailService _emailService;
     private readonly ILogger<CheckoutService> _logger;
 
@@ -22,6 +23,7 @@ public class CheckoutService : ICheckoutService
         IUserRepository userRepository,
         IRepository<PromoCode> promoRepository,
         IRepository<ProductVariant> variantRepository,
+        IProductRepository productRepository,
         IEmailService emailService,
         ILogger<CheckoutService> logger)
     {
@@ -29,11 +31,12 @@ public class CheckoutService : ICheckoutService
         _userRepository = userRepository;
         _promoRepository = promoRepository;
         _variantRepository = variantRepository;
+        _productRepository = productRepository;
         _emailService = emailService;
         _logger = logger;
     }
 
-    public async Task<PromoValidationResultDTO> ValidatePromoCodeAsync(string code, decimal subtotal)
+    public async Task<PromoValidationResultDTO> ValidatePromoCodeAsync(string code, decimal subtotal, int? userId, List<CartItemDTO> cartItems)
     {
         if (string.IsNullOrWhiteSpace(code))
         {
@@ -57,6 +60,85 @@ public class CheckoutService : ICheckoutService
 
         if (promo.MinOrderValue.HasValue && subtotal < promo.MinOrderValue.Value)
             return new PromoValidationResultDTO { Success = false, Message = $"Đơn hàng chưa đạt giá trị tối thiểu {promo.MinOrderValue.Value:N0}₫ để áp dụng mã này." };
+
+        // VIP Tier check
+        if (!string.IsNullOrWhiteSpace(promo.RequiredUserTier))
+        {
+            if (!userId.HasValue)
+                return new PromoValidationResultDTO { Success = false, Message = $"Mã này chỉ dành cho khách hàng hạng {promo.RequiredUserTier}. Vui lòng đăng nhập." };
+                
+            var user = await _userRepository.GetByIdAsync(userId.Value);
+            if (user == null || !string.Equals(user.Tier, promo.RequiredUserTier, StringComparison.OrdinalIgnoreCase))
+                return new PromoValidationResultDTO { Success = false, Message = $"Mã này chỉ dành cho khách hàng hạng {promo.RequiredUserTier}." };
+        }
+
+        // Category check
+        if (!string.IsNullOrWhiteSpace(promo.AppliesToCategory))
+        {
+            bool hasCategory = false;
+            foreach (var item in cartItems)
+            {
+                var product = await _productRepository.GetByIdAsync(item.ProductId);
+                if (product != null && string.Equals(product.Category, promo.AppliesToCategory, StringComparison.OrdinalIgnoreCase))
+                {
+                    hasCategory = true;
+                    break;
+                }
+            }
+            if (!hasCategory)
+                return new PromoValidationResultDTO { Success = false, Message = $"Mã này chỉ áp dụng cho danh mục {promo.AppliesToCategory}." };
+        }
+
+        // Combo / Product check
+        if (!string.IsNullOrWhiteSpace(promo.AppliesToProductIds))
+        {
+            var requiredIds = promo.AppliesToProductIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                  .Select(id => int.Parse(id.Trim())).ToList();
+            
+            var cartProductIds = cartItems.Select(c => c.ProductId).ToList();
+            
+            if (promo.IsCombo == true)
+            {
+                // Must have ALL required products
+                bool hasAll = requiredIds.All(id => cartProductIds.Contains(id));
+                if (!hasAll)
+                    return new PromoValidationResultDTO { Success = false, Message = "Mã này chỉ áp dụng khi mua trọn bộ combo sản phẩm." };
+            }
+            else
+            {
+                // Must have AT LEAST ONE of the required products
+                bool hasAny = requiredIds.Any(id => cartProductIds.Contains(id));
+                if (!hasAny)
+                    return new PromoValidationResultDTO { Success = false, Message = "Mã này không áp dụng cho các sản phẩm trong giỏ hàng." };
+            }
+        }
+
+        // Buy X Get Y check
+        if (promo.RequiredQuantity.HasValue && promo.RequiredQuantity.Value > 0)
+        {
+            int totalRelevantQuantity = 0;
+            
+            if (!string.IsNullOrWhiteSpace(promo.AppliesToCategory))
+            {
+                foreach (var item in cartItems)
+                {
+                    var product = await _productRepository.GetByIdAsync(item.ProductId);
+                    if (product != null && string.Equals(product.Category, promo.AppliesToCategory, StringComparison.OrdinalIgnoreCase))
+                    {
+                        totalRelevantQuantity += item.Quantity;
+                    }
+                }
+            }
+            else
+            {
+                totalRelevantQuantity = cartItems.Sum(c => c.Quantity);
+            }
+
+            if (totalRelevantQuantity < promo.RequiredQuantity.Value)
+            {
+                return new PromoValidationResultDTO { Success = false, Message = $"Cần mua ít nhất {promo.RequiredQuantity.Value} sản phẩm để áp dụng mã này." };
+            }
+        }
 
         decimal discount = 0;
         if (promo.Type == "percent")
@@ -135,34 +217,19 @@ public class CheckoutService : ICheckoutService
         if (request.PromoCodeId.HasValue)
         {
             var promo = await _promoRepository.GetByIdAsync(request.PromoCodeId.Value);
-            if (promo != null && promo.IsActive == true && promo.StartDate <= DateTime.Now && promo.EndDate >= DateTime.Now)
+            if (promo != null)
             {
-                if (!promo.UsageLimit.HasValue || (promo.UsedCount ?? 0) < promo.UsageLimit.Value)
+                var validationResult = await ValidatePromoCodeAsync(promo.Code, request.TotalPrice, finalUserId, request.CartItems);
+                if (validationResult.Success)
                 {
-                    if (!promo.MinOrderValue.HasValue || request.TotalPrice >= promo.MinOrderValue.Value)
-                    {
-                        if (promo.Type == "percent")
-                        {
-                            discountAmount = request.TotalPrice * (promo.Value / 100);
-                            if (promo.MaxDiscount.HasValue && discountAmount > promo.MaxDiscount.Value)
-                            {
-                                discountAmount = promo.MaxDiscount.Value;
-                            }
-                        }
-                        else if (promo.Type == "fixed")
-                        {
-                            discountAmount = promo.Value;
-                        }
-
-                        if (discountAmount > request.TotalPrice)
-                        {
-                            discountAmount = request.TotalPrice;
-                        }
-
-                        promo.UsedCount = (promo.UsedCount ?? 0) + 1;
-                        promo.UpdatedAt = DateTime.Now;
-                        await _promoRepository.UpdateAsync(promo);
-                    }
+                    discountAmount = validationResult.DiscountAmount;
+                    promo.UsedCount = (promo.UsedCount ?? 0) + 1;
+                    promo.UpdatedAt = DateTime.Now;
+                    await _promoRepository.UpdateAsync(promo);
+                }
+                else
+                {
+                    return new CheckoutResultDTO { Success = false, Message = validationResult.Message };
                 }
             }
         }

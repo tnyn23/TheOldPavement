@@ -1,4 +1,6 @@
+using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Mail;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +15,7 @@ public class EmailService : IEmailService
     private readonly string _fromEmail;
     private readonly string _fromName;
     private readonly string _apiKey;
+    private readonly string _smtpPassword;
     private readonly ILogger<EmailService> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
 
@@ -21,6 +24,7 @@ public class EmailService : IEmailService
         _fromEmail       = configuration["Email:FromEmail"] ?? configuration["Email:SenderEmail"] ?? "";
         _fromName        = "The Old Pavement";
         _apiKey          = configuration["Email:BrevoApiKey"] ?? "";
+        _smtpPassword    = configuration["Email:SenderPassword"] ?? "";
         _logger          = logger;
         _httpClientFactory = httpClientFactory;
     }
@@ -29,11 +33,34 @@ public class EmailService : IEmailService
     {
         if (string.IsNullOrWhiteSpace(_apiKey))
         {
-            _logger.LogWarning("[Email] BrevoApiKey chưa được cấu hình trong Railway Variables (Email__BrevoApiKey)");
-            return;
+            _logger.LogInformation("[Email] BrevoApiKey không tồn tại. Đang dùng SMTP Gmail fallback...");
+            try
+            {
+                using var client = new SmtpClient("smtp.gmail.com", 587)
+                {
+                    Credentials = new NetworkCredential(_fromEmail, _smtpPassword),
+                    EnableSsl = true
+                };
+                var mailMessage = new MailMessage
+                {
+                    From = new MailAddress(_fromEmail, _fromName),
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = isHtml
+                };
+                mailMessage.To.Add(toEmail);
+                await client.SendMailAsync(mailMessage);
+                _logger.LogInformation("[Email] Gửi SMTP Gmail thành công tới {To}", toEmail);
+                return;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[Email] Gửi SMTP Gmail thất bại: {Error}", ex.Message);
+                return;
+            }
         }
 
-        _logger.LogInformation("[Email] Đang gửi tới {To} | Subject: {Subject}", toEmail, subject);
+        _logger.LogInformation("[Email] Đang gửi qua Brevo API tới {To} | Subject: {Subject}", toEmail, subject);
 
         var payload = new
         {
@@ -57,14 +84,13 @@ public class EmailService : IEmailService
             var responseBody = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
-                _logger.LogInformation("[Email] Gửi thành công tới {To} | Status: {Status}", toEmail, response.StatusCode);
+                _logger.LogInformation("[Email] Gửi Brevo thành công tới {To} | Status: {Status}", toEmail, response.StatusCode);
             else
                 _logger.LogError("[Email] Brevo API lỗi | Status: {Status} | Body: {Body}", response.StatusCode, responseBody);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[Email] HTTP request failed tới Brevo | Error: {Error}", ex.Message);
-            throw;
         }
     }
 

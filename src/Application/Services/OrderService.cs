@@ -9,11 +9,13 @@ public class OrderService : IOrderService
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IRepository<ProductVariant> _variantRepository;
+    private readonly INotificationService _notificationService;
 
-    public OrderService(IOrderRepository orderRepository, IRepository<ProductVariant> variantRepository)
+    public OrderService(IOrderRepository orderRepository, IRepository<ProductVariant> variantRepository, INotificationService notificationService)
     {
         _orderRepository = orderRepository;
         _variantRepository = variantRepository;
+        _notificationService = notificationService;
     }
 
     public async Task<IEnumerable<OrderDTO>> GetAllOrdersAsync()
@@ -49,6 +51,16 @@ public class OrderService : IOrderService
             order.UpdatedAt = DateTime.UtcNow;
             await _orderRepository.UpdateAsync(order);
             await _orderRepository.SaveChangesAsync();
+            
+            if (order.UserId.HasValue)
+            {
+                await _notificationService.CreateNotificationAsync(
+                    order.UserId.Value,
+                    "order_update",
+                    "Cập nhật đơn hàng",
+                    $"Đơn hàng {order.OrderNumber} của bạn đã chuyển sang trạng thái: {status}",
+                    $"/User/Orders/{order.Id}");
+            }
         }
     }
 

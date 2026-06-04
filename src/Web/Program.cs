@@ -22,6 +22,7 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 
 // Add Services
 builder.Services.AddScoped<IProductService, ProductService>();
@@ -31,6 +32,12 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IMomoService, MomoService>();
 builder.Services.AddScoped<ICheckoutService, CheckoutService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<INotificationDispatcher, Web.Services.SignalRNotificationDispatcher>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+// Add SignalR
+builder.Services.AddSignalR();
 
 // ── MoMo: strongly-typed options + named HttpClient ──────────────────────────
 builder.Services.Configure<MomoOptions>(
@@ -110,6 +117,91 @@ using (var scope = app.Services.CreateScope())
     {
         Console.WriteLine($"Database Migration Warning (payment_status): {ex.Message}");
     }
+    // Add is_approved column to product_reviews if not exists
+    try
+    {
+        var reviewColExists = context.Database
+            .SqlQueryRaw<int>(
+                "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'product_reviews' AND COLUMN_NAME = 'is_approved'")
+            .AsEnumerable()
+            .FirstOrDefault();
+
+        if (reviewColExists == 0)
+        {
+            context.Database.ExecuteSqlRaw(
+                "ALTER TABLE product_reviews ADD COLUMN is_approved TINYINT(1) DEFAULT 1;");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database Migration Warning (product_reviews): {ex.Message}");
+    }
+
+    // Add new columns to promo_codes
+    try
+    {
+        var promoCols = context.Database
+            .SqlQueryRaw<string>(
+                "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'promo_codes'")
+            .ToList();
+
+        if (!promoCols.Contains("applies_to_category", StringComparer.OrdinalIgnoreCase))
+            context.Database.ExecuteSqlRaw("ALTER TABLE promo_codes ADD COLUMN applies_to_category VARCHAR(100) NULL;");
+        
+        if (!promoCols.Contains("applies_to_product_ids", StringComparer.OrdinalIgnoreCase))
+            context.Database.ExecuteSqlRaw("ALTER TABLE promo_codes ADD COLUMN applies_to_product_ids VARCHAR(255) NULL;");
+            
+        if (!promoCols.Contains("required_quantity", StringComparer.OrdinalIgnoreCase))
+            context.Database.ExecuteSqlRaw("ALTER TABLE promo_codes ADD COLUMN required_quantity INT NULL;");
+            
+        if (!promoCols.Contains("reward_quantity", StringComparer.OrdinalIgnoreCase))
+            context.Database.ExecuteSqlRaw("ALTER TABLE promo_codes ADD COLUMN reward_quantity INT NULL;");
+            
+        if (!promoCols.Contains("required_user_tier", StringComparer.OrdinalIgnoreCase))
+            context.Database.ExecuteSqlRaw("ALTER TABLE promo_codes ADD COLUMN required_user_tier VARCHAR(50) NULL;");
+            
+        if (!promoCols.Contains("is_combo", StringComparer.OrdinalIgnoreCase))
+            context.Database.ExecuteSqlRaw("ALTER TABLE promo_codes ADD COLUMN is_combo TINYINT(1) DEFAULT 0;");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database Migration Warning (promo_codes): {ex.Message}");
+    }
+
+    // Add new columns to users
+    try
+    {
+        var userCols = context.Database
+            .SqlQueryRaw<string>(
+                "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'")
+            .ToList();
+
+        if (!userCols.Contains("total_spent", StringComparer.OrdinalIgnoreCase))
+            context.Database.ExecuteSqlRaw("ALTER TABLE users ADD COLUMN total_spent DECIMAL(18,2) DEFAULT 0;");
+            
+        if (!userCols.Contains("tier", StringComparer.OrdinalIgnoreCase))
+            context.Database.ExecuteSqlRaw("ALTER TABLE users ADD COLUMN tier VARCHAR(50) DEFAULT 'Standard';");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database Migration Warning (users): {ex.Message}");
+    }
+
+    // Add new columns to sales
+    try
+    {
+        var saleCols = context.Database
+            .SqlQueryRaw<string>(
+                "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'sales'")
+            .ToList();
+
+        if (!saleCols.Contains("is_flash_sale", StringComparer.OrdinalIgnoreCase))
+            context.Database.ExecuteSqlRaw("ALTER TABLE sales ADD COLUMN is_flash_sale TINYINT(1) DEFAULT 0;");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database Migration Warning (sales): {ex.Message}");
+    }
 }
 
 if (!app.Environment.IsDevelopment())
@@ -137,6 +229,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+app.MapHub<Web.Hubs.NotificationHub>("/notificationHub");
 
 app.Run();
 

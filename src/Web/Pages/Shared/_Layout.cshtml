@@ -243,6 +243,34 @@
 
 
 
+    <!-- ══ SignalR Notification Script ══ -->
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+        <script>
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/notificationHub")
+                .build();
+
+            connection.on("ReceiveNotification", function (notification) {
+                const evt = new CustomEvent('show-toast', { 
+                    detail: { title: notification.title, message: notification.message, type: 'success' } 
+                });
+                window.dispatchEvent(evt);
+                
+                var bellCount = document.getElementById('notification-count');
+                if (bellCount) {
+                    bellCount.innerText = parseInt(bellCount.innerText || 0) + 1;
+                    bellCount.style.display = 'flex';
+                }
+            });
+
+            connection.start().catch(function (err) {
+                console.error("SignalR Connection Error: ", err.toString());
+            });
+        </script>
+    }
+
     @await RenderSectionAsync("Scripts", required: false)
 
     <!-- Global Toast Notifications -->

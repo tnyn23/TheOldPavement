@@ -70,6 +70,26 @@
                     }
                 </a>
 
+                <!-- Notification Bell -->
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                    int unreadCount = 0;
+                    if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int uid))
+                    {
+                        var notifService = Context.RequestServices.GetService(typeof(Application.Interfaces.INotificationService)) as Application.Interfaces.INotificationService;
+                        if (notifService != null)
+                        {
+                            unreadCount = notifService.GetUnreadCountAsync(uid).GetAwaiter().GetResult();
+                        }
+                    }
+
+                    <a href="/Customer/Notifications" class="relative flex items-center justify-center w-9 h-9 transition-colors hover:opacity-70" title="Thông báo">
+                        <i data-lucide="bell" style="width:18px;height:18px;color:#3E503C"></i>
+                        <span id="notification-count" class="absolute top-1 right-1 text-white text-[8px] rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold leading-none @(unreadCount == 0 ? "hidden" : "")" style="background-color:#FF6F3D">@unreadCount</span>
+                    </a>
+                }
+
                 <!-- Account -->
                 @if (User.Identity?.IsAuthenticated == true)
                 {

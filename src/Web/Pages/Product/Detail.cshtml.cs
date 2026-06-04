@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Application.DTOs;
+using Application.Interfaces;
 using Domain.Interfaces;
 using Domain.Models;
 using Web.Helpers;
@@ -85,10 +86,18 @@ public class DetailModel : PageModel
     [BindProperty]
     public string ReviewerName { get; set; } = string.Empty;
 
-    public DetailModel(IProductRepository productRepository, TheOldPavementDbContext context)
+    private readonly IReviewService _reviewService;
+    private readonly IWebHostEnvironment _env;
+
+    [BindProperty]
+    public List<IFormFile>? ReviewImages { get; set; }
+
+    public DetailModel(IProductRepository productRepository, TheOldPavementDbContext context, IReviewService reviewService, IWebHostEnvironment env)
     {
         _productRepository = productRepository;
         _context = context;
+        _reviewService = reviewService;
+        _env = env;
     }
 
     private void GenerateFallbackProduct(string slug)
@@ -260,13 +269,10 @@ public class DetailModel : PageModel
             .Include(p => p.ProductImages)
             .ToListAsync();
 
-        // Fetch Product Reviews
+        // Fetch Product Reviews using service
         if (Product != null)
         {
-            var allReviews = await _context.ProductReviews
-                .Where(r => r.ProductId == Product.Id)
-                .OrderByDescending(r => r.CreatedAt)
-                .ToListAsync();
+            var allReviews = await _reviewService.GetProductReviewsAsync(Product.Id);
 
             TotalReviews = allReviews.Count;
             if (TotalReviews > 0)
@@ -384,7 +390,6 @@ public class DetailModel : PageModel
 
         if (!string.IsNullOrWhiteSpace(ReviewContent))
         {
-            // Get current user ID if logged in, otherwise use 0 for guest
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             int userId = 0;
             if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedId))
@@ -392,32 +397,58 @@ public class DetailModel : PageModel
                 userId = parsedId;
             }
 
-            bool isVerifiedPurchase = false;
-            if (userId > 0)
+            if (userId == 0)
             {
-                isVerifiedPurchase = await _context.Orders
-                    .AnyAsync(o => o.UserId == userId && 
-                                   o.OrderItems.Any(oi => oi.ProductId == Product.Id) &&
-                                   o.Status != "cancelled");
+                TempData["ErrorMessage"] = "Bạn cần đăng nhập để đánh giá sản phẩm.";
+                return RedirectToPage(new { slug });
             }
 
-            var review = new ProductReview
+            bool canReview = await _reviewService.CanUserReviewProductAsync(userId, Product.Id);
+            if (!canReview)
             {
-                ProductId = Product.Id,
-                UserId = userId,
-                Rating = Rating,
-                Title = string.IsNullOrWhiteSpace(ReviewerName) ? "Khách hàng" : ReviewerName, // Reuse Title field for display name
-                Comment = ReviewContent,
-                IsVerifiedPurchase = isVerifiedPurchase,
-                CreatedAt = DateTime.Now
-            };
+                TempData["ErrorMessage"] = "Chỉ những khách hàng đã mua và nhận sản phẩm này mới được đánh giá.";
+                return RedirectToPage(new { slug });
+            }
 
-            _context.ProductReviews.Add(review);
-            await _context.SaveChangesAsync();
+            var imageUrls = new List<string>();
+            if (ReviewImages != null && ReviewImages.Any())
+            {
+                string uploadDir = Path.Combine(_env.WebRootPath, "uploads", "reviews");
+                if (!Directory.Exists(uploadDir))
+                    Directory.CreateDirectory(uploadDir);
+
+                foreach (var file in ReviewImages)
+                {
+                    if (file.Length > 0)
+                    {
+                        string ext = Path.GetExtension(file.FileName);
+                        string newFileName = $"{Guid.NewGuid()}{ext}";
+                        string filePath = Path.Combine(uploadDir, newFileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+                        imageUrls.Add($"/uploads/reviews/{newFileName}");
+                    }
+                }
+            }
+
+            await _reviewService.AddReviewAsync(Product.Id, userId, Rating, ReviewContent, ReviewerName, imageUrls);
             
             TempData["SuccessMessage"] = "Cảm ơn bạn! Đánh giá của bạn đã được gửi thành công.";
         }
 
+        return RedirectToPage(new { slug });
+    }
+
+    public async Task<IActionResult> OnPostMarkHelpfulAsync(string slug, int reviewId)
+    {
+        bool success = await _reviewService.MarkHelpfulAsync(reviewId);
+        if (success)
+        {
+            TempData["SuccessMessage"] = "Đã đánh dấu đánh giá là hữu ích.";
+        }
         return RedirectToPage(new { slug });
     }
 }

@@ -25,7 +25,8 @@ public partial class Sale
 
     public DateTime? UpdatedAt { get; set; }
 
+    [System.ComponentModel.DataAnnotations.Schema.Column("is_flash_sale")]
+    public bool IsFlashSale { get; set; } = false;
+
     public virtual ICollection<SaleProduct> SaleProducts { get; set; } = new List<SaleProduct>();
 }
-
-

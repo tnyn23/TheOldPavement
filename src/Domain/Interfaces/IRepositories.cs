@@ -27,4 +27,10 @@ public interface ICartRepository : IRepository<Cart>
     Task<Cart?> GetCartWithItemsAsync(int userId);
 }
 
+public interface IReviewRepository : IRepository<ProductReview>
+{
+    Task<IEnumerable<ProductReview>> GetReviewsByProductIdAsync(int productId, bool onlyApproved = true);
+    Task<IEnumerable<ProductReview>> GetPendingReviewsAsync();
+}
+
 

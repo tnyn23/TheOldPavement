@@ -149,7 +149,17 @@ public sealed class CheckoutModel : PageModel
 
     public async Task<IActionResult> OnPostApplyCouponAsync([FromBody] ApplyCouponRequest request)
     {
-        var result = await _checkoutService.ValidatePromoCodeAsync(request.Code, request.Subtotal);
+        var cartItems = CartManager.GetCart(HttpContext.Session);
+        
+        int? userId = null;
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (claim != null && int.TryParse(claim.Value, out int uid))
+                userId = uid;
+        }
+
+        var result = await _checkoutService.ValidatePromoCodeAsync(request.Code, request.Subtotal, userId, cartItems);
         return new JsonResult(new
         {
             success        = result.Success,

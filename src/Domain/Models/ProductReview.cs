@@ -29,6 +29,9 @@ public partial class ProductReview
 
     public DateTime? UpdatedAt { get; set; }
 
+    [System.ComponentModel.DataAnnotations.Schema.Column("is_approved")]
+    public bool IsApproved { get; set; } = true;
+
     public virtual Order? Order { get; set; }
 
     public virtual Product Product { get; set; } = null!;
