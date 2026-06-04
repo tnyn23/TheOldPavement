@@ -59,7 +59,7 @@ public class OrderService : IOrderService
                     "order_update",
                     "Cập nhật đơn hàng",
                     $"Đơn hàng {order.OrderNumber} của bạn đã chuyển sang trạng thái: {status}",
-                    $"/User/Orders/{order.Id}");
+                    $"/Customer/Orders?search={order.OrderNumber}");
             }
         }
     }

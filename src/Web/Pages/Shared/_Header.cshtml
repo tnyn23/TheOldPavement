@@ -43,14 +43,20 @@
 
             <!-- Search -->
             <div class="flex-1 flex items-center min-w-0">
-                <form action="/Shop" method="get" class="w-full max-w-sm mx-auto">
+                <form action="/Shop" method="get" class="w-full max-w-sm mx-auto relative" id="header-search-form">
                     <div class="relative flex items-center">
                         <i data-lucide="search" class="absolute left-3.5 w-3.5 h-3.5 text-gray-400 pointer-events-none flex-shrink-0"></i>
-                        <input type="text" name="SearchQuery" placeholder="Tìm kiếm sản phẩm..."
-                               class="w-full pl-9 pr-4 py-2 text-xs placeholder-gray-400 outline-none transition-all"
+                        <input type="text" name="SearchQuery" id="header-search-input" placeholder="Tìm kiếm sản phẩm..." autocomplete="off"
+                               class="w-full pl-9 pr-4 py-2 text-xs placeholder-gray-400 outline-none transition-all rounded-md"
                                style="background-color:#ede8df; border:1px solid rgba(62,80,60,0.2); color:#1a1f19"
                                onfocus="this.style.borderColor='#3E503C'; this.style.backgroundColor='#faf7f2'"
                                onblur="this.style.borderColor='rgba(62,80,60,0.2)'; this.style.backgroundColor='#ede8df'" />
+                    </div>
+                    <!-- Search Dropdown -->
+                    <div id="search-dropdown" class="absolute top-full left-0 right-0 mt-1.5 bg-[#faf7f2] border shadow-lg hidden z-50 max-h-[350px] overflow-y-auto scrollbar-thin rounded-md" style="border-color: rgba(62,80,60,0.15)">
+                        <div id="search-dropdown-content" class="p-3">
+                            <!-- Content injected via JS -->
+                        </div>
                     </div>
                 </form>
             </div>
@@ -191,6 +197,132 @@
         if (userBtn && userDrop) {
             userBtn.addEventListener('click', e => { e.stopPropagation(); userDrop.classList.toggle('hidden'); });
             document.addEventListener('click', e => { if (!userDrop.contains(e.target) && !userBtn.contains(e.target)) userDrop.classList.add('hidden'); });
+        }
+
+        // Advanced Search Logic
+        const searchInput = document.getElementById('header-search-input');
+        const searchDropdown = document.getElementById('search-dropdown');
+        const searchContent = document.getElementById('search-dropdown-content');
+        let searchTimeout = null;
+
+        const trendingSearches = ["áo thun", "hoodie", "rolling stones", "áo khoác nỉ", "sale"];
+
+        function getSearchHistory() {
+            try {
+                return JSON.parse(localStorage.getItem('searchHistory')) || [];
+            } catch { return []; }
+        }
+
+        function saveSearchHistory(query) {
+            if (!query.trim()) return;
+            let history = getSearchHistory();
+            history = history.filter(h => h.toLowerCase() !== query.toLowerCase());
+            history.unshift(query);
+            if (history.length > 5) history.pop();
+            localStorage.setItem('searchHistory', JSON.stringify(history));
+        }
+
+        function renderHistoryAndTrending() {
+            const history = getSearchHistory();
+            let html = '';
+            
+            if (history.length > 0) {
+                html += `<div class="mb-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Lịch sử tìm kiếm</span>
+                        <button type="button" onclick="clearSearchHistory()" class="text-[9px] text-gray-400 hover:text-red-500 underline">Xoá</button>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">`;
+                history.forEach(h => {
+                    html += `<a href="/Shop?SearchQuery=${encodeURIComponent(h)}" class="px-2 py-1 bg-white border text-[11px] text-gray-700 hover:border-black rounded transition-colors" style="border-color:rgba(62,80,60,0.15)">${h}</a>`;
+                });
+                html += `</div></div>`;
+            }
+
+            html += `<div>
+                <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 block">Tìm kiếm phổ biến</span>
+                <div class="flex flex-wrap gap-1.5">`;
+            trendingSearches.forEach(t => {
+                html += `<a href="/Shop?SearchQuery=${encodeURIComponent(t)}" class="px-2 py-1 bg-white border text-[11px] text-[#3E503C] hover:border-[#3E503C] rounded transition-colors" style="border-color:rgba(62,80,60,0.15)">
+                    <i data-lucide="trending-up" class="w-3 h-3 inline-block mr-1 text-[#FF6F3D]"></i>${t}
+                </a>`;
+            });
+            html += `</div></div>`;
+
+            searchContent.innerHTML = html;
+            if (window.lucide) lucide.createIcons();
+        }
+
+        window.clearSearchHistory = function() {
+            localStorage.removeItem('searchHistory');
+            renderHistoryAndTrending();
+        };
+
+        async function fetchSuggestions(query) {
+            searchContent.innerHTML = `<div class="py-4 text-center text-xs text-gray-400"><i data-lucide="loader-2" class="w-4 h-4 animate-spin mx-auto mb-1"></i> Đang tìm...</div>`;
+            if (window.lucide) lucide.createIcons();
+            
+            try {
+                const res = await fetch(`/Shop?handler=SearchSuggestions&q=${encodeURIComponent(query)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.length > 0) {
+                        let html = `<span class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 block">Gợi ý sản phẩm</span><div class="space-y-1">`;
+                        data.forEach(p => {
+                            html += `
+                            <a href="/Product/${p.slug}" class="flex items-center gap-3 p-1.5 hover:bg-[rgba(62,80,60,0.05)] rounded transition-colors group">
+                                <div class="w-10 h-10 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                                    <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[11px] font-semibold text-[#1a1f19] truncate">${p.name}</p>
+                                    <p class="text-[11px] font-bold text-[#FF6F3D] mt-0.5">${p.price.toLocaleString('vi-VN')}₫</p>
+                                </div>
+                            </a>`;
+                        });
+                        html += `</div>`;
+                        html += `<a href="/Shop?SearchQuery=${encodeURIComponent(query)}" class="block text-center text-[10px] font-bold text-[#3E503C] mt-2 pt-2 border-t" style="border-color:rgba(62,80,60,0.1)">Xem tất cả kết quả →</a>`;
+                        searchContent.innerHTML = html;
+                    } else {
+                        searchContent.innerHTML = `<div class="py-4 text-center text-xs text-gray-400">Không tìm thấy sản phẩm phù hợp.</div>`;
+                    }
+                }
+            } catch (e) {
+                renderHistoryAndTrending();
+            }
+        }
+
+        if (searchInput && searchDropdown) {
+            searchInput.addEventListener('focus', () => {
+                searchDropdown.classList.remove('hidden');
+                if (!searchInput.value.trim()) {
+                    renderHistoryAndTrending();
+                }
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                clearTimeout(searchTimeout);
+                if (query) {
+                    searchTimeout = setTimeout(() => fetchSuggestions(query), 300);
+                } else {
+                    renderHistoryAndTrending();
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+                    searchDropdown.classList.add('hidden');
+                }
+            });
+
+            const form = document.getElementById('header-search-form');
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    const query = searchInput.value.trim();
+                    if (query) saveSearchHistory(query);
+                });
+            }
         }
     });
 </script>

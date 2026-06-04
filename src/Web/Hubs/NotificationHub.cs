@@ -14,6 +14,11 @@ public class NotificationHub : Hub
             await Groups.AddToGroupAsync(Context.ConnectionId, $"User_{userIdClaim.Value}");
         }
 
+        if (Context.User?.IsInRole("admin") == true)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, "Admins");
+        }
+
         await base.OnConnectedAsync();
     }
 
@@ -23,6 +28,11 @@ public class NotificationHub : Hub
         if (userIdClaim != null)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"User_{userIdClaim.Value}");
+        }
+
+        if (Context.User?.IsInRole("admin") == true)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, "Admins");
         }
 
         await base.OnDisconnectedAsync(exception);

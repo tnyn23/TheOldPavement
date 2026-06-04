@@ -16,6 +16,7 @@ public class CheckoutService : ICheckoutService
     private readonly IRepository<ProductVariant> _variantRepository;
     private readonly IProductRepository _productRepository;
     private readonly IEmailService _emailService;
+    private readonly INotificationDispatcher _notificationDispatcher;
     private readonly ILogger<CheckoutService> _logger;
 
     public CheckoutService(
@@ -25,6 +26,7 @@ public class CheckoutService : ICheckoutService
         IRepository<ProductVariant> variantRepository,
         IProductRepository productRepository,
         IEmailService emailService,
+        INotificationDispatcher notificationDispatcher,
         ILogger<CheckoutService> logger)
     {
         _orderRepository = orderRepository;
@@ -33,6 +35,7 @@ public class CheckoutService : ICheckoutService
         _variantRepository = variantRepository;
         _productRepository = productRepository;
         _emailService = emailService;
+        _notificationDispatcher = notificationDispatcher;
         _logger = logger;
     }
 
@@ -317,6 +320,9 @@ public class CheckoutService : ICheckoutService
             // Email failure should not block order completion
             _logger.LogError(ex, "[Email] Gửi email xác nhận đơn hàng {OrderNumber} thất bại: {Message}", order.OrderNumber, ex.Message);
         }
+
+        // Notify admins in real-time
+        await _notificationDispatcher.NotifyAdminNewOrderAsync(order.OrderNumber, order.TotalAmount);
 
         return new CheckoutResultDTO 
         { 

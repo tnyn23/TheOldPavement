@@ -37,6 +37,19 @@ public class ShopModel : PageModel
     [BindProperty(SupportsGet = true)]
     public string SortBy { get; set; } = "newest";
 
+    private static readonly Dictionary<string, List<string>> Synonyms = new(StringComparer.OrdinalIgnoreCase)
+    {
+        { "áo thun", new List<string> { "tee", "tshirt", "t-shirt" } },
+        { "tee", new List<string> { "áo thun", "tshirt", "t-shirt" } },
+        { "hoodie", new List<string> { "áo khoác nỉ", "áo nỉ", "sweater", "khoác nỉ" } },
+        { "áo khoác nỉ", new List<string> { "hoodie", "áo nỉ", "sweater" } },
+        { "áo khoác", new List<string> { "jacket", "coat" } },
+        { "jacket", new List<string> { "áo khoác", "coat" } },
+        { "quần", new List<string> { "pants", "trousers" } },
+        { "pants", new List<string> { "quần", "trousers" } },
+        { "phụ kiện", new List<string> { "accessories", "bag", "hat", "túi", "nón", "mũ" } }
+    };
+
     public async Task OnGetAsync()
     {
         if (PageNumber < 1) PageNumber = 1;
@@ -48,8 +61,23 @@ public class ShopModel : PageModel
         // 1. Search Filter
         if (!string.IsNullOrWhiteSpace(SearchQuery))
         {
-            var searchLower = SearchQuery.ToLower();
-            query = query.Where(p => p.Name.ToLower().Contains(searchLower) || p.Slug.Contains(searchLower));
+            var searchLower = SearchQuery.ToLower().Trim();
+            var searchTerms = new List<string> { searchLower };
+            
+            foreach (var kvp in Synonyms)
+            {
+                if (searchLower.Contains(kvp.Key.ToLower()))
+                {
+                    searchTerms.AddRange(kvp.Value);
+                }
+            }
+
+            var productsIds = await _context.Products.Select(p => new { p.Id, p.Name, p.Slug }).ToListAsync();
+            var matchedIds = productsIds
+                .Where(p => searchTerms.Any(term => p.Name.ToLower().Contains(term) || p.Slug.ToLower().Contains(term)))
+                .Select(p => p.Id).ToList();
+
+            query = query.Where(p => matchedIds.Contains(p.Id));
         }
 
         // 2. Category Filter
@@ -84,6 +112,45 @@ public class ShopModel : PageModel
             .Skip((PageNumber - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
+    }
+
+    public async Task<IActionResult> OnGetSearchSuggestionsAsync(string q)
+    {
+        if (string.IsNullOrWhiteSpace(q)) return new JsonResult(new List<object>());
+
+        var searchLower = q.ToLower().Trim();
+        var searchTerms = new List<string> { searchLower };
+        
+        foreach (var kvp in Synonyms)
+        {
+            if (searchLower.Contains(kvp.Key.ToLower()))
+            {
+                searchTerms.AddRange(kvp.Value);
+            }
+        }
+
+        var productsIds = await _context.Products.Where(p => p.Status != "hidden").Select(p => new { p.Id, p.Name, p.Slug }).ToListAsync();
+        var matchedIds = productsIds
+            .Where(p => searchTerms.Any(term => p.Name.ToLower().Contains(term) || p.Slug.ToLower().Contains(term)))
+            .Select(p => p.Id).ToList();
+
+        var suggestions = await _context.Products
+            .Include(p => p.ProductImages)
+            .Where(p => matchedIds.Contains(p.Id))
+            .Take(6)
+            .Select(p => new
+            {
+                id = p.Id,
+                name = p.Name,
+                slug = p.Slug,
+                price = p.Price,
+                image = p.ProductImages.FirstOrDefault(i => i.IsPrimary == true) != null 
+                    ? p.ProductImages.FirstOrDefault(i => i.IsPrimary == true)!.ImageUrl 
+                    : (p.ProductImages.FirstOrDefault() != null ? p.ProductImages.FirstOrDefault()!.ImageUrl : "")
+            })
+            .ToListAsync();
+
+        return new JsonResult(suggestions);
     }
 }
 

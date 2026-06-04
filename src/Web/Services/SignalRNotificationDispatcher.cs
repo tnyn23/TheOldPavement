@@ -36,4 +36,22 @@ public class SignalRNotificationDispatcher : INotificationDispatcher
             _logger.LogError(ex, "Failed to push SignalR notification to user {UserId}", userId);
         }
     }
+
+    public async Task NotifyAdminNewOrderAsync(string orderNumber, decimal totalAmount)
+    {
+        try
+        {
+            await _hubContext.Clients.Group("Admins").SendAsync("ReceiveAdminNotification", new
+            {
+                type = "new_order",
+                orderNumber = orderNumber,
+                totalAmount = totalAmount,
+                createdAt = DateTime.Now
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to push SignalR notification to admins");
+        }
+    }
 }
