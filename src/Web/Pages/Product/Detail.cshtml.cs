@@ -338,6 +338,16 @@ public class DetailModel : PageModel
 
         TempData["SuccessMessage"] = $"Đã thêm {Quantity} sản phẩm vào giỏ hàng thành công!";
 
+        // Redirect back to referer if it comes from the same host (e.g. Shop catalog with paging/filters)
+        var referer = Request.Headers["Referer"].ToString();
+        if (!string.IsNullOrEmpty(referer) && Uri.TryCreate(referer, UriKind.Absolute, out var refererUri))
+        {
+            if (refererUri.Host.Equals(Request.Host.Host, StringComparison.OrdinalIgnoreCase))
+            {
+                return Redirect(referer);
+            }
+        }
+
         return RedirectToPage(new { slug });
     }
 

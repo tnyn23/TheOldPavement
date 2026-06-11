@@ -381,13 +381,13 @@ public class DashboardModel : PageModel
                 product.Status = status;
                 product.Description = description;
                 product.IsOnSale = isOnSale;
-                product.DiscountPercentage = discountPercentage;
-                product.OriginalPrice = originalPrice;
+                product.DiscountPercentage = isOnSale ? discountPercentage : null;
+                product.OriginalPrice = isOnSale ? originalPrice : null;
                 product.IsCollab = isCollab;
-                product.CollabPartner = collabPartner;
+                product.CollabPartner = isCollab ? collabPartner : null;
                 product.IsFeatured = isFeatured;
                 product.IsLimitedEdition = isLimitedEdition;
-                product.LimitedQuantity = limitedQuantity;
+                product.LimitedQuantity = isLimitedEdition ? limitedQuantity : null;
                 product.UpdatedAt = DateTime.Now;
 
                 for (int i = 0; i < 3; i++)
@@ -472,9 +472,15 @@ public class DashboardModel : PageModel
             var product = new Domain.Models.Product
             {
                 Name = name, Slug = slug, Price = price, Category = category, Status = status,
-                Description = description, IsOnSale = isOnSale, DiscountPercentage = discountPercentage,
-                OriginalPrice = originalPrice, IsCollab = isCollab, CollabPartner = collabPartner,
-                IsFeatured = isFeatured, IsLimitedEdition = isLimitedEdition, LimitedQuantity = limitedQuantity,
+                Description = description, 
+                IsOnSale = isOnSale, 
+                DiscountPercentage = isOnSale ? discountPercentage : null,
+                OriginalPrice = isOnSale ? originalPrice : null, 
+                IsCollab = isCollab, 
+                CollabPartner = isCollab ? collabPartner : null,
+                IsFeatured = isFeatured, 
+                IsLimitedEdition = isLimitedEdition, 
+                LimitedQuantity = isLimitedEdition ? limitedQuantity : null,
                 CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now
             };
 

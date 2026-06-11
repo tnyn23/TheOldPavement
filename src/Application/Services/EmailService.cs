@@ -128,8 +128,8 @@ public class EmailService : IEmailService
         var paymentMethodText = order.PaymentMethod?.ToLower() switch
         {
             "cod"  => "Thanh toán khi nhận hàng (COD)",
-            "momo" => "Ví điện tử MoMo — 0965481905 (Nguyễn Thế Hoàng Tùng)",
-            "bank" => "Chuyển khoản MBBank — 0965481905 (Nguyen The Hoang Tung)",
+            "momo" => "Ví điện tử MoMo — 0965481905 ",
+            "bank" => "Chuyển khoản MBBank — 0965481905 ",
             _      => "Thanh toán khi nhận hàng (COD)"
         };
         var fullAddress = $"{address.Address}, {address.Ward}, {address.District}, {address.City}".Replace(", ,", ",").Trim(',', ' ');

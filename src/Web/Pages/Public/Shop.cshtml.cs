@@ -19,7 +19,7 @@ public class ShopModel : PageModel
     public int TotalPages { get; set; }
     public const int PageSize = 12;
 
-    [BindProperty(Name = "Page", SupportsGet = true)]
+    [BindProperty(Name = "pg", SupportsGet = true)]
     public int PageNumber { get; set; } = 1;
 
     [BindProperty(SupportsGet = true)]

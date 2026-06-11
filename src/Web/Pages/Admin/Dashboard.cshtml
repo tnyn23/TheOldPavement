@@ -751,13 +751,13 @@
                                                     data-status="@p.Status"
                                                     data-description="@(p.Description ?? "")"
                                                     data-onsale="@(p.IsOnSale == true ? "true" : "false")"
-                                                    data-discount="@(p.DiscountPercentage ?? 0)"
-                                                    data-originalprice="@(p.OriginalPrice ?? 0)"
+                                                    data-discount="@(p.DiscountPercentage?.ToString() ?? "")"
+                                                    data-originalprice="@(((int?)p.OriginalPrice)?.ToString() ?? "")"
                                                     data-collab="@(p.IsCollab == true ? "true" : "false")"
                                                     data-collabpartner="@(p.CollabPartner ?? "")"
                                                     data-featured="@(p.IsFeatured == true ? "true" : "false")"
                                                     data-limited="@(p.IsLimitedEdition == true ? "true" : "false")"
-                                                    data-limitedqty="@(p.LimitedQuantity ?? 0)"
+                                                    data-limitedqty="@(p.LimitedQuantity?.ToString() ?? "")"
                                                     data-images="@imgJson"
                                                     data-sizes="@sizesJson">
                                                     <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
