@@ -6,6 +6,17 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/product-card.css" asp-append-version="true" />
+    @{
+        // First hero image URL — preloaded to eliminate LCP delay
+        var heroPreloadUrl = "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1280&q=75";
+    }
+    <!-- Preload above-the-fold hero image (LCP optimization) -->
+    <link rel="preload" as="image"
+          href="@heroPreloadUrl"
+          imagesrcset="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=768&q=75 768w,
+                       https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1280&q=75 1280w,
+                       https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1920&q=70 1920w"
+          imagesizes="100vw" />
     <style>
         /* ── Hero Slideshow ── */
         .hp-slide { position:absolute; inset:0; opacity:0; transition:opacity 1.2s ease; }
@@ -29,15 +40,24 @@
 <section class="relative overflow-hidden bg-black" style="height:min(680px,90vh)">
     @{
         var heroSlides = new[] {
-            new { Img="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1920&q=80",
-                  Tag="SS 2026 Collection", Head="36 Phố Phường", Sub="Streetwear đậm chất phố cổ Hà Nội",
-                  Href="/Shop", Cta="Shop Now" },
-            new { Img="https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&fit=crop&w=1920&q=80",
-                  Tag="Official Collab 2026", Head="Rolling Stones × OP", Sub="Bộ sưu tập hợp tác giới hạn toàn cầu",
-                  Href="/rolling-stones", Cta="Xem Collab" },
-            new { Img="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1920&q=80",
-                  Tag="Outlet Clearance", Head="Up To 40% Off", Sub="Sản phẩm cuối mùa — số lượng có hạn",
-                  Href="/outlet", Cta="Xem Outlet" },
+            new { 
+                Img768 ="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=768&q=75",
+                Img1280="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1280&q=75",
+                Img1920="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1920&q=70",
+                Tag="SS 2026 Collection", Head="36 Phố Phường", Sub="Streetwear đậm chất phố cổ Hà Nội",
+                Href="/Shop", Cta="Shop Now" },
+            new { 
+                Img768 ="https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&fit=crop&w=768&q=75",
+                Img1280="https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&fit=crop&w=1280&q=75",
+                Img1920="https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&fit=crop&w=1920&q=70",
+                Tag="Official Collab 2026", Head="Rolling Stones × OP", Sub="Bộ sưu tập hợp tác giới hạn toàn cầu",
+                Href="/rolling-stones", Cta="Xem Collab" },
+            new { 
+                Img768 ="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=768&q=75",
+                Img1280="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1280&q=75",
+                Img1920="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1920&q=70",
+                Tag="Outlet Clearance", Head="Up To 40% Off", Sub="Sản phẩm cuối mùa — số lượng có hạn",
+                Href="/outlet", Cta="Xem Outlet" },
         };
     }
 
@@ -45,7 +65,23 @@
     {
         var s = heroSlides[si];
         <div class="hp-slide @(si == 0 ? "active" : "")" data-slide="@si">
-            <img src="@s.Img" alt="@s.Head" loading="@(si == 0 ? "eager" : "lazy")" />
+            @if (si == 0)
+            {
+                // First slide: eager + srcset for responsive loading
+                <img src="@s.Img1280" alt="@s.Head"
+                     srcset="@s.Img768 768w, @s.Img1280 1280w, @s.Img1920 1920w"
+                     sizes="100vw"
+                     loading="eager"
+                     fetchpriority="high" />
+            }
+            else
+            {
+                // Other slides: lazy load
+                <img src="@s.Img1280" alt="@s.Head"
+                     srcset="@s.Img768 768w, @s.Img1280 1280w, @s.Img1920 1920w"
+                     sizes="100vw"
+                     loading="lazy" />
+            }
             <div class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent"></div>
         </div>
     }
@@ -125,9 +161,9 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
         @{
             var cats = new[] {
-                new { Label="Áo Thun", Value="Tee",         Img="https://images.unsplash.com/photo-1662103627854-ae7551d1eddb?w=600&q=80" },
+                new { Label="Áo Thun", Value="Tee",         Img="https://images.unsplash.com/photo-1662103627854-ae7551d1eddb?auto=format&fit=crop&w=480&q=75" },
                 new { Label="Hoodie",  Value="Hoodie",      Img="/images/products/hoodie-banner.png" },
-                new { Label="Quần",    Value="Pants",       Img="https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&q=80" },
+                new { Label="Quần",    Value="Pants",       Img="https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=480&q=75" },
                 new { Label="Phụ kiện",Value="Accessories", Img="/images/products/tag-banner.png" },
             };
         }
@@ -209,8 +245,12 @@
                 </a>
             </div>
             <div class="relative aspect-[4/5] overflow-hidden rounded-2xl">
-                <img src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
-                     alt="Hanoi Street" class="w-full h-full object-cover opacity-80 rounded-2xl" loading="lazy" />
+                <img src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=600&q=75"
+                     alt="Hanoi Street" class="w-full h-full object-cover opacity-80 rounded-2xl" loading="lazy"
+                     srcset="https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=400&q=75 400w,
+                             https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=600&q=75 600w,
+                             https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=70 800w"
+                     sizes="(max-width: 768px) 100vw, 50vw" />
                 <div class="absolute bottom-6 left-6 bg-black/80 px-4 py-3 border border-white/20 rounded-xl">
                     <p class="text-[9px] font-black tracking-[0.2em] uppercase text-white/60">Phố Cổ Hà Nội</p>
                     <p class="text-sm font-black text-white mt-0.5">36 Phố Phường</p>

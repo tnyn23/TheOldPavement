@@ -6,8 +6,33 @@ using Application.Services;
 using Domain.Interfaces;
 using Infrastructure.Context;
 using Infrastructure.Repositories;
+using Microsoft.AspNetCore.ResponseCompression;
+using System.IO.Compression;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ── Response Compression (Brotli + Gzip) ─────────────────────────────────────
+// Reduces HTML/CSS/JS transfer size by ~60-80% on Railway (no CDN)
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
+    {
+        "text/html",
+        "text/css",
+        "application/javascript",
+        "application/json",
+        "image/svg+xml",
+        "font/woff2",
+    });
+});
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+    options.Level = CompressionLevel.Fastest);
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+    options.Level = CompressionLevel.Fastest);
+
 
 // Add DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -210,13 +235,25 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// ── Enable compression FIRST (before static files) ───────────────────────────
+app.UseResponseCompression();
+
 app.UseHttpsRedirection();
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
     {
-        // Cache static files for 30 days (2592000 seconds)
-        ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=2592000");
+        var headers = ctx.Context.Response.Headers;
+        // Aggressive caching for versioned assets (CSS/JS with ?v= hash)
+        if (ctx.Context.Request.Query.ContainsKey("v"))
+        {
+            headers.Append("Cache-Control", "public, max-age=31536000, immutable");
+        }
+        else
+        {
+            // Regular static files: 30 days
+            headers.Append("Cache-Control", "public, max-age=2592000");
+        }
     }
 });
 

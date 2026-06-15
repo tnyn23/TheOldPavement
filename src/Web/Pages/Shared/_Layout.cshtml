@@ -124,17 +124,30 @@
             100% { background-position: -200% 0; }
         }
     </style>
+    <!-- DNS Prefetch for external domains -->
+    <link rel="dns-prefetch" href="//images.unsplash.com" />
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+    <link rel="dns-prefetch" href="//unpkg.com" />
+
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/images/logo.png" as="image" />
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" as="style" />
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS — pinned version for consistent caching -->
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+
     <!-- Custom Theme CSS -->
     <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
     @RenderSection("Styles", required: false)
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Lucide Icons — pinned version for CDN cache hit -->
+    <script src="https://unpkg.com/lucide@0.408.0/dist/umd/lucide.min.js" defer></script>
 </head>
 <body>
 
@@ -177,8 +190,13 @@
         <partial name="_Footer" />
     </div>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script>lucide.createIcons();</script>
+    <script src="~/lib/jquery/dist/jquery.min.js" defer></script>
+    <!-- Initialize Lucide after defer scripts load -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.lucide) lucide.createIcons();
+    });
+    </script>
 
     <!-- ══ Intro Script ══ -->
     <script>

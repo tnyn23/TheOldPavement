@@ -2,16 +2,26 @@
 @model Domain.Models.Product
 
 @functions {
+    // Returns URL with specified width/quality (Unsplash-aware)
     static string OptimizeImageUrl(string? url, int width = 400, int quality = 70)
     {
         if (string.IsNullOrWhiteSpace(url)) return "";
-        // Optimize Unsplash URLs to smaller size
         if (url.Contains("unsplash.com"))
         {
             var uri = url.Split('?')[0];
             return $"{uri}?auto=format&fit=crop&w={width}&q={quality}";
         }
         return url;
+    }
+
+    // Returns srcset string for Unsplash images
+    static string? BuildSrcset(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url) || !url.Contains("unsplash.com")) return null;
+        var base_ = url.Split('?')[0];
+        return $"{base_}?auto=format&fit=crop&w=300&q=70 300w, "
+             + $"{base_}?auto=format&fit=crop&w=400&q=70 400w, "
+             + $"{base_}?auto=format&fit=crop&w=600&q=65 600w";
     }
 }
 
@@ -42,8 +52,24 @@
 
 <article class="product-card-card product-card-clickable group" data-product-url="/Product/@Model.Slug" tabindex="0">
     <div class="product-card-media">
-        <img src="@mainImage" alt="@Model.Name" class="product-card-image product-card-image-main" loading="lazy" />
-        <img src="@hoverImage" alt="@Model.Name alternate view" class="product-card-image product-card-image-back" loading="lazy" />
+        @{
+            var mainSrcset  = BuildSrcset(Model.ProductImages?.ElementAtOrDefault(0)?.ImageUrl);
+            var hoverSrcset = BuildSrcset(Model.ProductImages?.ElementAtOrDefault(1)?.ImageUrl);
+        }
+        <img src="@mainImage"
+             @(mainSrcset != null ? $"srcset=\"{mainSrcset}\" sizes=\"(max-width:640px) 50vw, 25vw\"" : "")
+             alt="@Model.Name"
+             class="product-card-image product-card-image-main"
+             loading="lazy"
+             decoding="async"
+             width="400" height="500" />
+        <img src="@hoverImage"
+             @(hoverSrcset != null ? $"srcset=\"{hoverSrcset}\" sizes=\"(max-width:640px) 50vw, 25vw\"" : "")
+             alt="@Model.Name alternate view"
+             class="product-card-image product-card-image-back"
+             loading="lazy"
+             decoding="async"
+             width="400" height="500" />
 
         <!-- Premium Badges Stack -->
         <div class="product-card-badges">
