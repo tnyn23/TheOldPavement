@@ -11,6 +11,7 @@ public interface IProductService
     Task<int> CreateProductAsync(CreateProductDTO dto);
     Task UpdateProductAsync(int id, UpdateProductDTO dto);
     Task DeleteProductAsync(int id);
+    Task<SizeRecommendationResponseDto> GetSizeRecommendationAsync(SizeRecommendationRequestDto request);
 }
 
 public interface IOrderService

@@ -11,11 +11,13 @@ namespace Application.Services;
 public class ProductService : IProductService
 {
     private readonly IProductRepository _productRepository;
+    private readonly IRepository<SizeChart> _sizeChartRepository;
     private readonly IMapper _mapper;
 
-    public ProductService(IProductRepository productRepository, IMapper mapper)
+    public ProductService(IProductRepository productRepository, IRepository<SizeChart> sizeChartRepository, IMapper mapper)
     {
         _productRepository = productRepository;
+        _sizeChartRepository = sizeChartRepository;
         _mapper = mapper;
     }
 
@@ -86,6 +88,56 @@ public class ProductService : IProductService
 
         await _productRepository.DeleteAsync(product);
         await _productRepository.SaveChangesAsync();
+    }
+
+    public async Task<SizeRecommendationResponseDto> GetSizeRecommendationAsync(SizeRecommendationRequestDto request)
+    {
+        var sizeCharts = await _sizeChartRepository.FindAsync(s => s.ProductCategory == request.ProductCategory);
+
+        if (!sizeCharts.Any())
+        {
+            return new SizeRecommendationResponseDto { RecommendedSize = "", Message = "Không tìm thấy dữ liệu size cho danh mục này." };
+        }
+
+        var exactMatch = sizeCharts.FirstOrDefault(s => 
+            s.MinHeight <= request.Height && s.MaxHeight >= request.Height &&
+            s.MinWeight <= request.Weight && s.MaxWeight >= request.Weight);
+
+        var bestMatch = exactMatch;
+
+        if (bestMatch == null)
+        {
+            bestMatch = sizeCharts
+                .OrderBy(s => Math.Abs((s.MinWeight ?? 0 + s.MaxWeight ?? 0) / 2.0 - request.Weight))
+                .ThenBy(s => Math.Abs((s.MinHeight ?? 0 + s.MaxHeight ?? 0) / 2.0 - request.Height))
+                .FirstOrDefault();
+        }
+
+        if (bestMatch == null)
+        {
+            return new SizeRecommendationResponseDto { RecommendedSize = "", Message = "Không thể tìm size phù hợp." };
+        }
+
+        var sortedSizes = sizeCharts.OrderBy(s => s.MinWeight ?? 0).ToList();
+        int currentIndex = sortedSizes.IndexOf(bestMatch);
+        int targetIndex = currentIndex;
+
+        if (request.FitPreference == "Oversized")
+        {
+            targetIndex = Math.Min(currentIndex + 1, sortedSizes.Count - 1);
+        }
+        else if (request.FitPreference == "Fitted")
+        {
+            targetIndex = Math.Max(currentIndex - 1, 0);
+        }
+
+        var finalSize = sortedSizes[targetIndex];
+
+        return new SizeRecommendationResponseDto
+        {
+            RecommendedSize = finalSize.Size,
+            Message = $"Size {finalSize.Size} phù hợp với sở thích mặc {request.FitPreference} của bạn."
+        };
     }
 }
 

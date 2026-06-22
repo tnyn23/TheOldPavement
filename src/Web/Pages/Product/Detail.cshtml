@@ -406,8 +406,16 @@
                     <label class="block text-xs font-bold uppercase mb-1.5">Cân nặng: <span id="weight-val" class="font-mono font-normal">65</span> kg</label>
                     <input type="range" id="size-weight" min="40" max="120" value="65" oninput="calculateSizeRecommendation()" class="w-full accent-black" />
                 </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1.5">Sở thích mặc:</label>
+                    <select id="fit-preference" onchange="calculateSizeRecommendation()" class="w-full text-sm font-bold bg-white border border-gray-300 rounded-xl px-2 py-1 focus:outline-none focus:border-black">
+                        <option value="Fitted">Fitted (Vừa vặn)</option>
+                        <option value="Regular" selected>Regular (Thoải mái)</option>
+                        <option value="Oversized">Oversized (Rộng rãi)</option>
+                    </select>
+                </div>
             </div>
-            <div id="size-recommendation-result" class="hidden text-xs bg-black text-white px-3 py-2.5 font-bold uppercase tracking-wider text-center rounded-xl">
+            <div id="size-recommendation-result" class="hidden text-xs bg-black text-white px-3 py-2.5 font-bold uppercase tracking-wider text-center rounded-xl mt-4">
                 Size gợi ý cho bạn: L (Oversized Fit)
             </div>
         </div>
@@ -735,44 +743,52 @@
     });
 
     // AI Size guide calculation
-    function calculateSizeRecommendation() {
+    async function calculateSizeRecommendation() {
         const height = parseInt(document.getElementById('size-height').value);
         const weight = parseInt(document.getElementById('size-weight').value);
+        const fitPref = document.getElementById('fit-preference').value;
         
         document.getElementById('height-val').innerText = height;
         document.getElementById('weight-val').innerText = weight;
         
-        let recommendedSize = 'S';
-        
-        if (height > 182 || weight > 85) {
-            recommendedSize = 'XXL';
-        } else if (height > 175 || weight > 75) {
-            recommendedSize = 'XL';
-        } else if (height > 168 || weight > 65) {
-            recommendedSize = 'L';
-        } else if (height > 160 || weight > 55) {
-            recommendedSize = 'M';
-        } else {
-            recommendedSize = 'S';
-        }
-        
-        const resultBlock = document.getElementById('size-recommendation-result');
-        resultBlock.innerText = `Size gợi ý cho bạn: ${recommendedSize} (Oversized Fit)`;
-        resultBlock.classList.remove('hidden');
-        
-        const rows = ['S', 'M', 'L', 'XL', 'XXL'];
-        rows.forEach(r => {
-            const rowEl = document.getElementById(`size-row-${r}`);
-            if (rowEl) {
-                if (r === recommendedSize) {
-                    rowEl.className = 'bg-black text-white font-bold transition-all';
-                } else {
-                    rowEl.className = 'transition-all';
+        try {
+            const response = await fetch('/api/products/recommend-size', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    height: height,
+                    weight: weight,
+                    fitPreference: fitPref,
+                    productCategory: 'T-Shirt'
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const recommendedSize = data.recommendedSize;
+                const resultBlock = document.getElementById('size-recommendation-result');
+                
+                resultBlock.innerText = data.message;
+                resultBlock.classList.remove('hidden');
+                
+                if (recommendedSize) {
+                    const rows = ['S', 'M', 'L', 'XL', 'XXL'];
+                    rows.forEach(r => {
+                        const rowEl = document.getElementById(`size-row-${r}`);
+                        if (rowEl) {
+                            if (r === recommendedSize) {
+                                rowEl.className = 'bg-black text-white font-bold transition-all';
+                            } else {
+                                rowEl.className = 'transition-all';
+                            }
+                        }
+                    });
+                    selectSize(recommendedSize);
                 }
             }
-        });
-
-        selectSize(recommendedSize);
+        } catch (error) {
+            console.error('Error fetching size recommendation:', error);
+        }
     }
 </script>
 

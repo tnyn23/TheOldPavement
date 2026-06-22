@@ -19,6 +19,14 @@ public partial class SizeChart
 
     public string? Sleeve { get; set; }
 
+    public int? MinHeight { get; set; }
+
+    public int? MaxHeight { get; set; }
+
+    public int? MinWeight { get; set; }
+
+    public int? MaxWeight { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 }
 
