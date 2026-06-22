@@ -24,6 +24,11 @@ jobs:
     - name: Build and Publish
       run: dotnet publish src/Web/Web.csproj -c Release -o ./publish_output
 
+    - name: Take App Offline
+      run: |
+        echo "<html><body><h1>Site is updating, please wait a minute...</h1></body></html>" > app_offline.htm
+        curl -T app_offline.htm ftp://${{ secrets.FTP_SERVER }}/wwwroot/app_offline.htm --user ${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}
+
     - name: FTP Deploy
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
@@ -32,4 +37,8 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./publish_output/
         server-dir: /wwwroot/
-        dangerous-clean-slate: false # Set to true ONLY if you want FTP to delete files on the server that aren't in your code
+        dangerous-clean-slate: false
+
+    - name: Bring App Online
+      run: |
+        curl -Q "-DELE /wwwroot/app_offline.htm" ftp://${{ secrets.FTP_SERVER }}/ --user ${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}
