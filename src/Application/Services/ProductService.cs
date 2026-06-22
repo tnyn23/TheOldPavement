@@ -139,6 +139,145 @@ public class ProductService : IProductService
             Message = $"Size {finalSize.Size} phù hợp với sở thích mặc {request.FitPreference} của bạn."
         };
     }
+
+    public async Task<byte[]> ExportProductsToExcelAsync()
+    {
+        var products = await _productRepository.GetAllWithDetailsAsync();
+        var records = new List<ProductExcelDto>();
+
+        foreach (var p in products)
+        {
+            if (p.ProductVariants != null && p.ProductVariants.Any())
+            {
+                foreach (var v in p.ProductVariants)
+                {
+                    records.Add(new ProductExcelDto
+                    {
+                        ProductName = p.Name,
+                        Category = p.Category,
+                        Price = p.Price,
+                        OriginalPrice = p.OriginalPrice,
+                        Color = v.Color,
+                        Size = v.Size,
+                        StockQuantity = v.StockQuantity ?? 0
+                    });
+                }
+            }
+            else
+            {
+                // Product has no variants
+                records.Add(new ProductExcelDto
+                {
+                    ProductName = p.Name,
+                    Category = p.Category,
+                    Price = p.Price,
+                    OriginalPrice = p.OriginalPrice,
+                    Color = "",
+                    Size = "",
+                    StockQuantity = 0
+                });
+            }
+        }
+
+        using var memoryStream = new MemoryStream();
+        await MiniExcelLibs.MiniExcel.SaveAsAsync(memoryStream, records);
+        return memoryStream.ToArray();
+    }
+
+    public async Task ImportProductsFromExcelAsync(Stream excelStream)
+    {
+        var records = await MiniExcelLibs.MiniExcel.QueryAsync<ProductExcelDto>(excelStream);
+        
+        // Group by product name
+        var grouped = records.GroupBy(r => r.ProductName?.Trim());
+
+        foreach (var group in grouped)
+        {
+            var productName = group.Key;
+            if (string.IsNullOrEmpty(productName)) continue;
+
+            var firstRow = group.First();
+            var slug = productName.ToLower().Replace(" ", "-").Replace("đ", "d").Replace("á", "a").Replace("à", "a").Replace("ả", "a").Replace("ã", "a").Replace("ạ", "a").Replace("é", "e").Replace("è", "e").Replace("ẻ", "e").Replace("ẽ", "e").Replace("ẹ", "e").Replace("í", "i").Replace("ì", "i").Replace("ỉ", "i").Replace("ĩ", "i").Replace("ị", "i").Replace("ó", "o").Replace("ò", "o").Replace("ỏ", "o").Replace("õ", "o").Replace("ọ", "o").Replace("ú", "u").Replace("ù", "u").Replace("ủ", "u").Replace("ũ", "u").Replace("ụ", "u").Replace("ý", "y").Replace("ỳ", "y").Replace("ỷ", "y").Replace("ỹ", "y").Replace("ỵ", "y").Replace("ă", "a").Replace("â", "a").Replace("ê", "e").Replace("ô", "o").Replace("ơ", "o").Replace("ư", "u");
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\-]", "");
+
+            var product = await _productRepository.GetBySlugAsync(slug);
+            bool isNew = false;
+
+            if (product == null)
+            {
+                // check if exists by name
+                var existingProducts = await _productRepository.SearchProductsAsync(productName);
+                product = existingProducts.FirstOrDefault(p => p.Name.Equals(productName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (product == null)
+            {
+                isNew = true;
+                product = new Product
+                {
+                    Name = productName,
+                    Slug = slug,
+                    Category = firstRow.Category ?? "tee",
+                    Price = firstRow.Price,
+                    OriginalPrice = firstRow.OriginalPrice,
+                    Status = "available",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+            }
+            else
+            {
+                product.Price = firstRow.Price;
+                product.OriginalPrice = firstRow.OriginalPrice;
+                product.Category = firstRow.Category ?? product.Category;
+                product.UpdatedAt = DateTime.UtcNow;
+            }
+
+            if (product.ProductVariants == null)
+                product.ProductVariants = new List<ProductVariant>();
+
+            foreach (var row in group)
+            {
+                // Match existing variant by color and size
+                var colorStr = row.Color?.Trim()?.ToLower() ?? "";
+                var sizeStr = row.Size?.Trim()?.ToUpper() ?? "";
+
+                if (string.IsNullOrEmpty(colorStr) && string.IsNullOrEmpty(sizeStr))
+                    continue; // Skip empty variants
+
+                var existingVariant = product.ProductVariants.FirstOrDefault(v => 
+                    (v.Color?.ToLower() == colorStr || string.IsNullOrEmpty(v.Color) && string.IsNullOrEmpty(colorStr)) &&
+                    (v.Size?.ToUpper() == sizeStr || string.IsNullOrEmpty(v.Size) && string.IsNullOrEmpty(sizeStr)));
+
+                if (existingVariant != null)
+                {
+                    existingVariant.StockQuantity = row.StockQuantity;
+                }
+                else
+                {
+                    product.ProductVariants.Add(new ProductVariant
+                    {
+                        Color = row.Color?.Trim(),
+                        Size = row.Size?.Trim()?.ToUpper(),
+                        StockQuantity = row.StockQuantity,
+                        Sku = $"{slug}-{colorStr}-{sizeStr}".Replace("--", "-").TrimEnd('-'),
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+
+            if (isNew)
+            {
+                await _productRepository.AddAsync(product);
+            }
+            else
+            {
+                await _productRepository.UpdateAsync(product);
+            }
+        }
+
+        await _productRepository.SaveChangesAsync();
+    }
 }
 
 

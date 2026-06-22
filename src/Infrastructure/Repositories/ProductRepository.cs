@@ -46,6 +46,15 @@ public class ProductRepository : Repository<Product>, IProductRepository
             .Include(p => p.ProductVariants)
             .FirstOrDefaultAsync(p => p.Slug == slug);
     }
+
+    public async Task<IEnumerable<Product>> GetAllWithDetailsAsync()
+    {
+        return await _dbSet
+            .Include(p => p.ProductImages)
+            .Include(p => p.ProductVariants)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync();
+    }
 }
 
 

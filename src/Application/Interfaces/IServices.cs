@@ -12,6 +12,8 @@ public interface IProductService
     Task UpdateProductAsync(int id, UpdateProductDTO dto);
     Task DeleteProductAsync(int id);
     Task<SizeRecommendationResponseDto> GetSizeRecommendationAsync(SizeRecommendationRequestDto request);
+    Task<byte[]> ExportProductsToExcelAsync();
+    Task ImportProductsFromExcelAsync(Stream excelStream);
 }
 
 public interface IOrderService

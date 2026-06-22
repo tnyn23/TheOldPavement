@@ -597,10 +597,21 @@
                         <h2 class="text-base font-bold text-gray-900">Sản phẩm</h2>
                         <p class="text-xs text-gray-400 mt-0.5">@Model.TotalProductsCount sản phẩm trong kho</p>
                     </div>
-                    <button onclick="openProductModal()" class="btn btn-primary">
-                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                        Thêm sản phẩm
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="exportProducts()" class="btn btn-secondary flex items-center gap-1.5" title="Tải xuống danh sách sản phẩm">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span class="hidden sm:inline">Xuất Excel</span>
+                        </button>
+                        <button onclick="document.getElementById('import-excel-input').click()" class="btn btn-secondary flex items-center gap-1.5" title="Tải lên danh sách sản phẩm">
+                            <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                            <span class="hidden sm:inline">Nhập Excel</span>
+                        </button>
+                        <input type="file" id="import-excel-input" accept=".xlsx" class="hidden" onchange="importProducts(this)" />
+                        <button onclick="openProductModal()" class="btn btn-primary ml-2">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            Thêm
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Filter bar -->
@@ -1982,6 +1993,48 @@ async function quickDeletePromo(id) {
     const res = await fetch('?handler=DeletePromoCode', { method: 'POST', body: fd });
     if (res.ok) location.reload();
     else alert('Lỗi xóa mã khuyến mãi');
+}
+
+function exportProducts() {
+    window.location.href = '/api/products/export';
+}
+
+async function importProducts(input) {
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    
+    if (!confirm('Bạn có chắc chắn muốn tải lên và cập nhật danh sách sản phẩm từ file này?')) {
+        input.value = '';
+        return;
+    }
+
+    const fd = new FormData();
+    fd.append('file', file);
+    
+    const token = getToken();
+    if(token) fd.append('__RequestVerificationToken', token);
+
+    try {
+        // Show loading state
+        showToast('Đang nhập dữ liệu, vui lòng đợi...', 'success');
+        
+        const res = await fetch('/api/products/import', {
+            method: 'POST',
+            body: fd
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            showToast(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            alert('Lỗi: ' + data.message);
+        }
+    } catch (e) {
+        alert('Lỗi kết nối: ' + e.message);
+    } finally {
+        input.value = '';
+    }
 }
 </script>
 <script>

@@ -8,6 +8,7 @@ public interface IProductRepository : IRepository<Product>
     Task<IEnumerable<Product>> SearchProductsAsync(string keyword);
     Task<IEnumerable<Product>> GetByStatusAsync(string status);
     Task<Product?> GetBySlugAsync(string slug);
+    Task<IEnumerable<Product>> GetAllWithDetailsAsync();
 }
 
 public interface IOrderRepository : IRepository<Order>
