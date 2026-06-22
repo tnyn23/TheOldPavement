@@ -74,8 +74,9 @@ builder.Services.AddHttpClient("MoMo", client =>
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
-// Add Razor Pages
+// Add Razor Pages and Controllers
 builder.Services.AddRazorPages();
+builder.Services.AddControllers();
 
 // Add Cookie Authentication
 builder.Services.AddAuthentication("Cookies")
@@ -278,6 +279,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+app.MapControllers();
 app.MapHub<Web.Hubs.NotificationHub>("/notificationHub");
 
 app.Run();
