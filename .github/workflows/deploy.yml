@@ -28,6 +28,8 @@ jobs:
       run: |
         echo "<html><body><h1>Site is updating, please wait a minute...</h1></body></html>" > app_offline.htm
         curl -T app_offline.htm ftp://${{ secrets.FTP_SERVER }}/wwwroot/app_offline.htm --user ${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}
+        # Wait 15 seconds to ensure IIS has fully stopped the app pool and released all .dll file locks
+        sleep 15
 
     - name: FTP Deploy
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
