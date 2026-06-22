@@ -15,7 +15,7 @@ publish/
 *.bak
 
 # Sensitive configuration files
-appsettings.Production.json
+# appsettings.Production.json  (CẦN ĐẨY LÊN SERVER)
 appsettings.Development.json
 
 # Environment variables
