@@ -33,8 +33,6 @@ appsettings.Development.json
 .DS_Store
 Thumbs.db
 
-# Internal planning / documentation files (not for public repo)
-Kich_Ban_Thuyet_Trinh.md
-feature.md
-ui-system.md
-PROJECT_OVERVIEW.md
+# Markdown files (ignore all except README)
+*.md
+!README.md
