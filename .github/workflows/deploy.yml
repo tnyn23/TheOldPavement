@@ -22,7 +22,7 @@ jobs:
       run: dotnet restore TheOldPavement.sln
 
     - name: Build and Publish
-      run: dotnet publish TheOldPavement.sln -c Release -o ./publish_output
+      run: dotnet publish src/Web/Web.csproj -c Release -o ./publish_output
 
     - name: FTP Deploy
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
