@@ -194,9 +194,10 @@
     @if (Model.NewArrivals.Any())
     {
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-12">
+            @{ int newArrivalIndex = 0; }
             @foreach (var p in Model.NewArrivals)
             {
-                @await Html.PartialAsync("_ProductCard", p)
+                @await Html.PartialAsync("_ProductCard", p, new ViewDataDictionary(ViewData) { { "ItemIndex", newArrivalIndex++ } })
             }
         </div>
     }
@@ -274,9 +275,10 @@
             <a href="/sale" class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors">Xem tất cả →</a>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-12">
+            @{ int saleIndex = 0; }
             @foreach (var p in Model.SaleProducts)
             {
-                @await Html.PartialAsync("_ProductCard", p)
+                @await Html.PartialAsync("_ProductCard", p, new ViewDataDictionary(ViewData) { { "ItemIndex", saleIndex++ } })
             }
         </div>
     </section>
@@ -321,9 +323,10 @@
             <a href="/Shop" class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors">Xem tất cả →</a>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-12">
+            @{ int featuredIndex = 0; }
             @foreach (var p in Model.FeaturedProducts)
             {
-                @await Html.PartialAsync("_ProductCard", p)
+                @await Html.PartialAsync("_ProductCard", p, new ViewDataDictionary(ViewData) { { "ItemIndex", featuredIndex++ } })
             }
         </div>
     </section>

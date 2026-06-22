@@ -9,7 +9,7 @@
         if (url.Contains("unsplash.com"))
         {
             var uri = url.Split('?')[0];
-            return $"{uri}?auto=format&fit=crop&w={width}&q={quality}";
+            return $"{uri}?auto=format&fit=crop&w={width}&q={quality}&fm=webp";
         }
         return url;
     }
@@ -19,9 +19,9 @@
     {
         if (string.IsNullOrWhiteSpace(url) || !url.Contains("unsplash.com")) return null;
         var base_ = url.Split('?')[0];
-        return $"{base_}?auto=format&fit=crop&w=300&q=70 300w, "
-             + $"{base_}?auto=format&fit=crop&w=400&q=70 400w, "
-             + $"{base_}?auto=format&fit=crop&w=600&q=65 600w";
+        return $"{base_}?auto=format&fit=crop&w=300&q=70&fm=webp 300w, "
+             + $"{base_}?auto=format&fit=crop&w=400&q=70&fm=webp 400w, "
+             + $"{base_}?auto=format&fit=crop&w=600&q=65&fm=webp 600w";
     }
 }
 
@@ -48,25 +48,36 @@
                                : isCollab ? "bg-black text-white border border-white/20"
                                : isNew    ? "bg-gray-900 text-white"
                                : "";
+                               
+    // Determine priority loading for above-the-fold content
+    var itemIndex = ViewData["ItemIndex"] as int? ?? 999;
+    var isPriority = itemIndex < 4;
 }
 
 <article class="product-card-card product-card-clickable group" data-product-url="/Product/@Model.Slug" tabindex="0">
-    <div class="product-card-media">
+    <div class="product-card-media bg-gray-200 animate-pulse overflow-hidden relative">
         @{
             var mainSrcset  = BuildSrcset(Model.ProductImages?.ElementAtOrDefault(0)?.ImageUrl);
             var hoverSrcset = BuildSrcset(Model.ProductImages?.ElementAtOrDefault(1)?.ImageUrl);
+            
+            var loadingAttr = isPriority ? "eager" : "lazy";
+            var fetchPriorityAttr = isPriority ? "fetchpriority=\"high\"" : "";
+            var decodingAttr = isPriority ? "sync" : "async";
         }
         <img src="@mainImage"
-             @(mainSrcset != null ? $"srcset=\"{mainSrcset}\" sizes=\"(max-width:640px) 50vw, 25vw\"" : "")
+             @(mainSrcset != null ? Html.Raw($"srcset=\"{mainSrcset}\" sizes=\"(max-width:640px) 50vw, 25vw\"") : "")
              alt="@Model.Name"
-             class="product-card-image product-card-image-main"
-             loading="lazy"
-             decoding="async"
+             class="product-card-image product-card-image-main opacity-0 transition-opacity duration-700 ease-in-out"
+             onload="this.classList.remove('opacity-0'); this.classList.remove('animate-pulse'); this.parentElement.classList.remove('animate-pulse'); this.classList.add('opacity-100');"
+             loading="@loadingAttr"
+             @Html.Raw(fetchPriorityAttr)
+             decoding="@decodingAttr"
              width="400" height="500" />
         <img src="@hoverImage"
-             @(hoverSrcset != null ? $"srcset=\"{hoverSrcset}\" sizes=\"(max-width:640px) 50vw, 25vw\"" : "")
+             @(hoverSrcset != null ? Html.Raw($"srcset=\"{hoverSrcset}\" sizes=\"(max-width:640px) 50vw, 25vw\"") : "")
              alt="@Model.Name alternate view"
-             class="product-card-image product-card-image-back"
+             class="product-card-image product-card-image-back opacity-0 transition-opacity duration-700 ease-in-out"
+             onload="this.classList.remove('opacity-0'); this.classList.add('opacity-100');"
              loading="lazy"
              decoding="async"
              width="400" height="500" />
