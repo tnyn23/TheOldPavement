@@ -104,6 +104,18 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<TheOldPavementDbContext>();
+    
+    // Auto-apply all pending EF Core Migrations (like the new SizeChart columns)
+    try 
+    {
+        context.Database.Migrate();
+        Console.WriteLine("EF Core Migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"EF Core Migration Error: {ex.Message}");
+    }
+
     try
     {
         context.Database.ExecuteSqlRaw("ALTER TABLE orders MODIFY COLUMN payment_method VARCHAR(50);");
