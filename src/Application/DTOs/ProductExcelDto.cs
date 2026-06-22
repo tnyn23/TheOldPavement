@@ -24,4 +24,7 @@ public class ProductExcelDto
 
     [ExcelColumn(Name = "Tồn Kho", Width = 15)]
     public int StockQuantity { get; set; }
+
+    [ExcelColumn(Name = "Link Ảnh", Width = 40)]
+    public string? ImageUrl { get; set; }
 }

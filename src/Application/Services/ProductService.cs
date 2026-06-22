@@ -159,7 +159,9 @@ public class ProductService : IProductService
                         OriginalPrice = p.OriginalPrice,
                         Color = v.Color,
                         Size = v.Size,
-                        StockQuantity = v.StockQuantity ?? 0
+                        StockQuantity = v.StockQuantity ?? 0,
+                        ImageUrl = p.ProductImages?.FirstOrDefault(i => i.IsPrimary == true)?.ImageUrl 
+                                ?? p.ProductImages?.FirstOrDefault()?.ImageUrl
                     });
                 }
             }
@@ -174,7 +176,9 @@ public class ProductService : IProductService
                     OriginalPrice = p.OriginalPrice,
                     Color = "",
                     Size = "",
-                    StockQuantity = 0
+                    StockQuantity = 0,
+                    ImageUrl = p.ProductImages?.FirstOrDefault(i => i.IsPrimary == true)?.ImageUrl 
+                            ?? p.ProductImages?.FirstOrDefault()?.ImageUrl
                 });
             }
         }
@@ -235,6 +239,22 @@ public class ProductService : IProductService
 
             if (product.ProductVariants == null)
                 product.ProductVariants = new List<ProductVariant>();
+            if (product.ProductImages == null)
+                product.ProductImages = new List<ProductImage>();
+
+            if (!string.IsNullOrEmpty(firstRow.ImageUrl))
+            {
+                var imgUrl = firstRow.ImageUrl.Trim();
+                if (!product.ProductImages.Any(i => i.ImageUrl == imgUrl))
+                {
+                    product.ProductImages.Add(new ProductImage
+                    {
+                        ImageUrl = imgUrl,
+                        IsPrimary = !product.ProductImages.Any(),
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+            }
 
             foreach (var row in group)
             {
