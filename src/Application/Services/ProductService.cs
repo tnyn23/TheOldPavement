@@ -140,13 +140,39 @@ public class ProductService : IProductService
         };
     }
 
-    public async Task<byte[]> ExportProductsToExcelAsync()
+    private static readonly HttpClient _httpClient = new HttpClient();
+
+    public async Task<byte[]> ExportProductsToExcelAsync(string webRootPath)
     {
         var products = await _productRepository.GetAllWithDetailsAsync();
         var records = new List<ProductExcelDto>();
 
         foreach (var p in products)
         {
+            byte[]? imgBytes = null;
+            var primaryImageUrl = p.ProductImages?.FirstOrDefault(i => i.IsPrimary == true)?.ImageUrl 
+                               ?? p.ProductImages?.FirstOrDefault()?.ImageUrl;
+            
+            if (!string.IsNullOrEmpty(primaryImageUrl))
+            {
+                try
+                {
+                    if (primaryImageUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    {
+                        imgBytes = await _httpClient.GetByteArrayAsync(primaryImageUrl);
+                    }
+                    else if (primaryImageUrl.StartsWith("/images/products/"))
+                    {
+                        var filePath = Path.Combine(webRootPath, primaryImageUrl.TrimStart('/'));
+                        if (File.Exists(filePath))
+                        {
+                            imgBytes = await File.ReadAllBytesAsync(filePath);
+                        }
+                    }
+                }
+                catch { } // Ignore image download errors
+            }
+
             if (p.ProductVariants != null && p.ProductVariants.Any())
             {
                 foreach (var v in p.ProductVariants)
@@ -160,8 +186,7 @@ public class ProductService : IProductService
                         Color = v.Color,
                         Size = v.Size,
                         StockQuantity = v.StockQuantity ?? 0,
-                        ImageUrl = p.ProductImages?.FirstOrDefault(i => i.IsPrimary == true)?.ImageUrl 
-                                ?? p.ProductImages?.FirstOrDefault()?.ImageUrl
+                        ImageBytes = imgBytes
                     });
                 }
             }
@@ -177,8 +202,7 @@ public class ProductService : IProductService
                     Color = "",
                     Size = "",
                     StockQuantity = 0,
-                    ImageUrl = p.ProductImages?.FirstOrDefault(i => i.IsPrimary == true)?.ImageUrl 
-                            ?? p.ProductImages?.FirstOrDefault()?.ImageUrl
+                    ImageBytes = imgBytes
                 });
             }
         }
@@ -188,7 +212,7 @@ public class ProductService : IProductService
         return memoryStream.ToArray();
     }
 
-    public async Task ImportProductsFromExcelAsync(Stream excelStream)
+    public async Task ImportProductsFromExcelAsync(Stream excelStream, string webRootPath)
     {
         var records = await MiniExcelLibs.MiniExcel.QueryAsync<ProductExcelDto>(excelStream);
         
@@ -242,18 +266,32 @@ public class ProductService : IProductService
             if (product.ProductImages == null)
                 product.ProductImages = new List<ProductImage>();
 
-            if (!string.IsNullOrEmpty(firstRow.ImageUrl))
+            if (firstRow.ImageBytes != null && firstRow.ImageBytes.Length > 0)
             {
-                var imgUrl = firstRow.ImageUrl.Trim();
-                if (!product.ProductImages.Any(i => i.ImageUrl == imgUrl))
+                try
                 {
+                    var uploadDir = Path.Combine(webRootPath, "images", "products");
+                    if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
+
+                    var fileName = Guid.NewGuid().ToString() + ".png"; // MiniExcel usually gives PNG bytes or JPEG
+                    var filePath = Path.Combine(uploadDir, fileName);
+                    await File.WriteAllBytesAsync(filePath, firstRow.ImageBytes);
+
+                    var imgUrl = "/images/products/" + fileName;
+
+                    foreach (var img in product.ProductImages)
+                    {
+                        img.IsPrimary = false;
+                    }
+
                     product.ProductImages.Add(new ProductImage
                     {
                         ImageUrl = imgUrl,
-                        IsPrimary = !product.ProductImages.Any(),
+                        IsPrimary = true,
                         CreatedAt = DateTime.UtcNow
                     });
                 }
+                catch { } // ignore save errors
             }
 
             foreach (var row in group)

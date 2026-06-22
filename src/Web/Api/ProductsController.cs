@@ -9,10 +9,12 @@ namespace Web.Api;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
+    private readonly IWebHostEnvironment _environment;
 
-    public ProductsController(IProductService productService)
+    public ProductsController(IProductService productService, IWebHostEnvironment environment)
     {
         _productService = productService;
+        _environment = environment;
     }
 
     [HttpPost("recommend-size")]
@@ -32,7 +34,7 @@ public class ProductsController : ControllerBase
     {
         try
         {
-            var fileContents = await _productService.ExportProductsToExcelAsync();
+            var fileContents = await _productService.ExportProductsToExcelAsync(_environment.WebRootPath);
             return File(fileContents, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Products.xlsx");
         }
         catch (Exception ex)
@@ -57,7 +59,7 @@ public class ProductsController : ControllerBase
         try
         {
             using var stream = file.OpenReadStream();
-            await _productService.ImportProductsFromExcelAsync(stream);
+            await _productService.ImportProductsFromExcelAsync(stream, _environment.WebRootPath);
             return Ok(new { message = "Nhập dữ liệu thành công!" });
         }
         catch (Exception ex)
