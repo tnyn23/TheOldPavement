@@ -161,6 +161,50 @@ public class DashboardModel : PageModel
             await _context.SaveChangesAsync();
         }
 
+        // Seed Users if none exist to avoid FK errors
+        if (!_context.Users.Any())
+        {
+            var u1 = new Domain.Models.User { FullName = "Nguyễn Văn A", Email = "nguyenvana@gmail.com", PasswordHash = "hashed", Role = "customer", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now };
+            var u2 = new Domain.Models.User { FullName = "Trần Thị B", Email = "tranthib@gmail.com", PasswordHash = "hashed", Role = "customer", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now };
+            _context.Users.AddRange(u1, u2);
+            await _context.SaveChangesAsync();
+        }
+
+        // Seed Reviews
+        if (!_context.ProductReviews.Any())
+        {
+            var users = await _context.Users.Take(2).ToListAsync();
+            var u1Id = users.Count > 0 ? users[0].Id : 1;
+            var u2Id = users.Count > 1 ? users[1].Id : 1;
+
+            var reviews = new List<Domain.Models.ProductReview>
+            {
+                new() { ProductId = prod36?.Id ?? 1, UserId = u1Id, Rating = 5, Title = "Trần Văn Hoàng", Comment = "Áo đẹp, chất vải mềm mát. Shop đóng gói cẩn thận, giao hàng cực kỳ nhanh chóng. Rất ưng ý!", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-1) },
+                new() { ProductId = prodClassic?.Id ?? 2, UserId = u2Id, Rating = 4, Title = "Nguyễn Minh Tuấn", Comment = "Form áo vừa vặn, mặc lên dáng chuẩn. Tuy nhiên đường chỉ ở lai áo hơi lỏng một chút.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-2) },
+                new() { ProductId = prod36?.Id ?? 1, UserId = u1Id, Rating = 5, Title = "Lê Hoàng Yến", Comment = "Mua tặng người yêu mà bạn ấy khen nức nở. Áo local brand mà chất lượng không kém gì hàng xịn.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-3) },
+                new() { ProductId = prodClassic?.Id ?? 2, UserId = u2Id, Rating = 5, Title = "Phạm Quốc Bảo", Comment = "Sản phẩm giống hệt trên ảnh, chất liệu rất dày dặn nhưng không bị nóng. 10 điểm cho chất lượng.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-4) },
+                new() { ProductId = prod36?.Id ?? 1, UserId = u1Id, Rating = 3, Title = "Bùi Thị Lan", Comment = "Áo mặc cũng được, nhưng phần cổ áo hơi chật so với size mình thường mặc.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-5) },
+                new() { ProductId = prodClassic?.Id ?? 2, UserId = u2Id, Rating = 5, Title = "Đinh Nhật Minh", Comment = "Mình đã mua cái thứ 3 của shop rồi, thiết kế đơn giản nhưng rất tinh tế và dễ phối đồ.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-6) },
+                new() { ProductId = prod36?.Id ?? 1, UserId = u1Id, Rating = 4, Title = "Vũ Thùy Linh", Comment = "Chất lượng áo tốt trong tầm giá. Sẽ giới thiệu cho bạn bè mua chung.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-7) },
+                new() { ProductId = prodClassic?.Id ?? 2, UserId = u2Id, Rating = 5, Title = "Nguyễn Bảo Khang", Comment = "Giao hàng thần tốc, đặt hôm qua mà hôm nay đã có. Áo giặt không bị xù lông hay phai màu.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-8) },
+                new() { ProductId = prod36?.Id ?? 1, UserId = u1Id, Rating = 5, Title = "Hoàng Ngọc Hân", Comment = "Đỉnh của chóp, packaging rất xịn xò, có thiệp cảm ơn. Rất thích cách làm việc của The Old Pavement.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-9) },
+                new() { ProductId = prodClassic?.Id ?? 2, UserId = u2Id, Rating = 4, Title = "Trương Minh Nhật", Comment = "Hàng ngon bổ rẻ, đúng chất streetwear Hà Nội. Vải cotton mát mẻ.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-10) },
+                new() { ProductId = prod36?.Id ?? 1, UserId = u1Id, Rating = 2, Title = "Ngô Thành Công", Comment = "Mình nhận được hàng bị lỗi một vết bẩn nhỏ ở tay áo. Shop nhớ kiểm tra kĩ trước khi giao nhé.", IsApproved = false, CreatedAt = DateTime.Now.AddDays(-11) },
+                new() { ProductId = prodClassic?.Id ?? 2, UserId = u2Id, Rating = 5, Title = "Lê Hải Đăng", Comment = "Quá xuất sắc, mặc lên người cảm giác thoải mái. Phù hợp cho những ngày đi dạo phố.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-12) },
+                new() { ProductId = prod36?.Id ?? 1, UserId = u1Id, Rating = 4, Title = "Trần Tuấn Tú", Comment = "Thiết kế artwork sau lưng rất ngầu. Hi vọng shop ra thêm nhiều mẫu như thế này.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-13) },
+                new() { ProductId = prodClassic?.Id ?? 2, UserId = u2Id, Rating = 5, Title = "Phan Gia Hưng", Comment = "Tuyệt vời, giá sinh viên nhưng chất lượng quá ổn áp. Mong The Old Pavement phát triển mạnh hơn nữa.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-14) },
+                new() { ProductId = prod36?.Id ?? 1, UserId = u1Id, Rating = 5, Title = "Nguyễn Hồng Ánh", Comment = "Màu sắc bên ngoài nhìn còn đẹp hơn trên mạng. Mua đợt sale nên giá rất hời.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-15) },
+                new() { ProductId = prodClassic?.Id ?? 2, UserId = u2Id, Rating = 3, Title = "Đào Xuân Trường", Comment = "Vải hơi mỏng so với kỳ vọng của mình. Bù lại thiết kế đẹp và giao nhanh.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-16) },
+                new() { ProductId = prod36?.Id ?? 1, UserId = u1Id, Rating = 5, Title = "Lưu Đức Hải", Comment = "Mình là fan của shop từ những ngày đầu. Vẫn luôn giữ được chất riêng và chất lượng ngày càng đi lên.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-1) },
+                new() { ProductId = prodClassic?.Id ?? 2, UserId = u2Id, Rating = 4, Title = "Trịnh Thu Huyền", Comment = "Form áo khá to, các bạn nữ muốn mặc vừa nên lùi 1 size. Áo rất đẹp.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-2) },
+                new() { ProductId = prod36?.Id ?? 1, UserId = u1Id, Rating = 5, Title = "Nguyễn Quang Huy", Comment = "Hoàn hảo, không có điểm gì để chê. Áo giặt máy vô tư không lo nhăn.", IsApproved = true, CreatedAt = DateTime.Now.AddDays(-3) },
+                new() { ProductId = prodClassic?.Id ?? 2, UserId = u2Id, Rating = 4, Title = "Phạm Đình Trọng", Comment = "Tổng thể áo rất đẹp, nhưng hi vọng shop sẽ đổi sang dùng túi giấy để bảo vệ môi trường.", IsApproved = false, CreatedAt = DateTime.Now.AddHours(-2) }
+            };
+
+            _context.ProductReviews.AddRange(reviews);
+            await _context.SaveChangesAsync();
+        }
+
         // 2. Fetch all real data from database tables
         Products = await _context.Products
             .Include(p => p.ProductImages)
