@@ -30,6 +30,8 @@ public class DashboardModel : PageModel
     // Web Traffic Analytics
     public int TotalPageViews { get; set; }
     public int UniqueSessions { get; set; }
+    public int[] ViewsByDay { get; set; }
+    public int[] VisitsByDay { get; set; }
 
     // Dynamic Chart Data
     public decimal[] SalesByDay { get; set; } = new decimal[7];
@@ -246,8 +248,24 @@ public class DashboardModel : PageModel
 
         // 3.5 Fetch web traffic analytics data (adjusted to be smaller)
         var randomizer = new Random(DateTime.Now.DayOfYear);
-        TotalPageViews = randomizer.Next(250, 500);
-        UniqueSessions = randomizer.Next(50, 120);
+        
+        // Generate daily traffic for the chart (7 days)
+        ViewsByDay = new int[7];
+        VisitsByDay = new int[7];
+        int totalViews = 0;
+        int totalVisits = 0;
+        for (int i = 0; i < 7; i++)
+        {
+            var dailyViews = randomizer.Next(30, 80);
+            var dailyVisits = randomizer.Next(5, 20);
+            ViewsByDay[i] = dailyViews;
+            VisitsByDay[i] = dailyVisits;
+            totalViews += dailyViews;
+            totalVisits += dailyVisits;
+        }
+        
+        TotalPageViews = totalViews;
+        UniqueSessions = totalVisits;
         
         // Override real data with requested fake data for demo
         TotalRevenue = randomizer.Next(20, 35) * 100000; // 2.0M - 3.5M
