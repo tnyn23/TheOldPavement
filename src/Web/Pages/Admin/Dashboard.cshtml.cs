@@ -244,10 +244,14 @@ public class DashboardModel : PageModel
         TotalUsersCount = await _context.Users.CountAsync();
         if (TotalUsersCount == 0) TotalUsersCount = 12; // Fallback customer count if empty
 
-        // 3.5 Fetch web traffic analytics data
+        // 3.5 Fetch web traffic analytics data (adjusted to be smaller)
         var randomizer = new Random(DateTime.Now.DayOfYear);
-        TotalPageViews = randomizer.Next(1500, 3500);
-        UniqueSessions = randomizer.Next(300, 800);
+        TotalPageViews = randomizer.Next(250, 500);
+        UniqueSessions = randomizer.Next(50, 120);
+        
+        // Override real data with requested fake data for demo
+        TotalRevenue = randomizer.Next(20, 35) * 100000; // 2.0M - 3.5M
+        TotalOrdersCount = randomizer.Next(5, 12);
 
         // 4. Compute daily sales for current week dynamically (Monday - Sunday)
         SalesByDay = new decimal[7];
