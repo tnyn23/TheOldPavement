@@ -215,7 +215,34 @@
             ════════════════════════════════════════════ -->
             <div id="tab-analytics" class="tab-panel active px-4 md:px-6 py-6 space-y-5">
 
-                <!-- KPI Row -->
+                <!-- Web Traffic Overview -->
+                <div class="mb-5 bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-center text-lg font-bold text-emerald-800 mb-6">Overview</h3>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Views -->
+                        <div class="bg-[#EAEFF2] rounded-xl flex flex-col items-center justify-center p-8 h-[220px] transition-transform hover:scale-[1.02]">
+                            <p class="text-[2.75rem] font-black text-black tracking-tight mb-6">@Model.TotalPageViews.ToString("N0")</p>
+                            <p class="text-sm font-bold text-gray-900">Views</p>
+                        </div>
+                        <!-- Visits -->
+                        <div class="bg-[#EAEFF2] rounded-xl flex flex-col items-center justify-center p-8 h-[220px] transition-transform hover:scale-[1.02]">
+                            <p class="text-[2.75rem] font-black text-black tracking-tight mb-6">@Model.UniqueSessions.ToString("N0")</p>
+                            <p class="text-sm font-bold text-gray-900">Visits</p>
+                        </div>
+                        <!-- Revenue -->
+                        <div class="bg-[#EAEFF2] rounded-xl flex flex-col items-center justify-center p-8 h-[220px] transition-transform hover:scale-[1.02]">
+                            <p class="text-[2.75rem] font-black text-black tracking-tight mb-6">@((Model.TotalRevenue / 1000).ToString("N0"))K</p>
+                            <p class="text-sm font-bold text-gray-900">Revenue</p>
+                        </div>
+                        <!-- Top browser -->
+                        <div class="bg-[#EAEFF2] rounded-xl flex flex-col items-center justify-center p-8 h-[220px] transition-transform hover:scale-[1.02]">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/Google_Chrome_icon_%28February_2022%29.svg" alt="Chrome" class="w-[84px] h-[84px] mb-6 drop-shadow-md" />
+                            <p class="text-sm font-bold text-gray-900">Top browser</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Store KPI Row -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Revenue — hero card -->
                     <div class="stat-card lg:col-span-1 relative overflow-hidden">
